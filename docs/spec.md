@@ -14,7 +14,7 @@ Focus Town is a mobile app for iOS and Android where a small block-style town is
 
 **Visual reference: block-style town**
 
-![Block-style town overview: castle, tower, houses, workshop, trees, pond, crossing roads, and a house under construction](block-town-overview.png)
+![Block-style town overview: castle, tower, houses, workshop, trees, pond, crossing roads, and a house under construction](images/block-town-overview.png)
 
 Sample of the target look, taken from the [interactive block-style town prototype](https://claude.ai/artifact/Ee7RdRToJiXaa2hHeqs263). Developers should open the prototype to see animation, pan, and zoom.
 
@@ -248,7 +248,7 @@ Three screens in under 30 seconds, then the first real session is the tutorial. 
 
 Chosen direction: a block-style (voxel) town drawn in 2D isometric view, with small blocky workers built to scale. See the [block-style town prototype](https://claude.ai/artifact/Ee7RdRToJiXaa2hHeqs263). Fallback if the block town takes too long: the retro side-scroller.
 
-![Close-up of the construction site: three workers in yellow helmets and orange vests beside a house with log scaffolding, next to a ruin](block-town-closeup.png)
+![Close-up of the construction site: three workers in yellow helmets and orange vests beside a house with log scaffolding, next to a ruin](images/block-town-closeup.png)
 
 Close-up showing worker scale (about 1.6 blocks tall), scaffolding during construction, and a ruin in the foreground.
 

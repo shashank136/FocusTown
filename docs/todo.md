@@ -6,9 +6,9 @@ Companion to `prompt_plan.md`. Tick each box as you go. A step is done only when
 
 Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdRToJiXaa2hHeqs263
 
-![Block-style town overview](block-town-overview.png)
+![Block-style town overview](images/block-town-overview.png)
 
-![Construction site close-up with workers to scale](block-town-closeup.png)
+![Construction site close-up with workers to scale](images/block-town-closeup.png)
 
 ---
 

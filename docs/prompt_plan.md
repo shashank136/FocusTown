@@ -10,9 +10,9 @@ A test-driven, step-by-step plan to build the Focus Town MVP from the spec, endi
 
 The target look is the block-style town. Open the interactive prototype to see animation, panning, and zooming.
 
-![Block-style town overview: castle, tower, houses, workshop, trees, pond, crossing roads, and a house under construction](block-town-overview.png)
+![Block-style town overview: castle, tower, houses, workshop, trees, pond, crossing roads, and a house under construction](images/block-town-overview.png)
 
-![Close-up of the construction site: three workers in yellow helmets and orange vests beside a house with log scaffolding, next to a ruin](block-town-closeup.png)
+![Close-up of the construction site: three workers in yellow helmets and orange vests beside a house with log scaffolding, next to a ruin](images/block-town-closeup.png)
 
 Top: the whole town, as the renderer should draw it after step 18. Bottom: worker scale (about 1.6 blocks tall), scaffolding, and a ruin.
 

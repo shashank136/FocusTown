@@ -1,32 +1,21 @@
 # Focus Town
 
-A mobile app (iOS 17+ and Android 10+, one Flutter codebase) that helps you get back your focus. A small block-style town is built while you stay off your phone. Leave the app mid-session and the builders on that project die, leaving a permanent ruin. Completed buildings grow a persistent town.
+Focus Town is a mobile app for iOS and Android where a small block-style isometric town is built while you stay off your phone. Leaving the app mid-session kills the builders on that project and leaves a ruin; completed buildings grow a persistent town with a daily streak, town levels, and a new plot each focus day. It is built with Flutter and works fully offline.
 
-![Block-style town overview](block-town-overview.png)
+## Folder layout
 
-## How it works
+```
+CLAUDE.md                 guidance for Claude Code
+docs/
+  spec.md                 MVP specification
+  prompt_plan.md          ordered build prompts
+  todo.md                 progress checklist
+  device_tests.md         manual device tests (iOS, Android)
+  images/                 block-style town reference images
+  reference/              prototype HTML files (visual target)
+.vscode/extensions.json   recommended extensions
+```
 
-- Pick a focus session of 10–120 minutes. Length sets the building (hut, house, workshop, tower, castle) and how many workers are at risk.
-- Build progress equals real elapsed time and can't be sped up.
-- Locking the screen and phone calls are fine. Switching to another app gives you 10 seconds to return, plus one free 60-second pass per session. After that the workers die and the plot becomes a ruin.
-- A daily streak, town levels (1 XP per focus minute) and a new plot each focus day drive long-term play.
-- Fully offline: no accounts, no analytics, no network.
+## Start here
 
-## Status
-
-Pre-code. The repo currently holds the planning documents only; the Flutter project has not been created yet.
-
-| File | Purpose |
-| --- | --- |
-| `spec.md` | MVP specification (source of truth) |
-| `prompt_plan.md` | 22 ordered, test-driven prompts for building the MVP |
-| `todo.md` | Per-step build checklist |
-| `CLAUDE.md` | Guidance for Claude Code |
-
-## Planned stack
-
-Flutter, Flame (rendering), Riverpod (state), Drift/SQLite (storage), `flutter_local_notifications`, and native Swift/Kotlin platform channels for lock, app-switch and call detection.
-
-## MVP goal
-
-Prove the builder-death mechanic keeps people off their phones: day-7 retention of at least 20% and a session completion rate of at least 70%.
+`docs/todo.md`, then step 1 in `docs/prompt_plan.md`.
