@@ -48,4 +48,40 @@ class TownRepository {
             .getSingleOrNull();
     return row == null ? null : sessionFromRow(row);
   }
+
+  /// Stores a new running [session] and the [town] it was started from.
+  Future<void> saveSessionStarted(TownState town, Session session) =>
+      _db.transaction(() async {
+        await _db.into(_db.sessions).insert(sessionToRow(session));
+        await _writeTown(town);
+      });
+
+  /// Updates the stored row of an existing [session].
+  Future<void> saveSessionUpdated(Session session) async {
+    final changed = await (_db.update(
+      _db.sessions,
+    )..where((s) => s.id.equals(session.id))).write(sessionToRow(session));
+    if (changed == 0) throw StateError('No stored session ${session.id}');
+  }
+
+  /// Overwrites the town row and replaces all building rows, keeping the
+  /// `completedAt` of buildings that already exist.
+  Future<void> _writeTown(TownState town) async {
+    await (_db.update(
+      _db.towns,
+    )..where((t) => t.id.equals(_townId))).write(townToRow(town));
+    final existing = {
+      for (final b in await _db.select(_db.buildings).get())
+        b.id: b.completedAt,
+    };
+    final rows = [
+      for (final r in buildingsToRows(town, now: _clock.nowWall()))
+        if (existing[r.id.value] case final at?)
+          r.copyWith(completedAt: Value(at))
+        else
+          r,
+    ];
+    await _db.delete(_db.buildings).go();
+    await _db.batch((b) => b.insertAll(_db.buildings, rows));
+  }
 }

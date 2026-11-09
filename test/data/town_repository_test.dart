@@ -97,4 +97,78 @@ void main() {
       expect(await repo.activeSession(), live);
     });
   });
+
+  group('saveSessionStarted / saveSessionUpdated', () {
+    late TownState town;
+    setUp(() async => town = await repo.loadOrCreate());
+
+    test('started session is the active session', () async {
+      final s = session('a', SessionState.running);
+      await repo.saveSessionStarted(town, s);
+      expect(await repo.activeSession(), s);
+    });
+
+    test('started writes the town it was given', () async {
+      await repo.saveSessionStarted(
+        town.copyWith(xp: 10, workers: 2),
+        session('a', SessionState.running),
+      );
+      final back = await repo.loadOrCreate();
+      expect(back.xp, 10);
+      expect(back.workers, 2);
+    });
+
+    test('rewriting the town keeps existing completedAt', () async {
+      final before = (await db.select(db.buildings).getSingle()).completedAt;
+      clock.advance(const Duration(days: 1));
+      await repo.saveSessionStarted(town, session('a', SessionState.running));
+      final after = (await db.select(db.buildings).getSingle()).completedAt;
+      expect(after, before);
+    });
+
+    test('duplicate session id throws and leaves the town untouched', () async {
+      await repo.saveSessionStarted(town, session('a', SessionState.running));
+      await expectLater(
+        repo.saveSessionStarted(
+          town.copyWith(xp: 99),
+          session('a', SessionState.running),
+        ),
+        throwsA(isA<Object>()),
+      );
+      expect((await repo.loadOrCreate()).xp, 0);
+    });
+
+    test('updated away session keeps leftAt', () async {
+      final running = session('a', SessionState.running);
+      await repo.saveSessionStarted(town, running);
+      clock.advance(const Duration(minutes: 3));
+      final away = running.copyWith(
+        state: SessionState.away,
+        leftAt: TimeStamp.now(clock),
+      );
+      await repo.saveSessionUpdated(away);
+      final active = await repo.activeSession();
+      expect(active, away);
+      expect(active!.state, SessionState.away);
+    });
+
+    test('updating to completed clears the active session', () async {
+      final running = session('a', SessionState.running);
+      await repo.saveSessionStarted(town, running);
+      await repo.saveSessionUpdated(
+        running.copyWith(
+          state: SessionState.completed,
+          outcomeReason: OutcomeReason.completed,
+        ),
+      );
+      expect(await repo.activeSession(), isNull);
+    });
+
+    test('updating an unknown session throws', () async {
+      await expectLater(
+        repo.saveSessionUpdated(session('nope', SessionState.away)),
+        throwsStateError,
+      );
+    });
+  });
 }
