@@ -1,5 +1,7 @@
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/focus_controller.dart';
+import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/clock.dart';
@@ -25,3 +27,7 @@ final townRepositoryProvider = Provider<TownRepository>(
 final storedTownProvider = FutureProvider<TownState>(
   (ref) => ref.watch(townRepositoryProvider).loadOrCreate(),
 );
+
+/// The session controller.
+final focusControllerProvider =
+    AsyncNotifierProvider<FocusController, FocusState>(FocusController.new);
