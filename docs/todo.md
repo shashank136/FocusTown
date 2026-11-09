@@ -95,8 +95,8 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 ### Step 6: daily streak, plots, and XP
 - [ ] Paste Prompt 0 + Prompt 6
 - [x] `LocalDate` value class implemented
-- [ ] XP = focus minutes on completion
-- [ ] Streak: same day unchanged, next day +1, gap resets to 1
+- [x] XP = focus minutes on completion
+- [x] Streak: same day unchanged, next day +1, gap resets to 1
 - [ ] One plot per focus day, then queue drains
 - [ ] `currentStreak` shows 0 after a missed day
 - [ ] `TownLevel` thresholds: Camp 0, Village 300, Town 1,500, City 6,000, Metropolis 15,000
