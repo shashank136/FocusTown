@@ -7,6 +7,7 @@ import 'package:focus_town/ui/debug_screen.dart';
 
 void main() {
   _sliderTests();
+  _elapsedTests();
 
   testWidgets('shows title, wall and uptime, and refreshes each second', (
     tester,
@@ -63,5 +64,40 @@ void _sliderTests() {
     expect(find.text('Minutes: 120'), findsOneWidget);
     expect(find.text('Tier: castle'), findsOneWidget);
     expect(find.text('Workers at risk: 8'), findsOneWidget);
+  });
+}
+
+void _elapsedTests() {
+  testWidgets('shows elapsed since start and no tampering', (tester) async {
+    final clock = FakeClock();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [clockProvider.overrideWithValue(clock)],
+        child: const MaterialApp(home: DebugScreen()),
+      ),
+    );
+    expect(find.text('Elapsed since start: 00:00'), findsOneWidget);
+
+    clock.advance(const Duration(seconds: 90));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Elapsed since start: 01:30'), findsOneWidget);
+    expect(find.text('Clock tampered: no'), findsOneWidget);
+  });
+
+  testWidgets('flags wall clock jump, elapsed unchanged', (tester) async {
+    final clock = FakeClock();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [clockProvider.overrideWithValue(clock)],
+        child: const MaterialApp(home: DebugScreen()),
+      ),
+    );
+    clock.advance(const Duration(seconds: 90));
+    clock.setWall(clock.nowWall().add(const Duration(hours: 3)));
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('Elapsed since start: 01:30'), findsOneWidget);
+    expect(find.text('Clock tampered: yes'), findsOneWidget);
   });
 }

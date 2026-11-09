@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/time_stamp.dart';
 
 /// Developer screen showing live wall time and uptime.
 class DebugScreen extends ConsumerStatefulWidget {
@@ -16,12 +18,14 @@ class DebugScreen extends ConsumerStatefulWidget {
 
 class _DebugScreenState extends ConsumerState<DebugScreen> {
   static final List<int> _durations = BuildingTier.validDurations();
+  late final TimeStamp _start;
   Timer? _timer;
   int _minutes = 25;
 
   @override
   void initState() {
     super.initState();
+    _start = TimeStamp.now(ref.read(clockProvider));
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
   }
 
@@ -37,9 +41,17 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     return '${d.inHours}:$m:$s';
   }
 
+  static String _ms(Duration d) {
+    final m = d.inMinutes.toString().padLeft(2, '0');
+    final s = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
   @override
   Widget build(BuildContext context) {
     final clock = ref.watch(clockProvider);
+    final now = TimeStamp.now(clock);
+    final tampered = wallClockTampered(_start, now);
     final tier = BuildingTier.forMinutes(_minutes);
     return Scaffold(
       appBar: AppBar(title: const Text('Focus Town debug')),
@@ -50,6 +62,8 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
           children: [
             Text('Wall: ${clock.nowWall().toIso8601String()}'),
             Text('Uptime: ${_hms(clock.uptime())}'),
+            Text('Elapsed since start: ${_ms(elapsedBetween(_start, now))}'),
+            Text('Clock tampered: ${tampered ? 'yes' : 'no'}'),
             Slider(
               value: _durations.indexOf(_minutes).toDouble(),
               max: (_durations.length - 1).toDouble(),

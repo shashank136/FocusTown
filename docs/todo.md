@@ -67,8 +67,8 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] `TimeStamp` (wall + uptime) implemented
 - [x] `elapsedBetween` trusts uptime, falls back to wall after reboot, never negative
 - [x] `wallClockTampered` implemented
-- [ ] Tests: normal, clock forward, clock backward, reboot, reboot with clock backward
-- [ ] "Elapsed since app start" shown on `DebugScreen`
+- [x] Tests: normal, clock forward, clock backward, reboot, reboot with clock backward
+- [x] "Elapsed since app start" shown on `DebugScreen`
 - [ ] Committed: `step 03`
 
 ### Step 4: session state machine
