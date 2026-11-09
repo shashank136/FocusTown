@@ -188,4 +188,123 @@ void main() {
       expect(SessionEngine.abandon(done, stamp()), done);
     });
   });
+
+  group('resolve', () {
+    late FakeClock clock;
+    late Session running;
+
+    TimeStamp stamp() => TimeStamp.now(clock);
+    Duration secs(int n) => Duration(seconds: n);
+    Duration mins(int n) => Duration(minutes: n);
+
+    setUp(() {
+      clock = FakeClock();
+      running = SessionEngine.start(
+        id: 's',
+        minutes: 25,
+        workersAvailable: 5,
+        now: stamp(),
+      );
+    });
+
+    Session leaveAt(Session s, Duration after) {
+      clock.advance(after);
+      return SessionEngine.onBackgroundedUnlocked(s, stamp());
+    }
+
+    test('completes exactly at 25 min', () {
+      clock.advance(mins(25));
+      final s = SessionEngine.resolve(running, stamp());
+      expect(s.state, SessionState.completed);
+      expect(s.outcomeReason, OutcomeReason.completed);
+    });
+
+    test('24 min 59 s is still running', () {
+      clock.advance(mins(24) + secs(59));
+      expect(SessionEngine.resolve(running, stamp()), running);
+    });
+
+    test('away 30 s is still away', () {
+      final away = leaveAt(running, mins(5));
+      clock.advance(secs(30));
+      expect(SessionEngine.resolve(away, stamp()), away);
+    });
+
+    test('away 71 s with pass unused fails without foregrounding', () {
+      final away = leaveAt(running, mins(5));
+      clock.advance(secs(71));
+      final s = SessionEngine.resolve(away, stamp());
+      expect(s.state, SessionState.failed);
+      expect(s.outcomeReason, OutcomeReason.leftTooLong);
+      expect(s.awayTotal, secs(71));
+      expect(s.leftAt, isNotNull);
+    });
+
+    test('away 70 s with pass unused is still away', () {
+      final away = leaveAt(running, mins(5));
+      clock.advance(secs(70));
+      expect(SessionEngine.resolve(away, stamp()), away);
+    });
+
+    test('away 11 s with pass already used fails', () {
+      final used = running.copyWith(passUsed: true);
+      final away = leaveAt(used, mins(5));
+      clock.advance(secs(11));
+      expect(SessionEngine.resolve(away, stamp()).state, SessionState.failed);
+    });
+
+    test(
+      'left at 24 min, now 60 min: planned time inside window completes',
+      () {
+        final away = leaveAt(running, mins(24));
+        clock.advance(mins(36));
+        final s = SessionEngine.resolve(away, stamp());
+        expect(s.state, SessionState.completed);
+        expect(s.outcomeReason, OutcomeReason.completed);
+        expect(s.awayTotal, mins(36));
+      },
+    );
+
+    test('left at 10 min, now 60 min fails', () {
+      final away = leaveAt(running, mins(10));
+      clock.advance(mins(50));
+      final s = SessionEngine.resolve(away, stamp());
+      expect(s.state, SessionState.failed);
+      expect(s.outcomeReason, OutcomeReason.leftTooLong);
+    });
+
+    test('away within limit when planned time passes completes', () {
+      final away = leaveAt(running, mins(24) + secs(50));
+      clock.advance(secs(30));
+      final s = SessionEngine.resolve(away, stamp());
+      expect(s.state, SessionState.completed);
+      expect(s.awayTotal, secs(30));
+    });
+
+    test('a 5 minute lock mid-session still completes at 25 min', () {
+      clock.advance(mins(10));
+      final locked = SessionEngine.onLocked(running, stamp());
+      clock.advance(mins(5));
+      expect(SessionEngine.resolve(locked, stamp()), locked);
+      clock.advance(mins(10));
+      expect(
+        SessionEngine.resolve(locked, stamp()).state,
+        SessionState.completed,
+      );
+    });
+
+    test('finished session returns the same object', () {
+      final failed = SessionEngine.abandon(running, stamp());
+      clock.advance(mins(60));
+      expect(identical(SessionEngine.resolve(failed, stamp()), failed), isTrue);
+    });
+
+    test('reboot during away fails via wall time', () {
+      final away = leaveAt(running, mins(5));
+      clock
+        ..simulateReboot()
+        ..advance(mins(2)); // uptime 2m < 5m: wall fallback
+      expect(SessionEngine.resolve(away, stamp()).state, SessionState.failed);
+    });
+  });
 }

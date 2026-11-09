@@ -85,4 +85,48 @@ class SessionEngine {
           outcomeReason: OutcomeReason.abandoned,
         )
       : session;
+
+  /// Decides timeouts and completion from stored timestamps only.
+  ///
+  /// Call on every tick and app launch. Finished sessions are unchanged.
+  ///
+  /// Away: the limit is 10 s if the pass is spent, else 70 s. Past the limit
+  /// the session completes if the planned time was reached inside the allowed
+  /// window, otherwise it fails as `leftTooLong`, even if the app never came
+  /// back. Within the limit it completes once the planned time passes, else
+  /// stays away.
+  ///
+  /// Running: completes once the whole span from `startedAt` reaches the
+  /// planned time, so allowed away time counts.
+  static Session resolve(Session session, TimeStamp now) {
+    if (session.isFinished) return session;
+    Session complete(Session s) => s.copyWith(
+      state: SessionState.completed,
+      outcomeReason: OutcomeReason.completed,
+    );
+    if (session.state == SessionState.running) {
+      return elapsedBetween(session.startedAt, now) >= session.planned
+          ? complete(session)
+          : session;
+    }
+    final left = session.leftAt!;
+    final away = elapsedBetween(left, now);
+    final limit = session.passUsed
+        ? kWarningWindow
+        : kWarningWindow + kPassWindow;
+    final withAway = session.copyWith(awayTotal: session.awayTotal + away);
+    if (away > limit) {
+      final reached =
+          elapsedBetween(session.startedAt, left) + limit >= session.planned;
+      return reached
+          ? complete(withAway)
+          : withAway.copyWith(
+              state: SessionState.failed,
+              outcomeReason: OutcomeReason.leftTooLong,
+            );
+    }
+    return elapsedBetween(session.startedAt, now) >= session.planned
+        ? complete(withAway)
+        : session;
+  }
 }
