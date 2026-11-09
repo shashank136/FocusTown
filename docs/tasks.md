@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-07.7
-- What's left on it: everything. T-07.1-T-07.6 done: providers (`databaseProvider` via drift_flutter, `townRepositoryProvider`, `storedTownProvider`) and the "Stored town" card on DebugScreen. Verified on the iPhone 18 Pro simulator: card shows workers 3, plots 6, xp 0, streak 0, buildings 1; after terminate and relaunch `created_at` unchanged and still 1 building (DB at the app container `Documents/focus_town.sqlite`, columns are snake_case). No ios/Podfile needed (drift_flutter uses native assets). T-07.7 is a [device] task: give the user the iPhone steps and wait for results.
+- Current task: T-08.1
+- What's left on it: everything. Step 7 (T-07.1-T-07.7) is done; persistence verified on the iOS simulator only (user checked restart; Claude checked reinstall), recorded in `docs/device_tests.md`; a physical-iPhone repeat is still open. Next: step 8 controller, T-08.1 (FocusState, SessionResult, controller build and clearResult).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-07.6 done)
+- Last updated: 2026-11-09 (T-07.7 done)
 
 ## Status of steps
 
@@ -498,7 +498,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; app launches with the card visible.
 - Commit: `T-07.6: database providers and stored town card`
 
-### T-07.7 [ ] [device] Data persists across restarts
+### T-07.7 [x] [device] Data persists across restarts
 - Step: 7 (docs/prompt_plan.md, Prompt 7)
 - Depends on: T-07.6
 - Goal: confirm the on-disk database is created once and survives app restarts on the iPhone.
