@@ -106,9 +106,9 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Committed: `step 06`
 
 ### Phase A review
-- [ ] Domain test coverage at or above 90%
-- [ ] `lib/domain` has no Flutter imports (`grep -r "package:flutter" lib/domain` returns nothing)
-- [ ] Every functional rule FR-1 to FR-9 from the spec has at least one test
+- [x] Domain test coverage at or above 90%
+- [x] `lib/domain` has no Flutter imports (`grep -r "package:flutter" lib/domain` returns nothing)
+- [x] Every functional rule FR-1 to FR-9 from the spec has at least one test
 
 ---
 

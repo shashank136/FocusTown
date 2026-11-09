@@ -21,7 +21,19 @@ void main() {
     expect(a.hashCode, b.hashCode);
   });
 
+  test('TimeStamps differing only in uptime are unequal', () {
+    final a = TimeStamp(DateTime(2026), const Duration(seconds: 1));
+    final b = TimeStamp(DateTime(2026), const Duration(seconds: 2));
+    expect(a, isNot(b));
+  });
+
   group('elapsedBetween', () {
+    test('equal uptime is 0 even when the wall clock moved', () {
+      final from = TimeStamp(DateTime(2026), const Duration(minutes: 5));
+      final to = TimeStamp(DateTime(2026, 1, 1, 3), const Duration(minutes: 5));
+      expect(elapsedBetween(from, to), Duration.zero);
+    });
+
     test('normal passage uses uptime', () {
       final from = TimeStamp.now(clock);
       clock.advance(const Duration(minutes: 30));

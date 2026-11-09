@@ -28,6 +28,16 @@ void main() {
     }
   });
 
+  test('tier ranges are contiguous: each starts right after the last ends', () {
+    for (var i = 1; i < BuildingTier.values.length; i++) {
+      expect(
+        BuildingTier.values[i].minMinutes,
+        BuildingTier.values[i - 1].maxMinutes + 1,
+        reason: BuildingTier.values[i].name,
+      );
+    }
+  });
+
   test('validDurations is 10..120 step 5', () {
     final d = BuildingTier.validDurations();
     expect(d, hasLength(23));
