@@ -6,7 +6,10 @@ import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
+import 'package:focus_town/data/mappers.dart';
+import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -28,9 +31,20 @@ class _SeededController extends FocusController {
       FocusState(town: TownState.initial(), lastResult: _result);
 }
 
+late AppDatabase _db;
+
+/// Repository whose session save always fails.
+class _FailingRepository extends TownRepository {
+  // ignore: use_super_parameters, super params are private so names differ
+  new(AppDatabase db, Clock clock) : super(db, clock);
+
+  @override
+  Future<void> saveSessionStarted(TownState town, Session session) =>
+      Future.error(StateError('disk full'));
+}
+
 ProviderContainer _container({List<Override> extra = const []}) {
-  final db = AppDatabase(NativeDatabase.memory());
-  addTearDown(db.close);
+  final db = _db;
   final c = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(FakeClock()),
@@ -43,6 +57,11 @@ ProviderContainer _container({List<Override> extra = const []}) {
 }
 
 void main() {
+  setUp(() {
+    _db = AppDatabase(NativeDatabase.memory());
+    addTearDown(_db.close);
+  });
+
   group('FocusState', () {
     final session = Session(
       id: 's',
@@ -100,6 +119,82 @@ void main() {
       final state = c.read(focusControllerProvider).requireValue;
       expect(state.lastResult, isNull);
       expect(state.town, TownState.initial());
+    });
+
+    group('start', () {
+      test('10 minutes starts a persisted running session', () async {
+        final c = _container();
+        await c.read(focusControllerProvider.future);
+        await c.read(focusControllerProvider.notifier).start(10);
+        final active = c.read(focusControllerProvider).requireValue.active!;
+        expect(active.state, SessionState.running);
+        expect(active.workersAssigned, 1);
+        expect(active.plannedMinutes, 10);
+        expect(await c.read(townRepositoryProvider).activeSession(), active);
+      });
+
+      test('too few workers throws and persists nothing', () async {
+        final c = _container();
+        await c.read(focusControllerProvider.future);
+        await expectLater(
+          c.read(focusControllerProvider.notifier).start(120),
+          throwsStateError,
+        );
+        expect(c.read(focusControllerProvider).requireValue.active, isNull);
+        expect(await c.read(townRepositoryProvider).activeSession(), isNull);
+      });
+
+      test('starting while a session is active throws', () async {
+        final c = _container();
+        await c.read(focusControllerProvider.future);
+        final controller = c.read(focusControllerProvider.notifier);
+        await controller.start(10);
+        await expectLater(controller.start(10), throwsStateError);
+      });
+
+      test('a failed save leaves no active session and rethrows', () async {
+        final c = _container(
+          extra: [
+            townRepositoryProvider.overrideWith(
+              (ref) => _FailingRepository(_db, ref.watch(clockProvider)),
+            ),
+          ],
+        );
+        await c.read(focusControllerProvider.future);
+        await expectLater(
+          c.read(focusControllerProvider.notifier).start(10),
+          throwsStateError,
+        );
+        expect(c.read(focusControllerProvider).requireValue.active, isNull);
+      });
+
+      group('recovery town', () {
+        late ProviderContainer c;
+        setUp(() async {
+          c = _container();
+          final recovery = TownState.initial().copyWith(
+            workers: 0,
+            inRecoveryMode: true,
+          );
+          await c.read(townRepositoryProvider).loadOrCreate();
+          await (_db.update(
+            _db.towns,
+          )..where((t) => t.id.equals(1))).write(townToRow(recovery));
+        });
+
+        test('can start 10 minutes with 0 workers assigned', () async {
+          await c.read(focusControllerProvider.notifier).start(10);
+          final active = c.read(focusControllerProvider).requireValue.active!;
+          expect(active.workersAssigned, 0);
+        });
+
+        test('cannot start 25 minutes', () async {
+          await expectLater(
+            c.read(focusControllerProvider.notifier).start(25),
+            throwsStateError,
+          );
+        });
+      });
     });
   });
 }
