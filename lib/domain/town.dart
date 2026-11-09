@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/local_date.dart';
 
 /// Whether a placed building is standing or destroyed.
 enum BuildingStatus {
@@ -74,6 +75,10 @@ class TownState {
     required List<TownBuilding> buildings,
     required List<QueuedBuilding> queue,
     required this.inRecoveryMode,
+    this.xp = 0,
+    this.streakCount = 0,
+    this.lastStreakDate,
+    this.lastPlotGrantDate,
   }) : buildings = List.unmodifiable(buildings),
        queue = List.unmodifiable(queue);
 
@@ -109,6 +114,18 @@ class TownState {
   /// True while the town has no workers left to risk.
   final bool inRecoveryMode;
 
+  /// Total focus minutes completed.
+  final int xp;
+
+  /// Consecutive focus days, as last recorded.
+  final int streakCount;
+
+  /// Day of the last completed session, if any.
+  final LocalDate? lastStreakDate;
+
+  /// Day a daily plot was last granted, if ever.
+  final LocalDate? lastPlotGrantDate;
+
   /// Copy with changed fields.
   TownState copyWith({
     int? workers,
@@ -116,12 +133,20 @@ class TownState {
     List<TownBuilding>? buildings,
     List<QueuedBuilding>? queue,
     bool? inRecoveryMode,
+    int? xp,
+    int? streakCount,
+    LocalDate? lastStreakDate,
+    LocalDate? lastPlotGrantDate,
   }) => TownState(
     workers: workers ?? this.workers,
     plotsUnlocked: plotsUnlocked ?? this.plotsUnlocked,
     buildings: buildings ?? this.buildings,
     queue: queue ?? this.queue,
     inRecoveryMode: inRecoveryMode ?? this.inRecoveryMode,
+    xp: xp ?? this.xp,
+    streakCount: streakCount ?? this.streakCount,
+    lastStreakDate: lastStreakDate ?? this.lastStreakDate,
+    lastPlotGrantDate: lastPlotGrantDate ?? this.lastPlotGrantDate,
   );
 
   @override
@@ -131,7 +156,11 @@ class TownState {
       other.plotsUnlocked == plotsUnlocked &&
       _sameItems(other.buildings, buildings) &&
       _sameItems(other.queue, queue) &&
-      other.inRecoveryMode == inRecoveryMode;
+      other.inRecoveryMode == inRecoveryMode &&
+      other.xp == xp &&
+      other.streakCount == streakCount &&
+      other.lastStreakDate == lastStreakDate &&
+      other.lastPlotGrantDate == lastPlotGrantDate;
 
   @override
   int get hashCode => Object.hash(
@@ -140,6 +169,10 @@ class TownState {
     Object.hashAll(buildings),
     Object.hashAll(queue),
     inRecoveryMode,
+    xp,
+    streakCount,
+    lastStreakDate,
+    lastPlotGrantDate,
   );
 
   // Pure Dart: no collection package, so compare lists by hand.
