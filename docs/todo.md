@@ -78,7 +78,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] 10-second warning and one 60-second pass enforced
 - [x] `resolve()` fails an away session past its limit without a foreground event
 - [x] Tests: completion, lock, away 5s, away 30s (pass), second away fails, away 90s, resolve while away, exact completion, abandon, too few workers, progress, reboot during away
-- [ ] Session simulator panel on `DebugScreen` works with a local `FakeClock`
+- [x] Session simulator panel on `DebugScreen` works with a local `FakeClock`
 - [ ] Committed: `step 04`
 
 ### Step 5: town rules

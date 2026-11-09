@@ -8,6 +8,7 @@ import 'package:focus_town/ui/debug_screen.dart';
 void main() {
   _sliderTests();
   _elapsedTests();
+  _simulatorWiringTest();
 
   testWidgets('shows title, wall and uptime, and refreshes each second', (
     tester,
@@ -99,5 +100,19 @@ void _elapsedTests() {
 
     expect(find.text('Elapsed since start: 01:30'), findsOneWidget);
     expect(find.text('Clock tampered: yes'), findsOneWidget);
+  });
+}
+
+void _simulatorWiringTest() {
+  testWidgets('simulator uses the slider minutes (25 → +1 min is 4%)', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await tester.ensureVisible(find.text('Start'));
+    await tester.tap(find.text('Start'));
+    await tester.pump();
+    await tester.tap(find.text('+1 min'));
+    await tester.pump();
+    expect(find.text('Progress: 4%'), findsOneWidget);
   });
 }
