@@ -94,7 +94,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 6: daily streak, plots, and XP
 - [ ] Paste Prompt 0 + Prompt 6
-- [ ] `LocalDate` value class implemented
+- [x] `LocalDate` value class implemented
 - [ ] XP = focus minutes on completion
 - [ ] Streak: same day unchanged, next day +1, gap resets to 1
 - [ ] One plot per focus day, then queue drains
