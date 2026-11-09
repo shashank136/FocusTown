@@ -5,6 +5,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -169,6 +170,124 @@ void main() {
         repo.saveSessionUpdated(session('nope', SessionState.away)),
         throwsStateError,
       );
+    });
+  });
+
+  group('saveSessionResolved', () {
+    late TownState town;
+    late Session running;
+    setUp(() async {
+      town = await repo.loadOrCreate();
+      running = session('a', SessionState.running);
+      await repo.saveSessionStarted(town, running);
+    });
+
+    test(
+      'completed save reloads as the new town; session not active',
+      () async {
+        clock.advance(const Duration(minutes: 25));
+        final next = town.copyWith(
+          workers: 4,
+          plotsUnlocked: 7,
+          xp: 25,
+          streakCount: 1,
+          lastStreakDate: LocalDate.parse('2026-01-01'),
+          buildings: [
+            ...town.buildings,
+            const TownBuilding(
+              id: 'a',
+              tier: BuildingTier.house,
+              status: BuildingStatus.complete,
+              plotIndex: 1,
+            ),
+          ],
+        );
+        final done = running.copyWith(
+          state: SessionState.completed,
+          outcomeReason: OutcomeReason.completed,
+        );
+        await repo.saveSessionResolved(next, done);
+        expect(await repo.loadOrCreate(), next);
+        expect(await repo.activeSession(), isNull);
+        final row = await db.select(db.sessions).getSingle();
+        expect(row.state, 'completed');
+        expect(row.resolvedAt, clock.nowWall().millisecondsSinceEpoch);
+      },
+    );
+
+    test('failed save with a ruin round trips', () async {
+      final next = town.copyWith(
+        workers: 1,
+        inRecoveryMode: true,
+        buildings: [
+          ...town.buildings,
+          const TownBuilding(
+            id: 'a',
+            tier: BuildingTier.house,
+            status: BuildingStatus.ruin,
+            plotIndex: 2,
+          ),
+        ],
+      );
+      await repo.saveSessionResolved(
+        next,
+        running.copyWith(
+          state: SessionState.failed,
+          outcomeReason: OutcomeReason.leftTooLong,
+        ),
+      );
+      expect(await repo.loadOrCreate(), next);
+    });
+
+    test('queued buildings keep their order across saves', () async {
+      final done = running.copyWith(state: SessionState.completed);
+      const first = QueuedBuilding(id: 'zz', tier: BuildingTier.hut);
+      const second = QueuedBuilding(id: 'aa', tier: BuildingTier.hut);
+      await repo.saveSessionResolved(town.copyWith(queue: [first]), done);
+      clock.advance(const Duration(minutes: 5));
+      await repo.saveSessionResolved(
+        town.copyWith(queue: [first, second]),
+        done,
+      );
+      expect((await repo.loadOrCreate()).queue, [first, second]);
+    });
+
+    test('createdAt and onboardingDone survive', () async {
+      await (db.update(db.towns)..where((t) => t.id.equals(1))).write(
+        const TownsCompanion(onboardingDone: Value(true)),
+      );
+      final created = (await db.select(db.towns).getSingle()).createdAt;
+      clock.advance(const Duration(days: 2));
+      await repo.saveSessionResolved(
+        town.copyWith(xp: 5),
+        running.copyWith(state: SessionState.completed),
+      );
+      final row = await db.select(db.towns).getSingle();
+      expect(row.createdAt, created);
+      expect(row.onboardingDone, isTrue);
+      expect(row.xp, 5);
+    });
+
+    test('a failure rolls back town, buildings and session', () async {
+      final towns = await db.select(db.towns).get();
+      final buildings = await db.select(db.buildings).get();
+      final sessions = await db.select(db.sessions).get();
+      const dup = TownBuilding(
+        id: 'dup',
+        tier: BuildingTier.hut,
+        status: BuildingStatus.complete,
+        plotIndex: 1,
+      );
+      await expectLater(
+        repo.saveSessionResolved(
+          town.copyWith(xp: 99, buildings: [dup, dup]),
+          running.copyWith(state: SessionState.failed),
+        ),
+        throwsA(isA<Object>()),
+      );
+      expect(await db.select(db.towns).get(), towns);
+      expect(await db.select(db.buildings).get(), buildings);
+      expect(await db.select(db.sessions).get(), sessions);
     });
   });
 }

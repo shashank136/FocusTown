@@ -64,6 +64,17 @@ class TownRepository {
     if (changed == 0) throw StateError('No stored session ${session.id}');
   }
 
+  /// Stores the finished [session] and the whole new [town] atomically.
+  Future<void> saveSessionResolved(TownState town, Session session) =>
+      _db.transaction(() async {
+        await _db
+            .into(_db.sessions)
+            .insertOnConflictUpdate(
+              sessionToRow(session, resolvedAt: _clock.nowWall()),
+            );
+        await _writeTown(town);
+      });
+
   /// Overwrites the town row and replaces all building rows, keeping the
   /// `completedAt` of buildings that already exist.
   Future<void> _writeTown(TownState town) async {

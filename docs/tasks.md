@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-07.5
-- What's left on it: everything. T-07.1-T-07.4 done: `TownRepository` has `loadOrCreate`, `activeSession`, `saveSessionStarted` (session insert + private `_writeTown` in one transaction) and `saveSessionUpdated` (throws StateError for unknown id). `_writeTown` already keeps existing `completedAt` by building id; T-07.5 reuses it and adds the resolved session row with `resolvedAt` plus atomicity tests. Repository is not used by app code until T-07.6.
+- Current task: T-07.6
+- What's left on it: everything. T-07.1-T-07.5 done: `TownRepository` is complete (loadOrCreate, activeSession, saveSessionStarted, saveSessionUpdated, saveSessionResolved, atomic; rollback tested). Next: providers (databaseProvider with drift_flutter, townRepositoryProvider, storedTownProvider) and the "Stored town" card on DebugScreen, which ends step 7 and is the first time the DB runs in the app: verify in the simulator then (iOS build with drift_flutter already confirmed to compile and launch; no ios/Podfile was generated, so check Podfile before the first real DB open).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -27,7 +27,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-07.4 done)
+- Last updated: 2026-11-09 (T-07.5 done)
 
 ## Status of steps
 
@@ -473,7 +473,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-07.4: repository session start and update`
 
-### T-07.5 [ ] TownRepository: atomic saveSessionResolved
+### T-07.5 [x] TownRepository: atomic saveSessionResolved
 - Step: 7 (docs/prompt_plan.md, Prompt 7)
 - Depends on: T-07.4
 - Goal: save the finished session and the whole new town in one transaction so a crash never leaves a half-written result.
