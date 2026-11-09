@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-04.1
-- What's left on it: everything. Step 3 done; T-03.3 uncommitted until user approves.
+- Current task: T-04.2
+- What's left on it: everything. `Session` exists and is used by tests only until T-04.2 (engine) / T-04.4 (debug panel).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -22,7 +22,7 @@ Each session updates this section before stopping.
   - Lints: `factory ClassName.named` triggers `unnecessary_type_name_in_constructor`, but `factory .named` does not parse; use an `// ignore:` for named factories. `@immutable` needs `package:meta` (not approved), so value classes with `==` use `ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes`. Ask the user if they want `meta` added.
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-08 (T-03.3 done)
+- Last updated: 2026-11-08 (T-04.1 done)
 
 ## Status of steps
 
@@ -182,7 +182,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-03.3: debug elapsed time display`
 
-### T-04.1 [ ] Session model and enums (no logic)
+### T-04.1 [x] Session model and enums (no logic)
 - Step: 4 (docs/prompt_plan.md, Prompt 4)
 - Depends on: T-03.3
 - Goal: the immutable `Session` value type and its enums, with no behavior beyond copying.

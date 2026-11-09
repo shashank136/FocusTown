@@ -73,7 +73,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 4: session state machine
 - [ ] Paste Prompt 0 + Prompt 4
-- [ ] `Session` model and enums implemented
+- [x] `Session` model and enums implemented
 - [ ] `SessionEngine`: start, onLocked, onCallStarted, onBackgroundedUnlocked, onForegrounded, abandon, resolve, progress
 - [ ] 10-second warning and one 60-second pass enforced
 - [ ] `resolve()` fails an away session past its limit without a foreground event
