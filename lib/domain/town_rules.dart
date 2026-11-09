@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
@@ -75,6 +77,29 @@ class TownRules {
       );
     }
     return t;
+  }
+
+  /// Applies a failed [session]: workers die, a ruin takes a free plot, and
+  /// recovery mode starts at 0 workers.
+  static TownState applyFailed(TownState town, Session session) {
+    final hurt = town.copyWith(
+      workers: max(0, town.workers - session.workersAssigned),
+    );
+    final plot = nextFreePlot(hurt);
+    final ruined = plot == null
+        ? hurt
+        : hurt.copyWith(
+            buildings: [
+              ...hurt.buildings,
+              TownBuilding(
+                id: session.id,
+                tier: session.tier,
+                status: BuildingStatus.ruin,
+                plotIndex: plot,
+              ),
+            ],
+          );
+    return _updateRecovery(ruined);
   }
 
   // 3+ workers leaves recovery, 0 enters it, otherwise unchanged.

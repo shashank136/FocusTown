@@ -85,8 +85,8 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Paste Prompt 0 + Prompt 5
 - [x] `TownState` and `TownBuilding` implemented; `TownState.initial()` = 3 workers, 6 plots, starter house
 - [ ] `nextFreePlot`, `applyCompleted`, `applyFailed`, `canStart`, `placeQueued` implemented
-- [ ] Ruins occupy a plot
-- [ ] Recovery mode enters at 0 workers, allows hut-only sessions, failure costs nothing, exits at 3 workers
+- [x] Ruins occupy a plot
+- [x] Recovery mode enters at 0 workers, allows hut-only sessions, failure costs nothing, exits at 3 workers
 - [ ] `SessionEngine.start` uses recovery-aware worker availability
 - [ ] Tests for every rule listed in the prompt passing
 - [ ] Simulator shows workers, plots, queue, recovery flag, buildings; slider disables invalid durations

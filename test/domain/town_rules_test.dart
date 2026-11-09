@@ -36,6 +36,17 @@ Session _done(BuildingTier tier, {String id = 's1'}) => Session(
   outcomeReason: OutcomeReason.completed,
 );
 
+Session _failed(BuildingTier tier, {int? assigned, String id = 'f1'}) =>
+    Session(
+      id: id,
+      plannedMinutes: tier.minMinutes,
+      tier: tier,
+      workersAssigned: assigned ?? tier.workersAtRisk,
+      state: SessionState.failed,
+      startedAt: TimeStamp(DateTime(2026), Duration.zero),
+      outcomeReason: OutcomeReason.leftTooLong,
+    );
+
 void main() {
   group('nextFreePlot', () {
     test('initial town gives plot 1', () {
@@ -209,6 +220,83 @@ void main() {
     test('empty queue: unchanged', () {
       final s = TownState.initial();
       expect(TownRules.placeQueued(s), s);
+    });
+  });
+
+  group('applyFailed', () {
+    test('house failure on initial town: 1 worker, ruin on plot 1', () {
+      final t = TownRules.applyFailed(
+        TownState.initial(),
+        _failed(BuildingTier.house),
+      );
+      expect(t.workers, 1);
+      expect(
+        t.buildings.last,
+        const TownBuilding(
+          id: 'f1',
+          tier: BuildingTier.house,
+          status: BuildingStatus.ruin,
+          plotIndex: 1,
+        ),
+      );
+    });
+
+    test('castle assigned 8 on a 10-worker town leaves 2', () {
+      final t = TownRules.applyFailed(
+        _town(workers: 10),
+        _failed(BuildingTier.castle),
+      );
+      expect(t.workers, 2);
+    });
+
+    test('no free plot: workers reduced, nothing placed or queued', () {
+      final full = _town(
+        workers: 5,
+        buildings: [for (var i = 0; i < 6; i++) _b(i)],
+      );
+      final t = TownRules.applyFailed(full, _failed(BuildingTier.house));
+      expect(t.workers, 3);
+      expect(t.buildings, full.buildings);
+      expect(t.queue, isEmpty);
+    });
+
+    test('failure leaving 0 workers enters recovery', () {
+      final t = TownRules.applyFailed(
+        _town(workers: 2),
+        _failed(BuildingTier.house),
+      );
+      expect(t.workers, 0);
+      expect(t.inRecoveryMode, isTrue);
+    });
+
+    test(
+      'recovery failure with 0 assigned: workers unchanged, ruin, recovery',
+      () {
+        final t = TownRules.applyFailed(
+          _town(workers: 0, recovery: true),
+          _failed(BuildingTier.hut, assigned: 0),
+        );
+        expect(t.workers, 0);
+        expect(t.inRecoveryMode, isTrue);
+        expect(t.buildings.last.status, BuildingStatus.ruin);
+      },
+    );
+
+    test('workers never go negative', () {
+      final t = TownRules.applyFailed(
+        _town(workers: 1),
+        _failed(BuildingTier.castle),
+      );
+      expect(t.workers, 0);
+    });
+
+    test('3 recovery huts from 0 workers exit recovery exactly at 3', () {
+      var t = _town(workers: 0, recovery: true);
+      for (var i = 1; i <= 3; i++) {
+        t = TownRules.applyCompleted(t, _done(BuildingTier.hut, id: 'h$i'));
+        expect(t.workers, i);
+        expect(t.inRecoveryMode, i < 3, reason: 'after hut $i');
+      }
     });
   });
 }
