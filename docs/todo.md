@@ -64,8 +64,8 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 3: elapsed-time calculator
 - [ ] Paste Prompt 0 + Prompt 3
-- [ ] `TimeStamp` (wall + uptime) implemented
-- [ ] `elapsedBetween` trusts uptime, falls back to wall after reboot, never negative
+- [x] `TimeStamp` (wall + uptime) implemented
+- [x] `elapsedBetween` trusts uptime, falls back to wall after reboot, never negative
 - [ ] `wallClockTampered` implemented
 - [ ] Tests: normal, clock forward, clock backward, reboot, reboot with clock backward
 - [ ] "Elapsed since app start" shown on `DebugScreen`
