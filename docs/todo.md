@@ -41,9 +41,9 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 1: project skeleton and clock
 - [ ] Paste Prompt 0 + Prompt 1
-- [ ] Flutter app `focus_town` created (iOS 17+, Android minSdk 29)
-- [ ] Riverpod, lints, and mocktail added
-- [ ] Folders `lib/domain`, `lib/data`, `lib/platform`, `lib/game`, `lib/ui`, `lib/app` and matching `test/` folders exist
+- [x] Flutter app `focus_town` created (iOS 17+, Android minSdk 29)
+- [x] Riverpod, lints, and mocktail added
+- [x] Folders `lib/domain`, `lib/data`, `lib/platform`, `lib/game`, `lib/ui`, `lib/app` and matching `test/` folders exist
 - [ ] `Clock`, `SystemClock`, and `FakeClock` (advance, setWall, simulateReboot) implemented
 - [ ] Clock unit tests written first and passing
 - [ ] `clockProvider` added

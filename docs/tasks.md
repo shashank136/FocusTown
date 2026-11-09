@@ -13,13 +13,14 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-01.1
-- What's left on it: everything. No Flutter project exists yet (the repo holds docs only).
+- Current task: T-01.2
+- What's left on it: everything. T-01.1 is done (uncommitted until user approves).
 - Gotchas:
-  - Step 1 was reported as done, but the repo has no `pubspec.yaml`, no `lib/`, no `test/`. T-01.1–T-01.3 are therefore `[ ]`. If the project exists elsewhere, verify it, then tick them.
-  - Bundle id is not chosen yet (docs/todo.md section 0). Use `com.example.focus_town` until the user decides, and ask before step 22.
-  - Flutter on this machine: 3.47.9 stable.
-- Last updated: 2026-11-08 (task queue created, no app code written)
+  - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
+  - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
+  - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
+  - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
+- Last updated: 2026-11-08 (T-01.1 done)
 
 ## Status of steps
 
@@ -62,7 +63,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 
 ## Phase A: foundation and rules
 
-### T-01.1 [ ] Flutter project, dependencies, folders
+### T-01.1 [x] Flutter project, dependencies, folders
 - Step: 1 (docs/prompt_plan.md, Prompt 1)
 - Depends on: none
 - Goal: create the `focus_town` Flutter app in the repo root with dependencies, strict lints, and the layer folders, so later tasks have a compiling base.
