@@ -57,3 +57,15 @@ Focus Town is a mobile app where a block-style isometric town is built by small 
 
 - Original block-style art only, matching `docs/images/` and the voxel prototype.
 - No Minecraft textures, characters, or logos.
+
+## Session protocol
+
+The queue of coding work is `docs/tasks.md`. This protocol replaces the "one `prompt_plan` step at a time" and `step NN: description` commit rules above: work in tasks and use each task's own `Commit:` line.
+
+- Every session starts by reading CLAUDE.md, then the Handoff notes and the first `[~]` or `[ ]` task in `docs/tasks.md`.
+- If a task is `[~]`, run `git status` and `git diff` first and continue from where it stopped.
+- Work on ONE task per session unless the user says otherwise.
+- Write failing tests first, then implement until green.
+- Before finishing: `flutter analyze` clean, `flutter test` green, tick the task `[x]`, tick matching boxes in `docs/todo.md`, update Handoff notes, then ask the user before committing with the task's commit message.
+- For `[device]` tasks: give the user exact steps to perform on their iPhone or Android phone, wait for their results, record them in `docs/device_tests.md`, then tick the task.
+- If stuck or a test cannot pass legitimately, mark the task `[!]` with the reason, update Handoff notes, and stop. Never weaken or delete a test to make it pass.
