@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -31,7 +33,11 @@ class _SessionSimulatorPanelState extends State<SessionSimulatorPanel> {
   void _set(Session next) {
     if (next.isFinished && !(_session?.isFinished ?? false)) {
       _town = next.state == SessionState.completed
-          ? TownRules.applyCompleted(_town, next)
+          ? Progression.onSessionCompleted(
+              TownRules.applyCompleted(_town, next),
+              next,
+              _clock.nowWall(),
+            )
           : TownRules.applyFailed(_town, next);
     }
     _session = next;
@@ -67,9 +73,11 @@ class _SessionSimulatorPanelState extends State<SessionSimulatorPanel> {
     return 'Needs $need workers, you have ${_town.workers}';
   }
 
-  void _advance(Duration d) => _act((s) {
+  // Moves fake time forward; works with or without a session.
+  void _advance(Duration d) => setState(() {
     _clock.advance(d);
-    return s;
+    final s = _session;
+    if (s != null) _set(SessionEngine.resolve(s, _now));
   });
 
   void _returnAfter(Duration d) => _act((s) {
@@ -84,6 +92,10 @@ class _SessionSimulatorPanelState extends State<SessionSimulatorPanel> {
         ? 0
         : (SessionEngine.progress(s, _now) * 100).round();
     final blocked = _blockedReason();
+    final streak = Progression.currentStreak(
+      _town,
+      LocalDate.fromDateTime(_clock.nowWall()),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -98,6 +110,10 @@ class _SessionSimulatorPanelState extends State<SessionSimulatorPanel> {
             FilledButton(
               onPressed: () => _advance(const Duration(minutes: 1)),
               child: const Text('+1 min'),
+            ),
+            FilledButton(
+              onPressed: () => _advance(const Duration(days: 1)),
+              child: const Text('+1 day'),
             ),
             FilledButton(
               onPressed: () =>
@@ -127,6 +143,13 @@ class _SessionSimulatorPanelState extends State<SessionSimulatorPanel> {
         Text('Progress: $percent%'),
         Text('Pass used: ${s?.passUsed ?? false}'),
         Text('Outcome: ${s?.outcomeReason?.name ?? '-'}'),
+        Text('XP: ${_town.xp}'),
+        Text('Streak: $streak'),
+        Text('Level: ${Progression.levelFor(_town.xp).name}'),
+        Text(
+          'Level progress: '
+          '${(Progression.progressToNext(_town.xp) * 100).round()}%',
+        ),
         Text('Workers: ${_town.workers}'),
         Text('Plots: ${_town.buildings.length}/${_town.plotsUnlocked}'),
         Text('Queue: ${_town.queue.length}'),

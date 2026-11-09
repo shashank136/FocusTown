@@ -117,7 +117,7 @@ void main() {
         await _tap(tester, '+1 min');
       }
       expect(find.text('Workers: 4'), findsOneWidget);
-      expect(find.text('Plots: 2/6'), findsOneWidget);
+      expect(find.text('Plots: 2/7'), findsOneWidget);
       expect(find.text('hut complete plot 1'), findsOneWidget);
     });
 
@@ -130,7 +130,7 @@ void main() {
         await _tap(tester, '+1 min');
       }
       expect(find.text('Workers: 4'), findsOneWidget);
-      expect(find.text('Plots: 2/6'), findsOneWidget);
+      expect(find.text('Plots: 2/7'), findsOneWidget);
     });
 
     testWidgets('failing a 25 minute house: 1 worker and a ruin', (
@@ -175,6 +175,74 @@ void main() {
       await _failSession(tester);
       await _failSession(tester); // recovery hut, 0 assigned
       expect(find.text('Workers: 0'), findsOneWidget);
+    });
+  });
+
+  group('progression', () {
+    Future<void> completeHut(WidgetTester tester) async {
+      await _tap(tester, 'Start');
+      for (var i = 0; i < 10; i++) {
+        await _tap(tester, '+1 min');
+      }
+    }
+
+    testWidgets('initial: streak 0, camp, 0 xp, 0%', (tester) async {
+      await _pump(tester);
+      expect(find.text('Streak: 0'), findsOneWidget);
+      expect(find.text('Level: camp'), findsOneWidget);
+      expect(find.text('XP: 0'), findsOneWidget);
+      expect(find.text('Level progress: 0%'), findsOneWidget);
+    });
+
+    testWidgets('a 10 minute completion: streak 1, xp 10, 7 plots', (
+      tester,
+    ) async {
+      await _pump(tester);
+      await completeHut(tester);
+      expect(find.text('Streak: 1'), findsOneWidget);
+      expect(find.text('XP: 10'), findsOneWidget);
+      expect(find.text('Plots: 2/7'), findsOneWidget);
+      expect(find.text('Level: camp'), findsOneWidget);
+      expect(find.text('Level progress: 3%'), findsOneWidget);
+    });
+
+    testWidgets('+1 day then another completion: streak 2, 8 plots', (
+      tester,
+    ) async {
+      await _pump(tester);
+      await completeHut(tester);
+      await _tap(tester, '+1 day');
+      await completeHut(tester);
+      expect(find.text('Streak: 2'), findsOneWidget);
+      expect(find.text('XP: 20'), findsOneWidget);
+      expect(find.text('Plots: 3/8'), findsOneWidget);
+    });
+
+    testWidgets('a second completion the same day grants no extra plot', (
+      tester,
+    ) async {
+      await _pump(tester);
+      await completeHut(tester);
+      await completeHut(tester);
+      expect(find.text('Streak: 1'), findsOneWidget);
+      expect(find.text('Plots: 3/7'), findsOneWidget);
+    });
+
+    testWidgets('+1 day twice shows streak 0', (tester) async {
+      await _pump(tester);
+      await completeHut(tester);
+      await _tap(tester, '+1 day');
+      expect(find.text('Streak: 1'), findsOneWidget);
+      await _tap(tester, '+1 day');
+      expect(find.text('Streak: 0'), findsOneWidget);
+    });
+
+    testWidgets('a failed session changes no progression', (tester) async {
+      await _pump(tester);
+      await _failSession(tester);
+      expect(find.text('Streak: 0'), findsOneWidget);
+      expect(find.text('XP: 0'), findsOneWidget);
+      expect(find.text('Plots: 2/6'), findsOneWidget);
     });
   });
 }

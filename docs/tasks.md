@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-06.5
-- What's left on it: everything. Steps 4 and 5 done. The debug `SessionSimulatorPanel` owns a `TownState` and applies `TownRules` once per finished session. `TownRules.placeQueued` and `LocalDate` (T-06.1), `TownLevel`/`Progression` (T-06.2, T-06.3/T-06.4 onSessionCompleted: xp, streak, daily plot, queue drain; currentStreak) and the new TownState progression fields are used by tests only until the step-6 progression wiring (T-06.x). The slider is unchanged; invalid durations are blocked at Start with a reason line.
+- Current task: T-07.1
+- What's left on it: everything. Phase A (steps 1-6) is done: all core rules run in the debug `SessionSimulatorPanel` (own FakeClock, town, progression, `+1 day`). `TownRules.placeQueued` runs via `Progression.onSessionCompleted`. Next is Phase B (data and controller), starting with drift. The slider is unchanged; invalid durations are blocked at Start with a reason line.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -25,7 +25,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-08 (T-06.4 done)
+- Last updated: 2026-11-08 (T-06.5 done)
 
 ## Status of steps
 
@@ -400,7 +400,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-06.4: daily plot grant and current streak`
 
-### T-06.5 [ ] Simulator: +1 day, streak, level
+### T-06.5 [x] Simulator: +1 day, streak, level
 - Step: 6 (docs/prompt_plan.md, Prompt 6)
 - Depends on: T-06.4
 - Goal: wire progression into the app's simulator. Ends step 6 and phase A.

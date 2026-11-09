@@ -102,7 +102,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] `TownLevel` thresholds: Camp 0, Village 300, Town 1,500, City 6,000, Metropolis 15,000
 - [x] Failed sessions change none of these
 - [x] Tests incl. Jan 31 → Feb 1 and Dec 31 → Jan 1 passing
-- [ ] "+1 day" button and streak/level display on simulator
+- [x] "+1 day" button and streak/level display on simulator
 - [ ] Committed: `step 06`
 
 ### Phase A review
