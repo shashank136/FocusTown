@@ -59,7 +59,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] `validDurations` returns 23 values
 - [x] `largestAffordable` implemented
 - [x] Boundary tests (10, 20, 25, 40, 45, 60, 65, 90, 95, 120) passing
-- [ ] Duration slider on `DebugScreen` shows tier and workers at risk
+- [x] Duration slider on `DebugScreen` shows tier and workers at risk
 - [ ] Committed: `step 02`
 
 ### Step 3: elapsed-time calculator

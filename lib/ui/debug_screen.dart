@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/domain/building_tier.dart';
 
 /// Developer screen showing live wall time and uptime.
 class DebugScreen extends ConsumerStatefulWidget {
@@ -14,7 +15,9 @@ class DebugScreen extends ConsumerStatefulWidget {
 }
 
 class _DebugScreenState extends ConsumerState<DebugScreen> {
+  static final List<int> _durations = BuildingTier.validDurations();
   Timer? _timer;
+  int _minutes = 25;
 
   @override
   void initState() {
@@ -37,6 +40,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   @override
   Widget build(BuildContext context) {
     final clock = ref.watch(clockProvider);
+    final tier = BuildingTier.forMinutes(_minutes);
     return Scaffold(
       appBar: AppBar(title: const Text('Focus Town debug')),
       body: Padding(
@@ -46,6 +50,16 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
           children: [
             Text('Wall: ${clock.nowWall().toIso8601String()}'),
             Text('Uptime: ${_hms(clock.uptime())}'),
+            Slider(
+              value: _durations.indexOf(_minutes).toDouble(),
+              max: (_durations.length - 1).toDouble(),
+              divisions: _durations.length - 1,
+              onChanged: (v) =>
+                  setState(() => _minutes = _durations[v.round()]),
+            ),
+            Text('Minutes: $_minutes'),
+            Text('Tier: ${tier.name}'),
+            Text('Workers at risk: ${tier.workersAtRisk}'),
           ],
         ),
       ),
