@@ -1,4 +1,5 @@
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
 /// Pure town rules: each function reads a [TownState] and returns a result.
@@ -21,5 +22,65 @@ class TownRules {
     return town.inRecoveryMode
         ? tier == BuildingTier.hut
         : town.workers >= tier.workersAtRisk;
+  }
+
+  /// Applies a completed [session]: gains workers, places or queues the
+  /// building, then updates recovery mode.
+  static TownState applyCompleted(TownState town, Session session) {
+    final grown = town.copyWith(
+      workers: town.workers + session.tier.workersAddedOnSuccess,
+    );
+    final plot = nextFreePlot(grown);
+    final placed = plot == null
+        ? grown.copyWith(
+            queue: [
+              ...grown.queue,
+              QueuedBuilding(id: session.id, tier: session.tier),
+            ],
+          )
+        : grown.copyWith(
+            buildings: [
+              ...grown.buildings,
+              TownBuilding(
+                id: session.id,
+                tier: session.tier,
+                status: BuildingStatus.complete,
+                plotIndex: plot,
+              ),
+            ],
+          );
+    return _updateRecovery(placed);
+  }
+
+  /// Moves queued buildings onto free plots, oldest first.
+  static TownState placeQueued(TownState town) {
+    var t = town;
+    for (
+      var plot = nextFreePlot(t);
+      t.queue.isNotEmpty && plot != null;
+      plot = nextFreePlot(t)
+    ) {
+      final next = t.queue.first;
+      t = t.copyWith(
+        buildings: [
+          ...t.buildings,
+          TownBuilding(
+            id: next.id,
+            tier: next.tier,
+            status: BuildingStatus.complete,
+            plotIndex: plot,
+          ),
+        ],
+        queue: t.queue.skip(1).toList(),
+      );
+    }
+    return t;
+  }
+
+  // 3+ workers leaves recovery, 0 enters it, otherwise unchanged.
+  static TownState _updateRecovery(TownState town) {
+    if (town.workers >= 3) return town.copyWith(inRecoveryMode: false);
+    if (town.workers == 0) return town.copyWith(inRecoveryMode: true);
+    return town;
   }
 }

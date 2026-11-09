@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/session.dart';
+import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
 
@@ -22,6 +24,16 @@ TownState _town({
   buildings: buildings,
   queue: const [],
   inRecoveryMode: recovery,
+);
+
+Session _done(BuildingTier tier, {String id = 's1'}) => Session(
+  id: id,
+  plannedMinutes: tier.minMinutes,
+  tier: tier,
+  workersAssigned: tier.workersAtRisk,
+  state: SessionState.completed,
+  startedAt: TimeStamp(DateTime(2026), Duration.zero),
+  outcomeReason: OutcomeReason.completed,
 );
 
 void main() {
@@ -86,6 +98,117 @@ void main() {
         TownRules.canStart(_town(workers: 2, recovery: true), 25),
         isFalse,
       );
+    });
+  });
+
+  group('applyCompleted', () {
+    test('hut success: 4 workers, building on plot 1', () {
+      final t = TownRules.applyCompleted(
+        TownState.initial(),
+        _done(BuildingTier.hut),
+      );
+      expect(t.workers, 4);
+      expect(
+        t.buildings.last,
+        const TownBuilding(
+          id: 's1',
+          tier: BuildingTier.hut,
+          status: BuildingStatus.complete,
+          plotIndex: 1,
+        ),
+      );
+      expect(t.buildings, hasLength(2));
+    });
+
+    test('house success: 5 workers', () {
+      final t = TownRules.applyCompleted(
+        TownState.initial(),
+        _done(BuildingTier.house),
+      );
+      expect(t.workers, 5);
+    });
+
+    test('workshop, tower, castle success: workers unchanged', () {
+      for (final tier in [
+        BuildingTier.workshop,
+        BuildingTier.tower,
+        BuildingTier.castle,
+      ]) {
+        final t = TownRules.applyCompleted(TownState.initial(), _done(tier));
+        expect(t.workers, 3, reason: '$tier');
+        expect(t.buildings, hasLength(2), reason: '$tier');
+      }
+    });
+
+    test('all plots full: queued, buildings unchanged', () {
+      final full = _town(buildings: [for (var i = 0; i < 6; i++) _b(i)]);
+      final t = TownRules.applyCompleted(full, _done(BuildingTier.tower));
+      expect(t.queue, [
+        const QueuedBuilding(id: 's1', tier: BuildingTier.tower),
+      ]);
+      expect(t.buildings, full.buildings);
+    });
+
+    test('recovery with 2 workers, hut success: 3 workers, exits recovery', () {
+      final t = TownRules.applyCompleted(
+        _town(workers: 2, recovery: true),
+        _done(BuildingTier.hut),
+      );
+      expect(t.workers, 3);
+      expect(t.inRecoveryMode, isFalse);
+    });
+
+    test('recovery with 0 workers, hut success: 1 worker, still recovery', () {
+      final t = TownRules.applyCompleted(
+        _town(workers: 0, recovery: true),
+        _done(BuildingTier.hut),
+      );
+      expect(t.workers, 1);
+      expect(t.inRecoveryMode, isTrue);
+    });
+  });
+
+  group('placeQueued', () {
+    const q1 = QueuedBuilding(id: 'q1', tier: BuildingTier.hut);
+    const q2 = QueuedBuilding(id: 'q2', tier: BuildingTier.house);
+
+    TownState full({List<QueuedBuilding> queue = const [], int plots = 6}) =>
+        TownState(
+          workers: 3,
+          plotsUnlocked: plots,
+          buildings: [for (var i = 0; i < 6; i++) _b(i)],
+          queue: queue,
+          inRecoveryMode: false,
+        );
+
+    test('raising plotsUnlocked to 7 places the queued building on plot 6', () {
+      final t = TownRules.placeQueued(full(queue: [q1], plots: 7));
+      expect(t.queue, isEmpty);
+      expect(
+        t.buildings.last,
+        const TownBuilding(
+          id: 'q1',
+          tier: BuildingTier.hut,
+          status: BuildingStatus.complete,
+          plotIndex: 6,
+        ),
+      );
+    });
+
+    test('two queued, one free plot: oldest placed, one left', () {
+      final t = TownRules.placeQueued(full(queue: [q1, q2], plots: 7));
+      expect(t.buildings.last.id, 'q1');
+      expect(t.queue, [q2]);
+    });
+
+    test('no free plot: unchanged', () {
+      final s = full(queue: [q1]);
+      expect(TownRules.placeQueued(s), s);
+    });
+
+    test('empty queue: unchanged', () {
+      final s = TownState.initial();
+      expect(TownRules.placeQueued(s), s);
     });
   });
 }
