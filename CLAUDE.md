@@ -10,9 +10,25 @@ Focus Town is a mobile app where a block-style isometric town is built by small 
 
 - Requirements: `docs/spec.md`
 - Build steps and prompts: `docs/prompt_plan.md`
+- Task queue and handoff notes (the active work list): `docs/tasks.md`
 - Progress checklist: `docs/todo.md`
 - Manual device tests: `docs/device_tests.md`
 - Visual target: `docs/images/` and `docs/reference/focus-town-voxel.html`
+
+## Repo status
+
+As of 2026-11-08 the repo holds docs only: no `pubspec.yaml`, `lib/`, or `test/` yet. T-01.1 in `docs/tasks.md` creates the Flutter project. Verify with `ls` before assuming code exists.
+
+## Commands
+
+Valid once the project exists (T-01.1):
+
+- `flutter pub get`
+- `dart run build_runner build --delete-conflicting-outputs` (after changing drift tables)
+- `flutter analyze`
+- `flutter test` (all), `flutter test test/domain/some_test.dart` (one file), `flutter test --plain-name "case name"` (one case)
+- `flutter test integration_test` (needs a device or simulator)
+- `flutter run` (device or simulator)
 
 ## Workflow rules
 
