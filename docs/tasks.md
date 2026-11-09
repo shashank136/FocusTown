@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-04.3
-- What's left on it: everything. `Session` and `SessionEngine.start` are used by tests only until the T-04.x debug simulator panel.
+- Current task: T-04.4
+- What's left on it: everything. `Session` and `SessionEngine` (start, away rules, abandon) are used by tests only until the T-04.x debug simulator panel.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -23,7 +23,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-08 (T-04.2 done)
+- Last updated: 2026-11-08 (T-04.3 done)
 
 ## Status of steps
 
@@ -211,7 +211,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-04.2: session engine start`
 
-### T-04.3 [ ] Away and foreground rules (10 s window, one 60 s pass)
+### T-04.3 [x] Away and foreground rules (10 s window, one 60 s pass)
 - Step: 4 (docs/prompt_plan.md, Prompt 4)
 - Depends on: T-04.2
 - Goal: lock/call events are harmless; leaving the app starts the away timer; returning applies the 10-second window and the single free 60-second pass.
