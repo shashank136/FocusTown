@@ -1,11 +1,25 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
+/// Fake clock plus an in-memory database, so no test touches the disk.
+List<Override> _overrides(FakeClock clock) {
+  final db = AppDatabase(NativeDatabase.memory());
+  addTearDown(db.close);
+  return [
+    clockProvider.overrideWithValue(clock),
+    databaseProvider.overrideWithValue(db),
+  ];
+}
+
 void main() {
+  _storedTownTest();
   _sliderTests();
   _elapsedTests();
   _simulatorWiringTest();
@@ -16,7 +30,7 @@ void main() {
     final clock = FakeClock();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [clockProvider.overrideWithValue(clock)],
+        overrides: _overrides(clock),
         child: const MaterialApp(home: DebugScreen()),
       ),
     );
@@ -34,7 +48,7 @@ void main() {
 
 Future<void> _pump(WidgetTester tester) => tester.pumpWidget(
   ProviderScope(
-    overrides: [clockProvider.overrideWithValue(FakeClock())],
+    overrides: _overrides(FakeClock()),
     child: const MaterialApp(home: DebugScreen()),
   ),
 );
@@ -73,7 +87,7 @@ void _elapsedTests() {
     final clock = FakeClock();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [clockProvider.overrideWithValue(clock)],
+        overrides: _overrides(clock),
         child: const MaterialApp(home: DebugScreen()),
       ),
     );
@@ -90,7 +104,7 @@ void _elapsedTests() {
     final clock = FakeClock();
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [clockProvider.overrideWithValue(clock)],
+        overrides: _overrides(clock),
         child: const MaterialApp(home: DebugScreen()),
       ),
     );
@@ -114,5 +128,20 @@ void _simulatorWiringTest() {
     await tester.tap(find.text('+1 min'));
     await tester.pump();
     expect(find.text('Progress: 4%'), findsOneWidget);
+  });
+}
+
+void _storedTownTest() {
+  testWidgets('stored town card shows the seeded town', (tester) async {
+    await _pump(tester);
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+    await tester.ensureVisible(find.text('Stored town'));
+    expect(find.text('Stored town'), findsOneWidget);
+    expect(find.text('Stored workers: 3'), findsOneWidget);
+    expect(find.text('Stored plots unlocked: 6'), findsOneWidget);
+    expect(find.text('Stored XP: 0'), findsOneWidget);
+    expect(find.text('Stored streak: 0'), findsOneWidget);
+    expect(find.text('Stored buildings: 1'), findsOneWidget);
   });
 }

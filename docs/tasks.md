@@ -13,13 +13,14 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-07.6
-- What's left on it: everything. T-07.1-T-07.5 done: `TownRepository` is complete (loadOrCreate, activeSession, saveSessionStarted, saveSessionUpdated, saveSessionResolved, atomic; rollback tested). Next: providers (databaseProvider with drift_flutter, townRepositoryProvider, storedTownProvider) and the "Stored town" card on DebugScreen, which ends step 7 and is the first time the DB runs in the app: verify in the simulator then (iOS build with drift_flutter already confirmed to compile and launch; no ios/Podfile was generated, so check Podfile before the first real DB open).
+- Current task: T-07.7
+- What's left on it: everything. T-07.1-T-07.6 done: providers (`databaseProvider` via drift_flutter, `townRepositoryProvider`, `storedTownProvider`) and the "Stored town" card on DebugScreen. Verified on the iPhone 18 Pro simulator: card shows workers 3, plots 6, xp 0, streak 0, buildings 1; after terminate and relaunch `created_at` unchanged and still 1 building (DB at the app container `Documents/focus_town.sqlite`, columns are snake_case). No ios/Podfile needed (drift_flutter uses native assets). T-07.7 is a [device] task: give the user the iPhone steps and wait for results.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
   - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
   - Lints: `factory ClassName.named` triggers `unnecessary_type_name_in_constructor`, but `factory .named` does not parse; use an `// ignore:` for named factories. `@immutable` needs `package:meta` (not approved), so value classes with `==` use `ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes`. Ask the user if they want `meta` added.
+  - Widget tests that show DebugScreen must override `databaseProvider` with an in-memory `AppDatabase` (see `_overrides` in `debug_screen_test.dart`); `Override` type needs `import 'package:flutter_riverpod/misc.dart' show Override;`.
   - drift: `database.dart` has `ignore_for_file: public_member_api_docs`; in tests import `package:drift/drift.dart hide isNull` (clashes with matcher). After table changes run `dart run build_runner build --delete-conflicting-outputs`. drift_flutter is added but unused until T-07.6.
   - `buildingsToRows` stamps every row with the same `now`, so queue order survives only if the repository (T-07.5) passes existing `completedAt` values through; ties fall back to id order.
   - Seeing the app: Xcode 27.2 has no Simulator.app. Boot a device (`xcrun simctl boot <id>`), `flutter run -d <id>`, then `open "/Applications/Xcode.app/Contents/Applications/DeviceHub.app"` (confirmed working).
@@ -27,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-07.5 done)
+- Last updated: 2026-11-09 (T-07.6 done)
 
 ## Status of steps
 
@@ -483,7 +484,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-07.5: repository atomic session resolve`
 
-### T-07.6 [ ] Providers and "Stored town" card
+### T-07.6 [x] Providers and "Stored town" card
 - Step: 7 (docs/prompt_plan.md, Prompt 7)
 - Depends on: T-07.5
 - Goal: wire the database and repository into the app and show stored data on the debug screen. Ends step 7 code.

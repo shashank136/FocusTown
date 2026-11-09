@@ -76,8 +76,39 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Tier: ${tier.name}'),
             Text('Workers at risk: ${tier.workersAtRisk}'),
             SessionSimulatorPanel(minutes: _minutes),
+            const _StoredTownCard(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// What the database holds, loaded once through [storedTownProvider].
+class _StoredTownCard extends ConsumerWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final stored = ref.watch(storedTownProvider);
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Stored town'),
+          ...stored.when(
+            data: (t) => [
+              Text('Stored workers: ${t.workers}'),
+              Text('Stored plots unlocked: ${t.plotsUnlocked}'),
+              Text('Stored XP: ${t.xp}'),
+              Text('Stored streak: ${t.streakCount}'),
+              Text('Stored buildings: ${t.buildings.length + t.queue.length}'),
+            ],
+            loading: () => [const Text('Loading...')],
+            error: (e, _) => [Text('Error: $e')],
+          ),
+        ],
       ),
     );
   }
