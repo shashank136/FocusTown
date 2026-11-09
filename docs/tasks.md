@@ -13,19 +13,20 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-07.1
-- What's left on it: everything. Phase A (steps 1-6) is done: all core rules run in the debug `SessionSimulatorPanel` (own FakeClock, town, progression, `+1 day`). `TownRules.placeQueued` runs via `Progression.onSessionCompleted`. Next is Phase B (data and controller), starting with drift. The slider is unchanged; invalid durations are blocked at Start with a reason line.
+- Current task: T-07.2
+- What's left on it: everything. T-07.1 done: `lib/data/database.dart` (Towns, Buildings, Sessions, schema v1, generated `database.g.dart` committed, `drift_schemas/drift_schema_v1.json` dumped). Pinned drift 2.35.4, drift_flutter 0.3.1, drift_dev 2.35.3, build_runner 2.17.1. Next: row-to-domain mappers.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
   - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
   - Lints: `factory ClassName.named` triggers `unnecessary_type_name_in_constructor`, but `factory .named` does not parse; use an `// ignore:` for named factories. `@immutable` needs `package:meta` (not approved), so value classes with `==` use `ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes`. Ask the user if they want `meta` added.
+  - drift: `database.dart` has `ignore_for_file: public_member_api_docs`; in tests import `package:drift/drift.dart hide isNull` (clashes with matcher). After table changes run `dart run build_runner build --delete-conflicting-outputs`. drift_flutter is added but unused until T-07.6.
   - Seeing the app: Xcode 27.2 has no Simulator.app. Boot a device (`xcrun simctl boot <id>`), `flutter run -d <id>`, then `open "/Applications/Xcode.app/Contents/Applications/DeviceHub.app"` (confirmed working).
   - `TownState.copyWith` cannot set `lastStreakDate`/`lastPlotGrantDate` back to null (not needed; no clear flags).
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-08 (T-06.5 done)
+- Last updated: 2026-11-09 (T-07.1 done)
 
 ## Status of steps
 
@@ -415,7 +416,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 
 ## Phase B: data and controller
 
-### T-07.1 [ ] Drift dependencies, tables, schema v1
+### T-07.1 [x] Drift dependencies, tables, schema v1
 - Step: 7 (docs/prompt_plan.md, Prompt 7)
 - Depends on: T-06.5
 - Goal: add Drift and define the three tables with `schemaVersion = 1`.

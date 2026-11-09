@@ -116,8 +116,8 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 7: database and repository
 - [ ] Paste Prompt 0 + Prompt 7
-- [ ] Drift, drift_dev, build_runner added; code generation runs
-- [ ] Tables: towns, buildings, sessions (schema v1)
+- [x] Drift, drift_dev, build_runner added; code generation runs
+- [x] Tables: towns, buildings, sessions (schema v1)
 - [ ] `TownRepository`: loadOrCreate, activeSession, saveSessionStarted, saveSessionUpdated, saveSessionResolved
 - [ ] Row/domain mappers in a separate file; domain stays Drift-free
 - [ ] Resolved saves happen in one transaction
