@@ -87,7 +87,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] `nextFreePlot`, `applyCompleted`, `applyFailed`, `canStart`, `placeQueued` implemented
 - [x] Ruins occupy a plot
 - [x] Recovery mode enters at 0 workers, allows hut-only sessions, failure costs nothing, exits at 3 workers
-- [ ] `SessionEngine.start` uses recovery-aware worker availability
+- [x] `SessionEngine.start` uses recovery-aware worker availability
 - [ ] Tests for every rule listed in the prompt passing
 - [ ] Simulator shows workers, plots, queue, recovery flag, buildings; slider disables invalid durations
 - [ ] Committed: `step 05`

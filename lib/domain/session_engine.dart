@@ -17,14 +17,22 @@ class SessionEngine {
   ///
   /// Throws [ArgumentError] for an invalid duration and [StateError] when
   /// [workersAvailable] is below the tier's workers at risk.
+  ///
+  /// With [recovery], only a hut is allowed, [workersAvailable] is ignored and
+  /// no workers are put at risk.
   static Session start({
     required String id,
     required int minutes,
     required int workersAvailable,
     required TimeStamp now,
+    bool recovery = false,
   }) {
     final tier = BuildingTier.forMinutes(minutes);
-    if (workersAvailable < tier.workersAtRisk) {
+    if (recovery) {
+      if (tier != BuildingTier.hut) {
+        throw StateError('Recovery allows only a hut, got ${tier.name}');
+      }
+    } else if (workersAvailable < tier.workersAtRisk) {
       throw StateError(
         'Need ${tier.workersAtRisk} workers, have $workersAvailable',
       );
@@ -33,7 +41,7 @@ class SessionEngine {
       id: id,
       plannedMinutes: minutes,
       tier: tier,
-      workersAssigned: tier.workersAtRisk,
+      workersAssigned: recovery ? 0 : tier.workersAtRisk,
       state: SessionState.running,
       startedAt: now,
     );

@@ -4,6 +4,8 @@ import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 
 void main() {
   final now = TimeStamp(DateTime(2026, 1, 1, 9), const Duration(minutes: 3));
@@ -390,6 +392,50 @@ void main() {
         ..setWall(DateTime(2020));
       expect(SessionEngine.resolve(running, stamp()), running);
       expect(SessionEngine.progress(running, stamp()), 0.0);
+    });
+  });
+
+  group('start in recovery', () {
+    Session recover(int minutes, {int workers = 0}) => SessionEngine.start(
+      id: 'r1',
+      minutes: minutes,
+      workersAvailable: workers,
+      now: now,
+      recovery: true,
+    );
+
+    test('10 min with 0 workers runs with 0 assigned', () {
+      final s = recover(10);
+      expect(s.state, SessionState.running);
+      expect(s.tier, BuildingTier.hut);
+      expect(s.workersAssigned, 0);
+    });
+
+    test('20 min works', () {
+      expect(recover(20).workersAssigned, 0);
+    });
+
+    test('25 min throws StateError', () {
+      expect(() => recover(25), throwsStateError);
+    });
+
+    test('2 workers available still assigns 0', () {
+      expect(recover(10, workers: 2).workersAssigned, 0);
+    });
+
+    test('invalid minutes still throw ArgumentError', () {
+      expect(() => recover(7), throwsArgumentError);
+    });
+
+    test('a failed recovery session costs no workers', () {
+      final town = TownState.initial().copyWith(
+        workers: 2,
+        inRecoveryMode: true,
+      );
+      final failed = SessionEngine.abandon(recover(10), now);
+      final after = TownRules.applyFailed(town, failed);
+      expect(after.workers, 2);
+      expect(after.inRecoveryMode, isTrue);
     });
   });
 }
