@@ -97,11 +97,11 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] `LocalDate` value class implemented
 - [x] XP = focus minutes on completion
 - [x] Streak: same day unchanged, next day +1, gap resets to 1
-- [ ] One plot per focus day, then queue drains
-- [ ] `currentStreak` shows 0 after a missed day
-- [ ] `TownLevel` thresholds: Camp 0, Village 300, Town 1,500, City 6,000, Metropolis 15,000
-- [ ] Failed sessions change none of these
-- [ ] Tests incl. Jan 31 → Feb 1 and Dec 31 → Jan 1 passing
+- [x] One plot per focus day, then queue drains
+- [x] `currentStreak` shows 0 after a missed day
+- [x] `TownLevel` thresholds: Camp 0, Village 300, Town 1,500, City 6,000, Metropolis 15,000
+- [x] Failed sessions change none of these
+- [x] Tests incl. Jan 31 → Feb 1 and Dec 31 → Jan 1 passing
 - [ ] "+1 day" button and streak/level display on simulator
 - [ ] Committed: `step 06`
 

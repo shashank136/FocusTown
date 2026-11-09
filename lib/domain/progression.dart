@@ -1,6 +1,7 @@
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 
 /// Town size, from total XP (focus minutes).
 enum TownLevel {
@@ -41,7 +42,8 @@ class Progression {
     return ((xp - level.minXp) / (next.minXp - level.minXp)).clamp(0, 1);
   }
 
-  /// Adds XP and updates the daily streak for a completed [session].
+  /// Adds XP, updates the daily streak, grants the day's plot and drains the
+  /// queue for a completed [session].
   ///
   /// [completedAtLocal] must be local time, so the calendar day is the user's.
   static TownState onSessionCompleted(
@@ -59,10 +61,21 @@ class Progression {
       1 => town.streakCount + 1,
       _ => 1,
     };
-    return town.copyWith(
+    final grant = town.lastPlotGrantDate != today;
+    final updated = town.copyWith(
       xp: town.xp + session.plannedMinutes,
       streakCount: streak,
       lastStreakDate: today,
+      plotsUnlocked: grant ? town.plotsUnlocked + 1 : null,
+      lastPlotGrantDate: grant ? today : null,
     );
+    return TownRules.placeQueued(updated);
+  }
+
+  /// The streak to show on [today]: 0 once a day has been missed.
+  static int currentStreak(TownState town, LocalDate today) {
+    final last = town.lastStreakDate;
+    if (last == null || last.daysBetween(today) > 1) return 0;
+    return town.streakCount;
   }
 }
