@@ -13,7 +13,9 @@ void main() {
   });
 
   test('towns row round trips and onboardingDone defaults to false', () async {
-    await db.into(db.towns).insert(
+    await db
+        .into(db.towns)
+        .insert(
           TownsCompanion.insert(
             id: const Value(1),
             workerCount: 3,
@@ -34,7 +36,9 @@ void main() {
   });
 
   test('buildings row round trips with nullable plot and session', () async {
-    await db.into(db.buildings).insert(
+    await db
+        .into(db.buildings)
+        .insert(
           BuildingsCompanion.insert(
             id: 'b1',
             tier: 'hut',
@@ -50,7 +54,9 @@ void main() {
   });
 
   test('sessions row round trips with nullable away and outcome', () async {
-    await db.into(db.sessions).insert(
+    await db
+        .into(db.sessions)
+        .insert(
           SessionsCompanion.insert(
             id: 's1',
             plannedMinutes: 25,

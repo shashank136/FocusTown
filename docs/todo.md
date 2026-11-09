@@ -119,7 +119,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Drift, drift_dev, build_runner added; code generation runs
 - [x] Tables: towns, buildings, sessions (schema v1)
 - [ ] `TownRepository`: loadOrCreate, activeSession, saveSessionStarted, saveSessionUpdated, saveSessionResolved
-- [ ] Row/domain mappers in a separate file; domain stays Drift-free
+- [x] Row/domain mappers in a separate file; domain stays Drift-free
 - [ ] Resolved saves happen in one transaction
 - [ ] Tests: seeding, full round-trip, active session, atomic failure, queued buildings
 - [ ] "Stored town" card on `DebugScreen`

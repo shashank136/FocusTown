@@ -13,20 +13,21 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-07.2
-- What's left on it: everything. T-07.1 done: `lib/data/database.dart` (Towns, Buildings, Sessions, schema v1, generated `database.g.dart` committed, `drift_schemas/drift_schema_v1.json` dumped). Pinned drift 2.35.4, drift_flutter 0.3.1, drift_dev 2.35.3, build_runner 2.17.1. Next: row-to-domain mappers.
+- Current task: T-07.3
+- What's left on it: everything. T-07.1 and T-07.2 done: `lib/data/database.dart` (schema v1, row classes renamed via `@DataClassName` to TownRow/BuildingRow/SessionRow) and `lib/data/mappers.dart` (townFromRows, townToRow, buildingsToRows, sessionFromRow, sessionToRow). Next: `TownRepository` loadOrCreate and activeSession.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
   - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
   - Lints: `factory ClassName.named` triggers `unnecessary_type_name_in_constructor`, but `factory .named` does not parse; use an `// ignore:` for named factories. `@immutable` needs `package:meta` (not approved), so value classes with `==` use `ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes`. Ask the user if they want `meta` added.
   - drift: `database.dart` has `ignore_for_file: public_member_api_docs`; in tests import `package:drift/drift.dart hide isNull` (clashes with matcher). After table changes run `dart run build_runner build --delete-conflicting-outputs`. drift_flutter is added but unused until T-07.6.
+  - `buildingsToRows` stamps every row with the same `now`, so queue order survives only if the repository (T-07.5) passes existing `completedAt` values through; ties fall back to id order.
   - Seeing the app: Xcode 27.2 has no Simulator.app. Boot a device (`xcrun simctl boot <id>`), `flutter run -d <id>`, then `open "/Applications/Xcode.app/Contents/Applications/DeviceHub.app"` (confirmed working).
   - `TownState.copyWith` cannot set `lastStreakDate`/`lastPlotGrantDate` back to null (not needed; no clear flags).
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-07.1 done)
+- Last updated: 2026-11-09 (T-07.2 done)
 
 ## Status of steps
 
@@ -434,7 +435,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; the table classes and `AppDatabase` are used by the test (the repository, T-07.3, and provider, T-07.6, use them in app code).
 - Commit: `T-07.1: drift database and tables`
 
-### T-07.2 [ ] Row-to-domain mappers
+### T-07.2 [x] Row-to-domain mappers
 - Step: 7 (docs/prompt_plan.md, Prompt 7)
 - Depends on: T-07.1
 - Goal: convert between Drift rows and domain types; domain stays Drift-free.

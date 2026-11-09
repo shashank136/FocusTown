@@ -3,7 +3,7 @@
 part of 'database.dart';
 
 // ignore_for_file: type=lint
-class $TownsTable extends Towns with TableInfo<$TownsTable, Town> {
+class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -142,7 +142,7 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, Town> {
   static const String $name = 'towns';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Town> instance, {
+    Insertable<TownRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -240,9 +240,9 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, Town> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Town map(Map<String, dynamic> data, {String? tablePrefix}) {
+  TownRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Town(
+    return TownRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}id'],
@@ -292,7 +292,7 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, Town> {
   }
 }
 
-class Town extends DataClass implements Insertable<Town> {
+class TownRow extends DataClass implements Insertable<TownRow> {
   final int id;
   final int workerCount;
   final int plotsUnlocked;
@@ -303,7 +303,7 @@ class Town extends DataClass implements Insertable<Town> {
   final bool inRecoveryMode;
   final bool onboardingDone;
   final int createdAt;
-  const Town({
+  const TownRow({
     required this.id,
     required this.workerCount,
     required this.plotsUnlocked,
@@ -354,12 +354,12 @@ class Town extends DataClass implements Insertable<Town> {
     );
   }
 
-  factory Town.fromJson(
+  factory TownRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Town(
+    return TownRow(
       id: serializer.fromJson<int>(json['id']),
       workerCount: serializer.fromJson<int>(json['workerCount']),
       plotsUnlocked: serializer.fromJson<int>(json['plotsUnlocked']),
@@ -391,7 +391,7 @@ class Town extends DataClass implements Insertable<Town> {
     };
   }
 
-  Town copyWith({
+  TownRow copyWith({
     int? id,
     int? workerCount,
     int? plotsUnlocked,
@@ -402,7 +402,7 @@ class Town extends DataClass implements Insertable<Town> {
     bool? inRecoveryMode,
     bool? onboardingDone,
     int? createdAt,
-  }) => Town(
+  }) => TownRow(
     id: id ?? this.id,
     workerCount: workerCount ?? this.workerCount,
     plotsUnlocked: plotsUnlocked ?? this.plotsUnlocked,
@@ -418,8 +418,8 @@ class Town extends DataClass implements Insertable<Town> {
     onboardingDone: onboardingDone ?? this.onboardingDone,
     createdAt: createdAt ?? this.createdAt,
   );
-  Town copyWithCompanion(TownsCompanion data) {
-    return Town(
+  TownRow copyWithCompanion(TownsCompanion data) {
+    return TownRow(
       id: data.id.present ? data.id.value : this.id,
       workerCount: data.workerCount.present
           ? data.workerCount.value
@@ -449,7 +449,7 @@ class Town extends DataClass implements Insertable<Town> {
 
   @override
   String toString() {
-    return (StringBuffer('Town(')
+    return (StringBuffer('TownRow(')
           ..write('id: $id, ')
           ..write('workerCount: $workerCount, ')
           ..write('plotsUnlocked: $plotsUnlocked, ')
@@ -480,7 +480,7 @@ class Town extends DataClass implements Insertable<Town> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Town &&
+      (other is TownRow &&
           other.id == this.id &&
           other.workerCount == this.workerCount &&
           other.plotsUnlocked == this.plotsUnlocked &&
@@ -493,7 +493,7 @@ class Town extends DataClass implements Insertable<Town> {
           other.createdAt == this.createdAt);
 }
 
-class TownsCompanion extends UpdateCompanion<Town> {
+class TownsCompanion extends UpdateCompanion<TownRow> {
   final Value<int> id;
   final Value<int> workerCount;
   final Value<int> plotsUnlocked;
@@ -533,7 +533,7 @@ class TownsCompanion extends UpdateCompanion<Town> {
        streakCount = Value(streakCount),
        inRecoveryMode = Value(inRecoveryMode),
        createdAt = Value(createdAt);
-  static Insertable<Town> custom({
+  static Insertable<TownRow> custom({
     Expression<int>? id,
     Expression<int>? workerCount,
     Expression<int>? plotsUnlocked,
@@ -640,7 +640,7 @@ class TownsCompanion extends UpdateCompanion<Town> {
 }
 
 class $BuildingsTable extends Buildings
-    with TableInfo<$BuildingsTable, Building> {
+    with TableInfo<$BuildingsTable, BuildingRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -721,7 +721,7 @@ class $BuildingsTable extends Buildings
   static const String $name = 'buildings';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Building> instance, {
+    Insertable<BuildingRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -776,9 +776,9 @@ class $BuildingsTable extends Buildings
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Building map(Map<String, dynamic> data, {String? tablePrefix}) {
+  BuildingRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Building(
+    return BuildingRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -812,14 +812,14 @@ class $BuildingsTable extends Buildings
   }
 }
 
-class Building extends DataClass implements Insertable<Building> {
+class BuildingRow extends DataClass implements Insertable<BuildingRow> {
   final String id;
   final String tier;
   final String status;
   final int? plotIndex;
   final String? sessionId;
   final int completedAt;
-  const Building({
+  const BuildingRow({
     required this.id,
     required this.tier,
     required this.status,
@@ -858,12 +858,12 @@ class Building extends DataClass implements Insertable<Building> {
     );
   }
 
-  factory Building.fromJson(
+  factory BuildingRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Building(
+    return BuildingRow(
       id: serializer.fromJson<String>(json['id']),
       tier: serializer.fromJson<String>(json['tier']),
       status: serializer.fromJson<String>(json['status']),
@@ -885,14 +885,14 @@ class Building extends DataClass implements Insertable<Building> {
     };
   }
 
-  Building copyWith({
+  BuildingRow copyWith({
     String? id,
     String? tier,
     String? status,
     Value<int?> plotIndex = const Value.absent(),
     Value<String?> sessionId = const Value.absent(),
     int? completedAt,
-  }) => Building(
+  }) => BuildingRow(
     id: id ?? this.id,
     tier: tier ?? this.tier,
     status: status ?? this.status,
@@ -900,8 +900,8 @@ class Building extends DataClass implements Insertable<Building> {
     sessionId: sessionId.present ? sessionId.value : this.sessionId,
     completedAt: completedAt ?? this.completedAt,
   );
-  Building copyWithCompanion(BuildingsCompanion data) {
-    return Building(
+  BuildingRow copyWithCompanion(BuildingsCompanion data) {
+    return BuildingRow(
       id: data.id.present ? data.id.value : this.id,
       tier: data.tier.present ? data.tier.value : this.tier,
       status: data.status.present ? data.status.value : this.status,
@@ -915,7 +915,7 @@ class Building extends DataClass implements Insertable<Building> {
 
   @override
   String toString() {
-    return (StringBuffer('Building(')
+    return (StringBuffer('BuildingRow(')
           ..write('id: $id, ')
           ..write('tier: $tier, ')
           ..write('status: $status, ')
@@ -932,7 +932,7 @@ class Building extends DataClass implements Insertable<Building> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Building &&
+      (other is BuildingRow &&
           other.id == this.id &&
           other.tier == this.tier &&
           other.status == this.status &&
@@ -941,7 +941,7 @@ class Building extends DataClass implements Insertable<Building> {
           other.completedAt == this.completedAt);
 }
 
-class BuildingsCompanion extends UpdateCompanion<Building> {
+class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
   final Value<String> id;
   final Value<String> tier;
   final Value<String> status;
@@ -970,7 +970,7 @@ class BuildingsCompanion extends UpdateCompanion<Building> {
        tier = Value(tier),
        status = Value(status),
        completedAt = Value(completedAt);
-  static Insertable<Building> custom({
+  static Insertable<BuildingRow> custom({
     Expression<String>? id,
     Expression<String>? tier,
     Expression<String>? status,
@@ -1052,7 +1052,8 @@ class BuildingsCompanion extends UpdateCompanion<Building> {
   }
 }
 
-class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
+class $SessionsTable extends Sessions
+    with TableInfo<$SessionsTable, SessionRow> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1220,7 +1221,7 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   static const String $name = 'sessions';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Session> instance, {
+    Insertable<SessionRow> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1348,9 +1349,9 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Session map(Map<String, dynamic> data, {String? tablePrefix}) {
+  SessionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Session(
+    return SessionRow(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -1412,7 +1413,7 @@ class $SessionsTable extends Sessions with TableInfo<$SessionsTable, Session> {
   }
 }
 
-class Session extends DataClass implements Insertable<Session> {
+class SessionRow extends DataClass implements Insertable<SessionRow> {
   final String id;
   final int plannedMinutes;
   final String tier;
@@ -1426,7 +1427,7 @@ class Session extends DataClass implements Insertable<Session> {
   final bool passUsed;
   final String? outcomeReason;
   final int? resolvedAt;
-  const Session({
+  const SessionRow({
     required this.id,
     required this.plannedMinutes,
     required this.tier,
@@ -1494,12 +1495,12 @@ class Session extends DataClass implements Insertable<Session> {
     );
   }
 
-  factory Session.fromJson(
+  factory SessionRow.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Session(
+    return SessionRow(
       id: serializer.fromJson<String>(json['id']),
       plannedMinutes: serializer.fromJson<int>(json['plannedMinutes']),
       tier: serializer.fromJson<String>(json['tier']),
@@ -1535,7 +1536,7 @@ class Session extends DataClass implements Insertable<Session> {
     };
   }
 
-  Session copyWith({
+  SessionRow copyWith({
     String? id,
     int? plannedMinutes,
     String? tier,
@@ -1549,7 +1550,7 @@ class Session extends DataClass implements Insertable<Session> {
     bool? passUsed,
     Value<String?> outcomeReason = const Value.absent(),
     Value<int?> resolvedAt = const Value.absent(),
-  }) => Session(
+  }) => SessionRow(
     id: id ?? this.id,
     plannedMinutes: plannedMinutes ?? this.plannedMinutes,
     tier: tier ?? this.tier,
@@ -1568,8 +1569,8 @@ class Session extends DataClass implements Insertable<Session> {
         : this.outcomeReason,
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
   );
-  Session copyWithCompanion(SessionsCompanion data) {
-    return Session(
+  SessionRow copyWithCompanion(SessionsCompanion data) {
+    return SessionRow(
       id: data.id.present ? data.id.value : this.id,
       plannedMinutes: data.plannedMinutes.present
           ? data.plannedMinutes.value
@@ -1606,7 +1607,7 @@ class Session extends DataClass implements Insertable<Session> {
 
   @override
   String toString() {
-    return (StringBuffer('Session(')
+    return (StringBuffer('SessionRow(')
           ..write('id: $id, ')
           ..write('plannedMinutes: $plannedMinutes, ')
           ..write('tier: $tier, ')
@@ -1643,7 +1644,7 @@ class Session extends DataClass implements Insertable<Session> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Session &&
+      (other is SessionRow &&
           other.id == this.id &&
           other.plannedMinutes == this.plannedMinutes &&
           other.tier == this.tier &&
@@ -1659,7 +1660,7 @@ class Session extends DataClass implements Insertable<Session> {
           other.resolvedAt == this.resolvedAt);
 }
 
-class SessionsCompanion extends UpdateCompanion<Session> {
+class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<String> id;
   final Value<int> plannedMinutes;
   final Value<String> tier;
@@ -1714,7 +1715,7 @@ class SessionsCompanion extends UpdateCompanion<Session> {
        startedAtUptimeMs = Value(startedAtUptimeMs),
        awayTotalMs = Value(awayTotalMs),
        passUsed = Value(passUsed);
-  static Insertable<Session> custom({
+  static Insertable<SessionRow> custom({
     Expression<String>? id,
     Expression<int>? plannedMinutes,
     Expression<String>? tier,
@@ -2072,14 +2073,14 @@ class $$TownsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $TownsTable,
-          Town,
+          TownRow,
           $$TownsTableFilterComposer,
           $$TownsTableOrderingComposer,
           $$TownsTableAnnotationComposer,
           $$TownsTableCreateCompanionBuilder,
           $$TownsTableUpdateCompanionBuilder,
-          (Town, BaseReferences<_$AppDatabase, $TownsTable, Town>),
-          Town,
+          (TownRow, BaseReferences<_$AppDatabase, $TownsTable, TownRow>),
+          TownRow,
           PrefetchHooks Function()
         > {
   $$TownsTableTableManager(_$AppDatabase db, $TownsTable table)
@@ -2144,8 +2145,8 @@ class $$TownsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$TownsTable, Town>(table),
-                  BaseReferences<_$AppDatabase, $TownsTable, Town>(
+                  e.readTable<$TownsTable, TownRow>(table),
+                  BaseReferences<_$AppDatabase, $TownsTable, TownRow>(
                     db,
                     table,
                     e,
@@ -2162,14 +2163,14 @@ typedef $$TownsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $TownsTable,
-      Town,
+      TownRow,
       $$TownsTableFilterComposer,
       $$TownsTableOrderingComposer,
       $$TownsTableAnnotationComposer,
       $$TownsTableCreateCompanionBuilder,
       $$TownsTableUpdateCompanionBuilder,
-      (Town, BaseReferences<_$AppDatabase, $TownsTable, Town>),
-      Town,
+      (TownRow, BaseReferences<_$AppDatabase, $TownsTable, TownRow>),
+      TownRow,
       PrefetchHooks Function()
     >;
 typedef $$BuildingsTableCreateCompanionBuilder = BuildingsCompanion Function({
@@ -2306,14 +2307,17 @@ class $$BuildingsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $BuildingsTable,
-          Building,
+          BuildingRow,
           $$BuildingsTableFilterComposer,
           $$BuildingsTableOrderingComposer,
           $$BuildingsTableAnnotationComposer,
           $$BuildingsTableCreateCompanionBuilder,
           $$BuildingsTableUpdateCompanionBuilder,
-          (Building, BaseReferences<_$AppDatabase, $BuildingsTable, Building>),
-          Building,
+          (
+            BuildingRow,
+            BaseReferences<_$AppDatabase, $BuildingsTable, BuildingRow>,
+          ),
+          BuildingRow,
           PrefetchHooks Function()
         > {
   $$BuildingsTableTableManager(_$AppDatabase db, $BuildingsTable table)
@@ -2366,8 +2370,8 @@ class $$BuildingsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$BuildingsTable, Building>(table),
-                  BaseReferences<_$AppDatabase, $BuildingsTable, Building>(
+                  e.readTable<$BuildingsTable, BuildingRow>(table),
+                  BaseReferences<_$AppDatabase, $BuildingsTable, BuildingRow>(
                     db,
                     table,
                     e,
@@ -2384,14 +2388,17 @@ typedef $$BuildingsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $BuildingsTable,
-      Building,
+      BuildingRow,
       $$BuildingsTableFilterComposer,
       $$BuildingsTableOrderingComposer,
       $$BuildingsTableAnnotationComposer,
       $$BuildingsTableCreateCompanionBuilder,
       $$BuildingsTableUpdateCompanionBuilder,
-      (Building, BaseReferences<_$AppDatabase, $BuildingsTable, Building>),
-      Building,
+      (
+        BuildingRow,
+        BaseReferences<_$AppDatabase, $BuildingsTable, BuildingRow>,
+      ),
+      BuildingRow,
       PrefetchHooks Function()
     >;
 typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
@@ -2649,14 +2656,17 @@ class $$SessionsTableTableManager
         RootTableManager<
           _$AppDatabase,
           $SessionsTable,
-          Session,
+          SessionRow,
           $$SessionsTableFilterComposer,
           $$SessionsTableOrderingComposer,
           $$SessionsTableAnnotationComposer,
           $$SessionsTableCreateCompanionBuilder,
           $$SessionsTableUpdateCompanionBuilder,
-          (Session, BaseReferences<_$AppDatabase, $SessionsTable, Session>),
-          Session,
+          (
+            SessionRow,
+            BaseReferences<_$AppDatabase, $SessionsTable, SessionRow>,
+          ),
+          SessionRow,
           PrefetchHooks Function()
         > {
   $$SessionsTableTableManager(_$AppDatabase db, $SessionsTable table)
@@ -2737,8 +2747,8 @@ class $$SessionsTableTableManager
           withReferenceMapper: (p0) => p0
               .map(
                 (e) => (
-                  e.readTable<$SessionsTable, Session>(table),
-                  BaseReferences<_$AppDatabase, $SessionsTable, Session>(
+                  e.readTable<$SessionsTable, SessionRow>(table),
+                  BaseReferences<_$AppDatabase, $SessionsTable, SessionRow>(
                     db,
                     table,
                     e,
@@ -2755,14 +2765,14 @@ typedef $$SessionsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
       $SessionsTable,
-      Session,
+      SessionRow,
       $$SessionsTableFilterComposer,
       $$SessionsTableOrderingComposer,
       $$SessionsTableAnnotationComposer,
       $$SessionsTableCreateCompanionBuilder,
       $$SessionsTableUpdateCompanionBuilder,
-      (Session, BaseReferences<_$AppDatabase, $SessionsTable, Session>),
-      Session,
+      (SessionRow, BaseReferences<_$AppDatabase, $SessionsTable, SessionRow>),
+      SessionRow,
       PrefetchHooks Function()
     >;
 

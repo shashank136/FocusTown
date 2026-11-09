@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 part 'database.g.dart';
 
 /// Single row (id always 1).
+@DataClassName('TownRow')
 class Towns extends Table {
   IntColumn get id => integer()();
   IntColumn get workerCount => integer()();
@@ -25,6 +26,7 @@ class Towns extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('BuildingRow')
 class Buildings extends Table {
   TextColumn get id => text()();
   // BuildingTier.name
@@ -41,6 +43,7 @@ class Buildings extends Table {
   Set<Column<Object>> get primaryKey => {id};
 }
 
+@DataClassName('SessionRow')
 class Sessions extends Table {
   TextColumn get id => text()();
   IntColumn get plannedMinutes => integer()();
