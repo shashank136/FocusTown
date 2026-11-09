@@ -129,4 +129,12 @@ class SessionEngine {
         ? complete(withAway)
         : session;
   }
+
+  /// Fraction of the planned time done, from 0.0 to 1.0.
+  static double progress(Session session, TimeStamp now) =>
+      session.state == SessionState.completed
+      ? 1
+      : (elapsedBetween(session.startedAt, now).inMicroseconds /
+                session.planned.inMicroseconds)
+            .clamp(0, 1);
 }

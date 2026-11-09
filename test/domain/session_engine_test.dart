@@ -307,4 +307,89 @@ void main() {
       expect(SessionEngine.resolve(away, stamp()).state, SessionState.failed);
     });
   });
+
+  group('progress and reboot', () {
+    late FakeClock clock;
+    late Session running;
+
+    TimeStamp stamp() => TimeStamp.now(clock);
+    Duration secs(int n) => Duration(seconds: n);
+    Duration mins(int n) => Duration(minutes: n);
+
+    setUp(() {
+      clock = FakeClock()..advance(const Duration(hours: 1));
+      running = SessionEngine.start(
+        id: 's',
+        minutes: 25,
+        workersAvailable: 5,
+        now: stamp(),
+      );
+    });
+
+    test('progress at start is 0', () {
+      expect(SessionEngine.progress(running, stamp()), 0.0);
+    });
+
+    test('progress at 12.5 of 25 min is 0.5', () {
+      clock.advance(mins(12) + secs(30));
+      expect(SessionEngine.progress(running, stamp()), 0.5);
+    });
+
+    test('progress at 25 min is 1', () {
+      clock.advance(mins(25));
+      expect(SessionEngine.progress(running, stamp()), 1.0);
+    });
+
+    test('progress at 40 min is clamped to 1', () {
+      clock.advance(mins(40));
+      expect(SessionEngine.progress(running, stamp()), 1.0);
+    });
+
+    test('completed session has progress 1 whatever the clock says', () {
+      final done = running.copyWith(state: SessionState.completed);
+      expect(SessionEngine.progress(done, stamp()), 1.0);
+    });
+
+    test('reboot during away, 90 s wall gap, fails leftTooLong', () {
+      clock.advance(mins(10));
+      final away = SessionEngine.onBackgroundedUnlocked(running, stamp());
+      clock
+        ..simulateReboot()
+        ..advance(secs(90));
+      final s = SessionEngine.onForegrounded(away, stamp());
+      expect(s.state, SessionState.failed);
+      expect(s.outcomeReason, OutcomeReason.leftTooLong);
+    });
+
+    test('reboot during away, 30 s wall gap, uses the pass', () {
+      clock.advance(mins(10));
+      final away = SessionEngine.onBackgroundedUnlocked(running, stamp());
+      clock
+        ..simulateReboot()
+        ..advance(secs(30));
+      final s = SessionEngine.onForegrounded(away, stamp());
+      expect(s.state, SessionState.running);
+      expect(s.passUsed, isTrue);
+    });
+
+    test('reboot while running: 10 min + reboot + 15 min completes', () {
+      clock
+        ..advance(mins(10))
+        ..simulateReboot()
+        ..advance(mins(15));
+      expect(
+        SessionEngine.resolve(running, stamp()).state,
+        SessionState.completed,
+      );
+    });
+
+    test('reboot with wall clock set backward: no early completion', () {
+      clock
+        ..advance(mins(10))
+        ..simulateReboot()
+        ..setWall(DateTime(2020));
+      expect(SessionEngine.resolve(running, stamp()), running);
+      expect(SessionEngine.progress(running, stamp()), 0.0);
+    });
+  });
 }

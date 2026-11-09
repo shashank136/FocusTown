@@ -74,10 +74,10 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 ### Step 4: session state machine
 - [ ] Paste Prompt 0 + Prompt 4
 - [x] `Session` model and enums implemented
-- [ ] `SessionEngine`: start, onLocked, onCallStarted, onBackgroundedUnlocked, onForegrounded, abandon, resolve, progress
+- [x] `SessionEngine`: start, onLocked, onCallStarted, onBackgroundedUnlocked, onForegrounded, abandon, resolve, progress
 - [x] 10-second warning and one 60-second pass enforced
 - [x] `resolve()` fails an away session past its limit without a foreground event
-- [ ] Tests: completion, lock, away 5s, away 30s (pass), second away fails, away 90s, resolve while away, exact completion, abandon, too few workers, progress, reboot during away
+- [x] Tests: completion, lock, away 5s, away 30s (pass), second away fails, away 90s, resolve while away, exact completion, abandon, too few workers, progress, reboot during away
 - [ ] Session simulator panel on `DebugScreen` works with a local `FakeClock`
 - [ ] Committed: `step 04`
 
