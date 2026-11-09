@@ -83,7 +83,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 5: town rules
 - [ ] Paste Prompt 0 + Prompt 5
-- [ ] `TownState` and `TownBuilding` implemented; `TownState.initial()` = 3 workers, 6 plots, starter house
+- [x] `TownState` and `TownBuilding` implemented; `TownState.initial()` = 3 workers, 6 plots, starter house
 - [ ] `nextFreePlot`, `applyCompleted`, `applyFailed`, `canStart`, `placeQueued` implemented
 - [ ] Ruins occupy a plot
 - [ ] Recovery mode enters at 0 workers, allows hut-only sessions, failure costs nothing, exits at 3 workers
