@@ -20,19 +20,19 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Decide on bundle id / application id (e.g. `com.yourname.focustown`) and reserve the app name in App Store Connect
 
 ### Machine setup (MacBook Air)
-- [ ] Install or update Xcode and command-line tools
-- [ ] Install Flutter (stable channel) and run `flutter doctor` until it is clean
+- [x] Install or update Xcode and command-line tools
+- [x] Install Flutter (stable channel) and run `flutter doctor` until it is clean
 - [ ] Install Android Studio, an Android SDK (API 29+), and create an emulator
-- [ ] Install CocoaPods
+- [x] Install CocoaPods
 - [ ] Enable Developer Mode on your iPhone and confirm `flutter devices` sees it
-- [ ] Set a passcode on your iPhone (required for lock detection)
+- [x] Set a passcode on your iPhone (required for lock detection)
 - [ ] Get access to a physical Android phone (ideally Samsung or Xiaomi) before step 11
 
 ### Project hygiene
-- [ ] Create a private git repository
-- [ ] Add `prompt_plan.md`, `todo.md`, and the reference images to `docs/`
-- [ ] Save a copy of the prototype HTML (`focus-town-voxel.html`) in `docs/reference/` for steps 13–18
-- [ ] Set up a simple CI script (or a local `make check`) that runs `flutter analyze` and `flutter test`
+- [x] Create a private git repository
+- [x] Add `prompt_plan.md`, `todo.md`, and the reference images to `docs/`
+- [x] Save a copy of the prototype HTML (`focus-town-voxel.html`) in `docs/reference/` for steps 13–18
+- [x] Set up a simple CI script (or a local `make check`) that runs `flutter analyze` and `flutter test`
 - [ ] Agree on a commit format: `step NN: short description`
 
 ---
