@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/progression.dart';
+import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town_rules.dart';
@@ -42,5 +45,62 @@ class FocusController extends AsyncNotifier<FocusState> {
         .read(townRepositoryProvider)
         .saveSessionStarted(current.town, session);
     state = AsyncData(current.copyWith(active: session));
+  }
+
+  /// Resolves the active session from the clock; finishes it if due.
+  Future<void> tick() async {
+    final current = await future;
+    final active = current.active;
+    if (active == null) return;
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final resolved = SessionEngine.resolve(active, now);
+    if (resolved.isFinished) {
+      state = AsyncData(await _finish(current, resolved, now));
+    }
+  }
+
+  /// Gives up the active session, losing its workers.
+  Future<void> abandon() async {
+    final current = await future;
+    final active = current.active;
+    if (active == null) return;
+    final now = TimeStamp.now(ref.read(clockProvider));
+    state = AsyncData(
+      await _finish(current, SessionEngine.abandon(active, now), now),
+    );
+  }
+
+  /// Applies the town rules, saves everything atomically, builds the result.
+  Future<FocusState> _finish(
+    FocusState base,
+    Session finished,
+    TimeStamp now,
+  ) async {
+    final completed = finished.state == SessionState.completed;
+    final town = completed
+        ? Progression.onSessionCompleted(
+            TownRules.applyCompleted(base.town, finished),
+            finished,
+            now.wall,
+          )
+        : TownRules.applyFailed(base.town, finished);
+    await ref.read(townRepositoryProvider).saveSessionResolved(town, finished);
+    final queued = town.queue.any((q) => q.id == finished.id);
+    final result = SessionResult(
+      outcome: !completed
+          ? SessionOutcome.failed
+          : queued
+          ? SessionOutcome.queued
+          : SessionOutcome.completed,
+      tier: finished.tier,
+      workersLost: completed ? 0 : finished.workersAssigned,
+      workersGained: completed ? finished.tier.workersAddedOnSuccess : 0,
+      newStreak: Progression.currentStreak(
+        town,
+        LocalDate.fromDateTime(now.wall),
+      ),
+      plotGranted: town.plotsUnlocked > base.town.plotsUnlocked,
+    );
+    return FocusState(town: town, lastResult: result);
   }
 }

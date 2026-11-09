@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
@@ -10,6 +11,7 @@ import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -32,6 +34,7 @@ class _SeededController extends FocusController {
 }
 
 late AppDatabase _db;
+late FakeClock _clock;
 
 /// Repository whose session save always fails.
 class _FailingRepository extends TownRepository {
@@ -47,7 +50,7 @@ ProviderContainer _container({List<Override> extra = const []}) {
   final db = _db;
   final c = ProviderContainer(
     overrides: [
-      clockProvider.overrideWithValue(FakeClock()),
+      clockProvider.overrideWithValue(_clock),
       databaseProvider.overrideWithValue(db),
       ...extra,
     ],
@@ -58,6 +61,7 @@ ProviderContainer _container({List<Override> extra = const []}) {
 
 void main() {
   setUp(() {
+    _clock = FakeClock();
     _db = AppDatabase(NativeDatabase.memory());
     addTearDown(_db.close);
   });
@@ -194,6 +198,165 @@ void main() {
             throwsStateError,
           );
         });
+      });
+    });
+
+    group('finish', () {
+      /// Writes [town] as the stored town before the controller loads it.
+      Future<void> seed(TownState town) async {
+        await _db.transaction(() async {
+          await _db
+              .into(_db.towns)
+              .insert(
+                townToRow(town)
+                    .copyWith(id: const Value(1), createdAt: const Value(0)),
+              );
+          await _db.batch(
+            (b) => b.insertAll(
+              _db.buildings,
+              buildingsToRows(town, now: _clock.nowWall()),
+            ),
+          );
+        });
+      }
+
+      Future<ProviderContainer> loaded() async {
+        final c = _container();
+        await c.read(focusControllerProvider.future);
+        return c;
+      }
+
+      FocusState stateOf(ProviderContainer c) =>
+          c.read(focusControllerProvider).requireValue;
+
+      Future<void> runHut(ProviderContainer c) async {
+        final controller = c.read(focusControllerProvider.notifier);
+        await controller.start(10);
+        _clock.advance(const Duration(minutes: 10));
+        await controller.tick();
+      }
+
+      test(
+        'completed hut: worker gained, placed, streak, plot granted',
+        () async {
+          final c = await loaded();
+          await runHut(c);
+          final s = stateOf(c);
+          expect(s.town.workers, 4);
+          expect(
+            s.town.buildings.any(
+              (b) => b.plotIndex == 1 && b.tier == BuildingTier.hut,
+            ),
+            isTrue,
+          );
+          expect(s.town.streakCount, 1);
+          expect(s.active, isNull);
+          expect(
+            s.lastResult,
+            const SessionResult(
+              outcome: SessionOutcome.completed,
+              tier: BuildingTier.hut,
+              workersLost: 0,
+              workersGained: 1,
+              newStreak: 1,
+              plotGranted: true,
+            ),
+          );
+          expect(await c.read(townRepositoryProvider).activeSession(), isNull);
+          expect(await c.read(townRepositoryProvider).loadOrCreate(), s.town);
+        },
+      );
+
+      test('abandon loses workers and leaves a ruin', () async {
+        final c = await loaded();
+        final controller = c.read(focusControllerProvider.notifier);
+        await controller.start(10);
+        await controller.abandon();
+        final s = stateOf(c);
+        expect(s.town.workers, 2);
+        expect(
+          s.town.buildings.where((b) => b.status == BuildingStatus.ruin),
+          hasLength(1),
+        );
+        expect(s.lastResult!.outcome, SessionOutcome.failed);
+        expect(s.lastResult!.workersLost, 1);
+        expect(s.active, isNull);
+      });
+
+      test('full town queues the completed building', () async {
+        await seed(
+          TownState.initial().copyWith(
+            buildings: [
+              for (var i = 0; i < 6; i++)
+                TownBuilding(
+                  id: 'b$i',
+                  tier: BuildingTier.hut,
+                  status: BuildingStatus.complete,
+                  plotIndex: i,
+                ),
+            ],
+            lastPlotGrantDate: LocalDate.fromDateTime(_clock.nowWall()),
+          ),
+        );
+        final c = await loaded();
+        await runHut(c);
+        final s = stateOf(c);
+        expect(s.lastResult!.outcome, SessionOutcome.queued);
+        expect(s.town.queue, hasLength(1));
+      });
+
+      test('failed session with the last worker enters recovery', () async {
+        await seed(TownState.initial().copyWith(workers: 1));
+        final c = await loaded();
+        final controller = c.read(focusControllerProvider.notifier);
+        await controller.start(10);
+        await controller.abandon();
+        expect(stateOf(c).town.workers, 0);
+        expect(stateOf(c).town.inRecoveryMode, isTrue);
+      });
+
+      group('in recovery', () {
+        setUp(
+          () => seed(
+            TownState.initial().copyWith(workers: 0, inRecoveryMode: true),
+          ),
+        );
+
+        test('abandoned recovery hut leaves workers at 0', () async {
+          final c = await loaded();
+          final controller = c.read(focusControllerProvider.notifier);
+          await controller.start(10);
+          await controller.abandon();
+          expect(stateOf(c).town.workers, 0);
+          expect(stateOf(c).town.inRecoveryMode, isTrue);
+        });
+
+        test('three completed huts end recovery with 3 workers', () async {
+          final c = await loaded();
+          for (var i = 0; i < 3; i++) {
+            await runHut(c);
+            c.read(focusControllerProvider.notifier).clearResult();
+          }
+          expect(stateOf(c).town.workers, 3);
+          expect(stateOf(c).town.inRecoveryMode, isFalse);
+        });
+      });
+
+      test('tick with nothing active does nothing', () async {
+        final c = await loaded();
+        final before = stateOf(c);
+        await c.read(focusControllerProvider.notifier).tick();
+        expect(stateOf(c), before);
+      });
+
+      test('tick before the planned time keeps the session running', () async {
+        final c = await loaded();
+        final controller = c.read(focusControllerProvider.notifier);
+        await controller.start(10);
+        _clock.advance(const Duration(minutes: 9));
+        await controller.tick();
+        expect(stateOf(c).active!.state, SessionState.running);
+        expect(stateOf(c).lastResult, isNull);
       });
     });
   });
