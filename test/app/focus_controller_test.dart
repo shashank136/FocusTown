@@ -359,5 +359,103 @@ void main() {
         expect(stateOf(c).lastResult, isNull);
       });
     });
+
+    group('lifecycle', () {
+      late ProviderContainer c;
+      late FocusController controller;
+      setUp(() async {
+        c = _container();
+        await c.read(focusControllerProvider.future);
+        controller = c.read(focusControllerProvider.notifier);
+      });
+
+      FocusState stateOf() => c.read(focusControllerProvider).requireValue;
+      Future<SessionRow> storedSession() =>
+          _db.select(_db.sessions).getSingle();
+
+      Future<void> awayFor(Duration d) async {
+        await controller.onBackgroundedUnlocked();
+        _clock.advance(d);
+        await controller.onForegrounded();
+      }
+
+      test('leave and return after 5 s keeps running, no pass', () async {
+        await controller.start(25);
+        await awayFor(const Duration(seconds: 5));
+        expect(stateOf().active!.state, SessionState.running);
+        expect(stateOf().active!.passUsed, isFalse);
+        expect((await storedSession()).state, 'running');
+      });
+
+      test('return after 30 s uses the pass and persists it', () async {
+        await controller.start(25);
+        await awayFor(const Duration(seconds: 30));
+        expect(stateOf().active!.passUsed, isTrue);
+        expect((await storedSession()).passUsed, isTrue);
+      });
+
+      test('return after 90 s fails the session', () async {
+        await controller.start(25);
+        await awayFor(const Duration(seconds: 90));
+        final s = stateOf();
+        expect(s.active, isNull);
+        expect(s.lastResult!.outcome, SessionOutcome.failed);
+        expect(s.town.workers, 1);
+        expect(
+          s.town.buildings.where((b) => b.status == BuildingStatus.ruin),
+          hasLength(1),
+        );
+        expect((await storedSession()).state, 'failed');
+      });
+
+      test('a second 30 s away in the same session fails', () async {
+        await controller.start(25);
+        await awayFor(const Duration(seconds: 30));
+        await awayFor(const Duration(seconds: 30));
+        expect(stateOf().lastResult!.outcome, SessionOutcome.failed);
+      });
+
+      test('lock and call change and write nothing', () async {
+        await controller.start(25);
+        final before = stateOf();
+        final row = await storedSession();
+        await controller.onLocked();
+        await controller.onCallStarted();
+        expect(stateOf(), before);
+        expect(await storedSession(), row);
+      });
+
+      test('events with no active session are no-ops', () async {
+        final before = stateOf();
+        await controller.onLocked();
+        await controller.onCallStarted();
+        await controller.onBackgroundedUnlocked();
+        await controller.onForegrounded();
+        expect(stateOf(), before);
+        expect(await _db.select(_db.sessions).get(), isEmpty);
+      });
+
+      test('the at timestamp is used to measure time away', () async {
+        await controller.start(25);
+        _clock.advance(const Duration(seconds: 12));
+        final at = TimeStamp(
+          _clock.nowWall().subtract(const Duration(seconds: 12)),
+          _clock.uptime() - const Duration(seconds: 12),
+        );
+        await controller.onBackgroundedUnlocked(at: at);
+        expect(stateOf().active!.leftAt, at);
+        await controller.onForegrounded();
+        // 12 s measured from `at` needs the pass; from now it would be 0 s.
+        expect(stateOf().active!.passUsed, isTrue);
+      });
+
+      test('away state is stored with leftAt', () async {
+        await controller.start(25);
+        await controller.onBackgroundedUnlocked();
+        final stored = await c.read(townRepositoryProvider).activeSession();
+        expect(stored!.state, SessionState.away);
+        expect(stored.leftAt, stateOf().active!.leftAt);
+      });
+    });
   });
 }

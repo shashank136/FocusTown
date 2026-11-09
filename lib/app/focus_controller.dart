@@ -70,6 +70,47 @@ class FocusController extends AsyncNotifier<FocusState> {
     );
   }
 
+  /// Screen lock is allowed; nothing changes.
+  Future<void> onLocked({TimeStamp? at}) =>
+      _forward(SessionEngine.onLocked, at);
+
+  /// A phone call is allowed; nothing changes.
+  Future<void> onCallStarted({TimeStamp? at}) =>
+      _forward(SessionEngine.onCallStarted, at);
+
+  /// The user left the app with the phone unlocked.
+  Future<void> onBackgroundedUnlocked({TimeStamp? at}) =>
+      _forward(SessionEngine.onBackgroundedUnlocked, at);
+
+  /// The user came back to the app.
+  Future<void> onForegrounded({TimeStamp? at}) =>
+      _forward(SessionEngine.onForegrounded, at, resolveAfter: true);
+
+  // Applies an engine event to the active session, then saves or finishes.
+  Future<void> _forward(
+    Session Function(Session, TimeStamp) event,
+    TimeStamp? at, {
+    bool resolveAfter = false,
+  }) async {
+    final current = await future;
+    final active = current.active;
+    if (active == null) return;
+    final clock = ref.read(clockProvider);
+    final t = at ?? TimeStamp.now(clock);
+    var updated = event(active, t);
+    // Planned time may have passed while the user was away.
+    if (resolveAfter) {
+      updated = SessionEngine.resolve(updated, TimeStamp.now(clock));
+    }
+    if (updated == active) return;
+    if (updated.isFinished) {
+      state = AsyncData(await _finish(current, updated, t));
+      return;
+    }
+    await ref.read(townRepositoryProvider).saveSessionUpdated(updated);
+    state = AsyncData(current.copyWith(active: updated));
+  }
+
   /// Applies the town rules, saves everything atomically, builds the result.
   Future<FocusState> _finish(
     FocusState base,
