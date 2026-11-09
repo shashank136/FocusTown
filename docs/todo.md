@@ -46,9 +46,9 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Folders `lib/domain`, `lib/data`, `lib/platform`, `lib/game`, `lib/ui`, `lib/app` and matching `test/` folders exist
 - [x] `Clock`, `SystemClock`, and `FakeClock` (advance, setWall, simulateReboot) implemented
 - [x] Clock unit tests written first and passing
-- [ ] `clockProvider` added
-- [ ] `DebugScreen` shows wall time and uptime, refreshing every second
-- [ ] Widget test for `DebugScreen` passing
+- [x] `clockProvider` added
+- [x] `DebugScreen` shows wall time and uptime, refreshing every second
+- [x] Widget test for `DebugScreen` passing
 - [ ] App runs on iPhone
 - [ ] Committed: `step 01`
 

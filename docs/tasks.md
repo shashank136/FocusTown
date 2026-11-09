@@ -13,21 +13,21 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-01.3
-- What's left on it: everything. T-01.2 is done (uncommitted until user approves). `Clock`, `SystemClock`, `FakeClock` exist but are wired only by T-01.3.
+- Current task: T-02.1
+- What's left on it: everything. T-01.3 is done (uncommitted until user approves). Step 1 is complete except launching on a simulator/iPhone (not run: no booted simulator).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
   - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-08 (T-01.2 done)
+- Last updated: 2026-11-08 (T-01.3 done)
 
 ## Status of steps
 
 Total: 124 tasks (T-01.1 to T-22.15). Tasks tagged `[device]` need the user's physical phone.
 
-- T-01 (step 1): not done yet, see Gotchas. Tasks T-01.1–T-01.3 below.
+- T-01 (step 1): [x] done (T-01.1–T-01.3).
 
 ## Shared context (applies to every task)
 
@@ -98,7 +98,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-01.2: clock, system clock and fake clock`
 
-### T-01.3 [ ] clockProvider, FocusTownApp and DebugScreen
+### T-01.3 [x] clockProvider, FocusTownApp and DebugScreen
 - Step: 1 (docs/prompt_plan.md, Prompt 1)
 - Depends on: T-01.2
 - Goal: wire the clock into the running app with a debug screen showing live wall time and uptime. This ends step 1.

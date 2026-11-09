@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/app.dart';
 
 void main() {
-  runApp(const MaterialApp(home: Scaffold()));
+  runApp(const ProviderScope(child: FocusTownApp()));
 }
