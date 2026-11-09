@@ -7,6 +7,5 @@ class FocusTownApp extends StatelessWidget {
   const new({super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      const MaterialApp(home: DebugScreen());
+  Widget build(BuildContext context) => const MaterialApp(home: DebugScreen());
 }

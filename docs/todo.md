@@ -54,11 +54,11 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 2: building tiers
 - [ ] Paste Prompt 0 + Prompt 2
-- [ ] `BuildingTier` enum with minutes, workers at risk, workers added
-- [ ] `forMinutes` rejects < 10, > 120, and non-multiples of 5
-- [ ] `validDurations` returns 23 values
-- [ ] `largestAffordable` implemented
-- [ ] Boundary tests (10, 20, 25, 40, 45, 60, 65, 90, 95, 120) passing
+- [x] `BuildingTier` enum with minutes, workers at risk, workers added
+- [x] `forMinutes` rejects < 10, > 120, and non-multiples of 5
+- [x] `validDurations` returns 23 values
+- [x] `largestAffordable` implemented
+- [x] Boundary tests (10, 20, 25, 40, 45, 60, 65, 90, 95, 120) passing
 - [ ] Duration slider on `DebugScreen` shows tier and workers at risk
 - [ ] Committed: `step 02`
 
