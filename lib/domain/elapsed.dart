@@ -8,3 +8,13 @@ Duration elapsedBetween(TimeStamp from, TimeStamp to) {
   final wall = to.wall.difference(from.wall);
   return wall.isNegative ? Duration.zero : wall;
 }
+
+/// Whether wall time disagrees with uptime by more than 2 minutes.
+///
+/// After a reboot uptime restarts, so there is nothing to compare: false.
+bool wallClockTampered(TimeStamp from, TimeStamp to) {
+  if (to.uptime < from.uptime) return false;
+  final wallDelta = to.wall.difference(from.wall);
+  final uptimeDelta = to.uptime - from.uptime;
+  return (wallDelta - uptimeDelta).abs() > const Duration(minutes: 2);
+}

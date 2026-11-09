@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-03.2
-- What's left on it: everything. T-03.1 is done (uncommitted until user approves). `TimeStamp` and `elapsedBetween` are used by tests only until the step 3 wiring task.
+- Current task: T-03.3
+- What's left on it: everything. T-03.2 is done (uncommitted until user approves). `wallClockTampered` is used by tests only until T-03.3.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -22,7 +22,7 @@ Each session updates this section before stopping.
   - Lints: `factory ClassName.named` triggers `unnecessary_type_name_in_constructor`, but `factory .named` does not parse; use an `// ignore:` for named factories. `@immutable` needs `package:meta` (not approved), so value classes with `==` use `ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes`. Ask the user if they want `meta` added.
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-08 (T-03.1 done)
+- Last updated: 2026-11-08 (T-03.2 done)
 
 ## Status of steps
 
@@ -160,7 +160,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-03.1: time stamp and elapsed calculation`
 
-### T-03.2 [ ] Wall-clock tamper detection
+### T-03.2 [x] Wall-clock tamper detection
 - Step: 3 (docs/prompt_plan.md, Prompt 3)
 - Depends on: T-03.1
 - Goal: detect when the wall clock disagrees with uptime so it can be logged.

@@ -66,7 +66,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Paste Prompt 0 + Prompt 3
 - [x] `TimeStamp` (wall + uptime) implemented
 - [x] `elapsedBetween` trusts uptime, falls back to wall after reboot, never negative
-- [ ] `wallClockTampered` implemented
+- [x] `wallClockTampered` implemented
 - [ ] Tests: normal, clock forward, clock backward, reboot, reboot with clock backward
 - [ ] "Elapsed since app start" shown on `DebugScreen`
 - [ ] Committed: `step 03`
