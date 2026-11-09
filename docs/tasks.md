@@ -13,14 +13,15 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-01.2
-- What's left on it: everything. T-01.1 is done (uncommitted until user approves).
+- Current task: T-01.3
+- What's left on it: everything. T-01.2 is done (uncommitted until user approves). `Clock`, `SystemClock`, `FakeClock` exist but are wired only by T-01.3.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
   - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
-- Last updated: 2026-11-08 (T-01.1 done)
+  - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
+- Last updated: 2026-11-08 (T-01.2 done)
 
 ## Status of steps
 
@@ -79,7 +80,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; `flutter run` (or `flutter build apk --debug`) compiles; `git status` shows no build output committed.
 - Commit: `T-01.1: flutter project skeleton and deps`
 
-### T-01.2 [ ] Clock, SystemClock, FakeClock
+### T-01.2 [x] Clock, SystemClock, FakeClock
 - Step: 1 (docs/prompt_plan.md, Prompt 1)
 - Depends on: T-01.1
 - Goal: the injectable clock every later task depends on: wall time plus monotonic uptime, with a controllable fake.

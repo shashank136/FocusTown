@@ -44,8 +44,8 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Flutter app `focus_town` created (iOS 17+, Android minSdk 29)
 - [x] Riverpod, lints, and mocktail added
 - [x] Folders `lib/domain`, `lib/data`, `lib/platform`, `lib/game`, `lib/ui`, `lib/app` and matching `test/` folders exist
-- [ ] `Clock`, `SystemClock`, and `FakeClock` (advance, setWall, simulateReboot) implemented
-- [ ] Clock unit tests written first and passing
+- [x] `Clock`, `SystemClock`, and `FakeClock` (advance, setWall, simulateReboot) implemented
+- [x] Clock unit tests written first and passing
 - [ ] `clockProvider` added
 - [ ] `DebugScreen` shows wall time and uptime, refreshing every second
 - [ ] Widget test for `DebugScreen` passing
