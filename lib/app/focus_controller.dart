@@ -12,8 +12,16 @@ import 'package:focus_town/domain/town_rules.dart';
 class FocusController extends AsyncNotifier<FocusState> {
   @override
   Future<FocusState> build() async {
-    final town = await ref.watch(townRepositoryProvider).loadOrCreate();
-    return FocusState(town: town);
+    final repo = ref.watch(townRepositoryProvider);
+    final base = FocusState(town: await repo.loadOrCreate());
+    final stored = await repo.activeSession();
+    if (stored == null) return base;
+    // The app may have been killed: decide the outcome from timestamps now.
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final resolved = SessionEngine.resolve(stored, now);
+    if (resolved.isFinished) return await _finish(base, resolved, now);
+    if (resolved != stored) await repo.saveSessionUpdated(resolved);
+    return base.copyWith(active: resolved);
   }
 
   /// Dismisses the last result.

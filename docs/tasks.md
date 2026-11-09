@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-08.5
-- What's left on it: everything. T-08.1-T-08.4 done: `FocusController` has `start`, `tick`, `abandon`, `onLocked`, `onCallStarted`, `onBackgroundedUnlocked`, `onForegrounded` (all take optional `at`) via private `_forward` (event, resolve for foreground, save update or `_finish`). Not shown in UI until T-08.6. Next: T-08.5, resume on launch (`build()` resolves a stored active session). Physical-iPhone repeat of step 7 persistence is still open in `docs/device_tests.md`. Test trick: seed a stored town by inserting rows before the first controller read.
+- Current task: T-08.6
+- What's left on it: everything. T-08.1-T-08.5 done: `FocusController.build()` now resolves a stored active session from timestamps on launch (finished → `_finish` with `lastResult`; else keeps it, persisting if resolve changed it). Reboot tests need uptime > 0 before the reboot. Next: T-08.6, debug screen on FocusController (first time the controller shows in the app: verify in the simulator). Loop request from user: finish tasks up to step 10; [device] tasks (T-08.7, T-09.6, T-10.5) need a physical iPhone which the user does not have (simulator only), so stop and ask there.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-08.4 done)
+- Last updated: 2026-11-09 (T-08.5 done)
 
 ## Status of steps
 
@@ -562,7 +562,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-08.4: controller lifecycle events`
 
-### T-08.5 [ ] Resume and resolve on launch
+### T-08.5 [x] Resume and resolve on launch
 - Step: 8 (docs/prompt_plan.md, Prompt 8)
 - Depends on: T-08.4
 - Goal: after the app was killed, `build()` resolves any stored active session from timestamps.

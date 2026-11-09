@@ -457,5 +457,85 @@ void main() {
         expect(stored.leftAt, stateOf().active!.leftAt);
       });
     });
+
+    group('resume on launch', () {
+      // A second container over the same database simulates a killed app.
+      Future<FocusState> relaunch() =>
+          _container().read(focusControllerProvider.future);
+
+      Future<FocusController> first() {
+        final c = _container();
+        return c
+            .read(focusControllerProvider.future)
+            .then((_) => c.read(focusControllerProvider.notifier));
+      }
+
+      test('a running session survives and stays active', () async {
+        final controller = await first();
+        await controller.start(25);
+        _clock.advance(const Duration(minutes: 4));
+        final s = await relaunch();
+        expect(s.active!.state, SessionState.running);
+        expect(s.lastResult, isNull);
+      });
+
+      test('away for 90 s while killed fails the session', () async {
+        final controller = await first();
+        await controller.start(25);
+        await controller.onBackgroundedUnlocked();
+        _clock.advance(const Duration(seconds: 90));
+        final s = await relaunch();
+        expect(s.active, isNull);
+        expect(s.lastResult!.outcome, SessionOutcome.failed);
+        expect(s.town.workers, 1);
+      });
+
+      test('planned time passing while killed completes it', () async {
+        final controller = await first();
+        await controller.start(10);
+        _clock.advance(const Duration(minutes: 11));
+        final s = await relaunch();
+        expect(s.active, isNull);
+        expect(s.lastResult!.outcome, SessionOutcome.completed);
+        expect(s.town.workers, 4);
+      });
+
+      test('away 30 s with the pass unused stays away', () async {
+        final controller = await first();
+        await controller.start(25);
+        await controller.onBackgroundedUnlocked();
+        _clock.advance(const Duration(seconds: 30));
+        final s = await relaunch();
+        expect(s.active!.state, SessionState.away);
+        expect(s.lastResult, isNull);
+      });
+
+      test('a reboot while away falls back to wall time and fails', () async {
+        // Uptime must be above zero so the reboot visibly resets it.
+        _clock.advance(const Duration(hours: 1));
+        final controller = await first();
+        await controller.start(25);
+        await controller.onBackgroundedUnlocked();
+        _clock
+          ..advance(const Duration(seconds: 100))
+          ..simulateReboot();
+        final s = await relaunch();
+        expect(s.lastResult!.outcome, SessionOutcome.failed);
+      });
+
+      test(
+        'wall clock moved forward while killed does not complete early',
+        () async {
+          final controller = await first();
+          await controller.start(25);
+          _clock
+            ..advance(const Duration(minutes: 3))
+            ..setWall(_clock.nowWall().add(const Duration(hours: 2)));
+          final s = await relaunch();
+          expect(s.active!.state, SessionState.running);
+          expect(s.lastResult, isNull);
+        },
+      );
+    });
   });
 }
