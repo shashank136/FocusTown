@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
+import 'package:focus_town/game/effects/particles.dart';
+import 'package:focus_town/game/render/particle_painter.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/render/worker_painter.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
@@ -20,6 +22,8 @@ class TownRenderer {
   List<VisibleBlock>? _visible;
   BlockIndex? _index;
   List<PlacedWorker> _workers = const [];
+  List<Particle> _particles = const [];
+  double _particleAlpha = 1;
   int _worldVersion = 0;
   TownState? _town;
   ActiveSite? _site;
@@ -76,6 +80,15 @@ class TownRenderer {
   // ignore: use_setters_to_change_properties, a command, not a property
   void setWorkers(List<PlacedWorker> workers) => _workers = workers;
 
+  /// The particles currently drawn.
+  List<Particle> get particles => _particles;
+
+  /// Draws [particles] over the workers, at opacity [alpha] (0 to 1).
+  void setParticles(List<Particle> particles, double alpha) {
+    _particles = particles;
+    _particleAlpha = alpha;
+  }
+
   /// Draws everything into [canvas], which is [size] big.
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(
@@ -113,6 +126,15 @@ class TownRenderer {
         origin: cam.origin,
         viewSize: size,
         index: _index,
+      );
+    }
+    if (_particles.isNotEmpty) {
+      paintParticles(
+        canvas,
+        _particles,
+        _particleAlpha,
+        tile: cam.tile,
+        origin: cam.origin,
       );
     }
   }

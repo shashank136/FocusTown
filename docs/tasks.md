@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-18.3 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-18.1-T-18.2 done: the building under construction is drawn from the real clock. `TownGame(clock:)` (HomeScreen passes clockProvider) computes, on every allowed frame, `SessionEngine.progress` -> `stageForProgress` -> `renderer.setSite(ActiveSite)` (null when no session), so it never comes from stored state; tests cover every tier's first/last three stage thresholds (±1 s), monotonic stages, one re-record per stage change, lock (time keeps going) and reboot (wall fallback). Next: T-18.3 (completion celebration: particles + site transition).
+- Current task: T-18.4 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-18.3 done: completion celebration. `lib/game/effects/particles.dart` (seeded ParticleSystem, burst/step/alive), `site_transition.dart` (SiteTransition.celebrate 1 s, fade, `workersLeaving` lerp to nearest road), `render/particle_painter.dart`. TownGame remembers the last site plot and workers (the stored town moves to the next free plot at the end), and on a new completed result bursts 40 particles (none in low power) and walks the site workers to a road (vanish at once in reduced motion). Dust colors are fixed plank/stone/log tones, not per tier. Next: T-18.4 (failure: dead workers, smoke, goldens).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-18.2 done)
+- Last updated: 2026-11-09 (T-18.3 done)
 
 ## Status of steps
 
@@ -1291,7 +1291,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-18.2: progress driven construction`
 
-### T-18.3 [ ] Completed transition: celebration
+### T-18.3 [x] Completed transition: celebration
 - Step: 18 (docs/prompt_plan.md, Prompt 18)
 - Depends on: T-18.2
 - Goal: when a session completes, show a short celebration and let site workers walk to the roads.

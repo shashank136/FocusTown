@@ -11,6 +11,8 @@ import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/camera_transition.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
+import 'package:focus_town/game/effects/particles.dart';
+import 'package:focus_town/game/effects/site_transition.dart';
 import 'package:focus_town/game/frame_limiter.dart';
 import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
@@ -66,6 +68,14 @@ class TownGame extends FlameGame
   CameraTransition? _transition;
   Plot? _siteToFocus;
 
+  // The last building site, remembered because the stored town moves on to
+  // the next free plot the moment a session ends.
+  Plot? _lastPlot;
+  List<PlacedWorker> _lastSiteWorkers = const [];
+  SiteTransition? _show;
+  List<PlacedWorker> _leaving = const [];
+  final ParticleSystem _particles = ParticleSystem(1);
+
   /// Shows [town]; call on every change of the stored town.
   void setTown(TownState town) {
     _redraw = true;
@@ -75,11 +85,33 @@ class TownGame extends FlameGame
   /// Gives the game what to draw: the town (rebuilt only when it changed) and
   /// the running session (which decides where the workers are).
   void setFocus(FocusState focus) {
+    final result = focus.lastResult;
+    final plot = _lastPlot;
+    if (result != null &&
+        !identical(result, _focus?.lastResult) &&
+        result.outcome == SessionOutcome.completed &&
+        plot != null) {
+      _celebrate(plot);
+    }
+    final active = focus.active;
+    if (active != null) _lastPlot = activeSitePlot(focus.town);
     if (focus.town != _town) {
       _town = focus.town;
       setTown(focus.town);
     }
     _focus = focus;
+  }
+
+  void _celebrate(Plot plot) {
+    _show = SiteTransition.celebrate();
+    _leaving = _lastSiteWorkers;
+    if (!_lowPower) {
+      _particles.burst(
+        (plot.center.x, plot.center.y, 3),
+        const [0xFFc69c5d, 0xFFbcbfc5, 0xFFa8875c],
+        40,
+      );
+    }
   }
 
   /// True while the app is in the background: no frames, engine paused.
@@ -157,9 +189,14 @@ class TownGame extends FlameGame
     super.update(dt);
     _elapsed += Duration(microseconds: (dt * 1e6).round());
     _updateCamera(dt);
+    final step = Duration(microseconds: (dt * 1e6).round());
+    _particles.step(step);
+    _show?.step(step);
+    if (_show?.phase == TransitionPhase.done) _show = null;
     if (limiter.allow(_elapsed)) {
       _updateSite();
       _simulateWorkers();
+      renderer.setParticles(_particles.alive, _show?.fade ?? 0);
       _redraw = true;
     }
   }
@@ -220,6 +257,11 @@ class TownGame extends FlameGame
           reducedMotion: reducedMotion,
         ),
       );
+      _lastSiteWorkers = site;
+    }
+    final show = _show;
+    if (show != null && !reducedMotion) {
+      site.addAll(workersLeaving(_leaving, show.progress));
     }
     renderer.setWorkers([
       ...site,
