@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-17.4 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-17.1-T-17.3 done: lib/game/frame_limiter.dart (FrameMode normal 15 / lowPower 10 / paused 0 fps, FrameLimiter.allow(now) with 1 ms slack; refused calls do not move the clock). Next: T-17.4 (low power mode reader: iOS Swift + Dart only, the Android Kotlin half stays deferred).
+- Current task: T-17.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-17.1-T-17.4 done: lib/platform/power_state.dart (PowerState over 'focus/lifecycle' method lowPowerMode; any failure = false), powerStateProvider and lowPowerProvider (StreamProvider<bool>: initial value, every 30 s, on resume; emits only on change; timers must be created inside the test body, not setUp, to use the fake clock), Swift lowPowerMode in FocusLifecyclePlugin (iOS build compiles; the Android Kotlin half stays deferred). The provider is not consumed yet (T-17.6). Next: T-17.5 (draw workers with local occlusion).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-17.3 done)
+- Last updated: 2026-11-09 (T-17.4 done)
 
 ## Status of steps
 
@@ -1211,7 +1211,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-17.3: frame limiter`
 
-### T-17.4 [ ] Low-power mode reader (native + Dart)
+### T-17.4 [x] Low-power mode reader (native + Dart)
 - Step: 17 (docs/prompt_plan.md, Prompt 17)
 - Depends on: T-17.3
 - Goal: know when iOS Low Power Mode or Android Battery Saver is on.

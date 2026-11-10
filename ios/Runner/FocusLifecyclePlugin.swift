@@ -39,6 +39,8 @@ final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
   func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     if call.method == "uptimeMs" {
       result(Self.uptimeMs())
+    } else if call.method == "lowPowerMode" {
+      result(ProcessInfo.processInfo.isLowPowerModeEnabled)
     } else {
       result(FlutterMethodNotImplemented)
     }

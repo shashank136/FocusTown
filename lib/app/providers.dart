@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/focus_state.dart';
@@ -15,6 +18,7 @@ import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/lifecycle_router.dart';
 import 'package:focus_town/platform/local_notifier.dart';
 import 'package:focus_town/platform/notifier.dart' as warnings;
+import 'package:focus_town/platform/power_state.dart';
 
 /// The app-wide [Clock]; tests override it with a fake.
 final clockProvider = Provider<Clock>((ref) => SystemClock());
@@ -99,3 +103,41 @@ final visibleBlocksProvider = Provider.family<List<VisibleBlock>, TownWorldKey>(
 /// The build stage of [active] at [progress] (0..1), or 0 without a session.
 int activeStage(Session? active, double progress) =>
     active == null ? 0 : stageForProgress(active.tier, progress);
+
+/// Reads the phone's battery saver state.
+final powerStateProvider = Provider<PowerState>((ref) => PowerState());
+
+class _ResumeObserver with WidgetsBindingObserver {
+  new(this.onResume);
+  final void Function() onResume;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) onResume();
+  }
+}
+
+/// Whether low power mode is on: read at start, every 30 s and on resume;
+/// emits only when the value changes.
+final lowPowerProvider = StreamProvider<bool>((ref) {
+  final power = ref.watch(powerStateProvider);
+  final controller = StreamController<bool>();
+  bool? last;
+  Future<void> poll() async {
+    final value = await power.isLowPower();
+    if (controller.isClosed || value == last) return;
+    last = value;
+    controller.add(value);
+  }
+
+  unawaited(poll());
+  final timer = Timer.periodic(const Duration(seconds: 30), (_) => poll());
+  final observer = _ResumeObserver(() => unawaited(poll()));
+  WidgetsBinding.instance.addObserver(observer);
+  ref.onDispose(() {
+    timer.cancel();
+    WidgetsBinding.instance.removeObserver(observer);
+    unawaited(controller.close());
+  });
+  return controller.stream;
+});
