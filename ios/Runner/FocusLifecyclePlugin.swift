@@ -1,14 +1,19 @@
+import CallKit
 import Flutter
 import UIKit
 
-/// Bridges lock, background, foreground and uptime to Dart.
+/// Bridges lock, background, foreground, calls and uptime to Dart.
 ///
 /// Events go over `focus/lifecycle/events` as `{type, wallMs, uptimeMs}`.
 /// `focus/lifecycle` method `uptimeMs` returns the monotonic uptime.
-final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
+final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
+  CXCallObserverDelegate
+{
   private var sink: FlutterEventSink?
   private var isLocked = false
   private var observers: [NSObjectProtocol] = []
+  private let callObserver = CXCallObserver()
+  private var activeCalls = Set<UUID>()
 
   static func register(with registrar: FlutterPluginRegistrar) {
     let instance = FocusLifecyclePlugin()
@@ -22,6 +27,7 @@ final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler 
     )
     registrar.addMethodCallDelegate(instance, channel: methods)
     instance.observeApplication()
+    instance.callObserver.setDelegate(instance, queue: .main)
   }
 
   /// Continuous time in ms. Counts device sleep, unlike
@@ -57,6 +63,20 @@ final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler 
       "wallMs": Int(Date().timeIntervalSince1970 * 1000),
       "uptimeMs": Self.uptimeMs(),
     ])
+  }
+
+  /// Ringing and dialing count as a call. Several calls (hold, conference)
+  /// make one `callStarted` / `callEnded` pair around the whole group.
+  func callObserver(_ callObserver: CXCallObserver, callChanged call: CXCall) {
+    if call.hasEnded {
+      if activeCalls.remove(call.uuid) != nil && activeCalls.isEmpty {
+        emit("callEnded")
+      }
+    } else {
+      let wasEmpty = activeCalls.isEmpty
+      activeCalls.insert(call.uuid)
+      if wasEmpty { emit("callStarted") }
+    }
   }
 
   private func emitLocked() {
