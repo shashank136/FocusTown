@@ -97,4 +97,98 @@ void main() {
       expect(world.blockCount, 14);
     });
   });
+
+  group('visibility', () {
+    test('a single block shows all three faces', () {
+      world.set(0, 0, 0, Blocks.grass);
+      expect(world.visibleFaces(0, 0, 0), kFaceTop | kFaceX | kFaceY);
+      expect(world.visibleFaces(0, 0, 0), 7);
+    });
+
+    test('a block with neighbors on +x, +y and above is hidden', () {
+      world
+        ..set(0, 0, 0, Blocks.grass)
+        ..set(1, 0, 0, Blocks.grass)
+        ..set(0, 1, 0, Blocks.grass)
+        ..set(0, 0, 1, Blocks.grass);
+      expect(world.visibleFaces(0, 0, 0), 0);
+      expect(
+        world.sortedVisible().any((b) => b.x == 0 && b.y == 0 && b.z == 0),
+        isFalse,
+      );
+    });
+
+    test('stacking hides only the lower top face', () {
+      world
+        ..set(0, 0, 0, Blocks.grass)
+        ..set(0, 0, 1, Blocks.grass);
+      final f = world.visibleFaces(0, 0, 0);
+      expect(f & kFaceTop, 0);
+      expect(f & kFaceX, kFaceX);
+      expect(f & kFaceY, kFaceY);
+    });
+
+    test('a block at x+1 hides only the +x face', () {
+      world
+        ..set(0, 0, 0, Blocks.grass)
+        ..set(1, 0, 0, Blocks.grass);
+      expect(world.visibleFaces(0, 0, 0), kFaceTop | kFaceY);
+    });
+  });
+
+  group('sortedVisible', () {
+    test('sorts by x + y + z ascending', () {
+      world
+        ..set(2, 2, 0, Blocks.grass)
+        ..set(0, 0, 0, Blocks.grass)
+        ..set(1, 1, 0, Blocks.grass);
+      expect(world.sortedVisible().map((b) => (b.x, b.y, b.z)), [
+        (0, 0, 0),
+        (1, 1, 0),
+        (2, 2, 0),
+      ]);
+    });
+
+    test('equal depth breaks ties by z, then x, then y', () {
+      world
+        ..set(1, 0, 0, Blocks.grass)
+        ..set(0, 1, 0, Blocks.grass)
+        ..set(0, 0, 1, Blocks.grass);
+      expect(world.sortedVisible().map((b) => (b.x, b.y, b.z)), [
+        (0, 1, 0),
+        (1, 0, 0),
+        (0, 0, 1),
+      ]);
+    });
+
+    test('a 5x5x1 fill has 25 visible blocks', () {
+      world.fill(0, 0, 0, 4, 4, 0, Blocks.grass);
+      expect(world.sortedVisible(), hasLength(25));
+    });
+
+    test('entries carry the material and visible faces', () {
+      world.set(0, 0, 0, Blocks.roof);
+      final b = world.sortedVisible().single;
+      expect(b.material, Blocks.roof);
+      expect(b.faces, 7);
+    });
+
+    test('the same input always gives the same order', () {
+      void build(VoxelWorld w) {
+        w
+          ..fill(0, 0, 0, 3, 3, 1, Blocks.stone)
+          ..set(5, 1, 0, Blocks.log)
+          ..set(-2, 4, 2, Blocks.log);
+      }
+
+      final a = VoxelWorld();
+      final b = VoxelWorld();
+      build(a);
+      build(b);
+      expect(
+        a.sortedVisible().map((v) => (v.x, v.y, v.z)).toList(),
+        b.sortedVisible().map((v) => (v.x, v.y, v.z)).toList(),
+      );
+    });
+  });
 }

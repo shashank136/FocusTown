@@ -1,5 +1,35 @@
 import 'package:focus_town/game/world/block_material.dart';
 
+/// Bit for a visible top face.
+const kFaceTop = 1;
+
+/// Bit for a visible +x side face.
+const kFaceX = 2;
+
+/// Bit for a visible +y side face.
+const kFaceY = 4;
+
+/// A block that shows at least one face, ready to draw.
+class VisibleBlock {
+  /// Creates a visible block.
+  const new(this.x, this.y, this.z, this.material, this.faces);
+
+  /// Coordinates.
+  final int x;
+
+  /// Coordinates.
+  final int y;
+
+  /// Coordinates.
+  final int z;
+
+  /// What it is made of.
+  final BlockMaterial material;
+
+  /// Bit set of [kFaceTop], [kFaceX], [kFaceY].
+  final int faces;
+}
+
 /// A sparse grid of blocks. Coordinates must be in -128..127.
 class VoxelWorld {
   final Map<int, BlockMaterial> _blocks = {};
@@ -71,5 +101,29 @@ class VoxelWorld {
         set(x, y, z, onEdgeX && onEdgeY ? corner ?? m : m);
       }
     }
+  }
+
+  /// Which faces of the block at ([x], [y], [z]) are not covered.
+  int visibleFaces(int x, int y, int z) =>
+      (has(x, y, z + 1) ? 0 : kFaceTop) |
+      (has(x + 1, y, z) ? 0 : kFaceX) |
+      (has(x, y + 1, z) ? 0 : kFaceY);
+
+  /// Blocks with a visible face, back to front: by `x + y + z`, then `z`,
+  /// `x`, `y`.
+  List<VisibleBlock> sortedVisible() {
+    final out = <VisibleBlock>[];
+    for (final b in blocks) {
+      final faces = visibleFaces(b.x, b.y, b.z);
+      if (faces != 0) out.add(VisibleBlock(b.x, b.y, b.z, b.material, faces));
+    }
+    return out..sort((a, b) {
+      final depth = (a.x + a.y + a.z).compareTo(b.x + b.y + b.z);
+      if (depth != 0) return depth;
+      final z = a.z.compareTo(b.z);
+      if (z != 0) return z;
+      final x = a.x.compareTo(b.x);
+      return x != 0 ? x : a.y.compareTo(b.y);
+    });
   }
 }
