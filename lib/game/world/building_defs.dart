@@ -39,7 +39,13 @@ void buildTier(
     case BuildingTier.house:
       _house(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 5, 5, 6);
-    case BuildingTier.workshop || BuildingTier.tower || BuildingTier.castle:
+    case BuildingTier.workshop:
+      _workshop(w, ox, oy, stage);
+      if (scaffold) _scaffold(w, ox, oy, 5, 5, 4);
+    case BuildingTier.tower:
+      _tower(w, ox, oy, stage);
+      if (scaffold) _scaffold(w, ox, oy, 3, 3, 9);
+    case BuildingTier.castle:
       throw UnimplementedError('$t is not built yet');
   }
 }
@@ -94,4 +100,46 @@ void _house(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 5) w.fill(ox, oy, 5, ox + 4, oy + 4, 5, Blocks.roof);
   if (stage >= 6) w.fill(ox + 1, oy + 1, 6, ox + 3, oy + 3, 6, Blocks.roof);
   if (stage >= 7) w.set(ox + 2, oy + 2, 7, Blocks.roof);
+}
+
+void _workshop(VoxelWorld w, int ox, int oy, int stage) {
+  for (var z = 1; z <= math.min(stage, 3); z++) {
+    w.ring(ox, oy, 5, 5, z, Blocks.cobble);
+    if (z <= 2) {
+      // The 2-wide door is open as soon as the ring exists.
+      w
+        ..remove(ox + 1, oy + 4, z)
+        ..remove(ox + 2, oy + 4, z);
+    }
+  }
+  if (stage >= 4) {
+    w
+      ..set(ox + 4, oy + 1, 2, Blocks.glass)
+      ..set(ox + 4, oy + 2, 2, Blocks.glass);
+  }
+  if (stage >= 5) w.fill(ox, oy, 4, ox + 4, oy + 4, 4, Blocks.slate);
+  if (stage >= 6) w.fill(ox + 3, oy + 1, 5, ox + 3, oy + 1, 6, Blocks.cobble);
+}
+
+void _tower(VoxelWorld w, int ox, int oy, int stage) {
+  // Solid stone layers: stages 1-4 add two layers each, stage 5 adds one.
+  const layers = [2, 4, 6, 8, 9];
+  for (var s = 1; s <= math.min(stage, 5); s++) {
+    final top = layers[s - 1];
+    final bottom = s == 1 ? 1 : layers[s - 2] + 1;
+    w.fill(ox, oy, bottom, ox + 2, oy + 2, top, Blocks.stone);
+  }
+  // Features appear with their layer.
+  w
+    ..remove(ox + 1, oy + 2, 1)
+    ..remove(ox + 1, oy + 2, 2);
+  if (stage >= 3) w.set(ox + 2, oy + 1, 5, Blocks.glass);
+  if (stage >= 4) w.set(ox + 1, oy + 2, 7, Blocks.glass);
+  if (stage >= 6) {
+    for (final (dx, dy) in [(0, 0), (2, 0), (0, 2), (2, 2)]) {
+      w.set(ox + dx, oy + dy, 10, Blocks.stone);
+    }
+  }
+  if (stage >= 7) w.fill(ox + 1, oy + 1, 10, ox + 1, oy + 1, 12, Blocks.log);
+  if (stage >= 8) w.fill(ox + 2, oy + 1, 11, ox + 3, oy + 1, 12, Blocks.wool);
 }

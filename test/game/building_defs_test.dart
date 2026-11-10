@@ -170,16 +170,117 @@ void main() {
     });
   });
 
-  test('workshop, tower and castle are not built yet', () {
-    for (final t in [
-      BuildingTier.workshop,
-      BuildingTier.tower,
-      BuildingTier.castle,
-    ]) {
+  group('workshop', () {
+    test('block count never decreases and the final count is 71', () {
+      var last = 0;
+      for (var s = 1; s <= 6; s++) {
+        final n = _build(BuildingTier.workshop, s).blockCount;
+        expect(n, greaterThanOrEqualTo(last), reason: 'stage $s');
+        last = n;
+      }
+      expect(last, 71); // 3 rings of 16, minus 4 door, 25 slate, 2 chimney
+    });
+
+    test('the 2-wide door gap is open at stage 1', () {
+      final w = _build(BuildingTier.workshop, 1);
+      expect(w.has(ox + 1, oy + 4, 1), isFalse);
+      expect(w.has(ox + 2, oy + 4, 1), isFalse);
+      expect(w.has(ox, oy + 4, 1), isTrue);
+    });
+
+    test('stage 4 adds two glass windows, stage 5 a slate roof', () {
+      final w4 = _build(BuildingTier.workshop, 4);
+      expect(w4.get(ox + 4, oy + 1, 2), Blocks.glass);
+      expect(w4.get(ox + 4, oy + 2, 2), Blocks.glass);
+      expect(_build(BuildingTier.workshop, 3).has(ox + 4, oy + 1, 2), isTrue);
       expect(
-        () => buildTier(VoxelWorld(), t, 3, 3, stage: 1),
-        throwsUnimplementedError,
+        _build(BuildingTier.workshop, 3).get(ox + 4, oy + 1, 2),
+        Blocks.cobble,
       );
+      expect(_build(BuildingTier.workshop, 5).get(ox, oy, 4), Blocks.slate);
+    });
+
+    test('stage 6 adds the chimney', () {
+      final w = _build(BuildingTier.workshop, 6);
+      expect(w.get(ox + 3, oy + 1, 5), Blocks.cobble);
+      expect(w.get(ox + 3, oy + 1, 6), Blocks.cobble);
+      expect(_build(BuildingTier.workshop, 5).has(ox + 3, oy + 1, 5), isFalse);
+    });
+  });
+
+  group('tower', () {
+    test('block count never decreases and the final count is 90', () {
+      var last = 0;
+      for (var s = 1; s <= 8; s++) {
+        final n = _build(BuildingTier.tower, s).blockCount;
+        expect(n, greaterThanOrEqualTo(last), reason: 'stage $s');
+        last = n;
+      }
+      expect(last, 90); // 81 stone minus 2 door, 4 battlements, 3 pole, 4 flag
+    });
+
+    test('the flag exists only at stage 8', () {
+      expect(
+        _build(BuildingTier.tower, 8).get(ox + 3, oy + 1, 12),
+        Blocks.wool,
+      );
+      expect(_build(BuildingTier.tower, 7).has(ox + 3, oy + 1, 12), isFalse);
+      expect(_build(BuildingTier.tower, 7).get(ox + 1, oy + 1, 12), Blocks.log);
+      expect(_build(BuildingTier.tower, 6).has(ox + 1, oy + 1, 11), isFalse);
+    });
+
+    test('battlements appear at stage 6', () {
+      final w = _build(BuildingTier.tower, 6);
+      for (final (dx, dy) in [(0, 0), (2, 0), (0, 2), (2, 2)]) {
+        expect(w.get(ox + dx, oy + dy, 10), Blocks.stone);
+      }
+      expect(w.has(ox + 1, oy + 1, 10), isFalse);
+    });
+
+    test('door gap and windows come with their layers', () {
+      expect(_build(BuildingTier.tower, 1).has(ox + 1, oy + 2, 1), isFalse);
+      expect(_build(BuildingTier.tower, 1).has(ox + 1, oy + 2, 2), isFalse);
+      expect(_build(BuildingTier.tower, 2).has(ox + 1, oy + 2, 3), isTrue);
+      expect(
+        _build(BuildingTier.tower, 3).get(ox + 2, oy + 1, 5),
+        Blocks.glass,
+      );
+      expect(_build(BuildingTier.tower, 2).has(ox + 2, oy + 1, 5), isFalse);
+      expect(
+        _build(BuildingTier.tower, 4).get(ox + 1, oy + 2, 7),
+        Blocks.glass,
+      );
+    });
+  });
+
+  test(
+    'workshop and tower fit the plot, scaffold on at the stage before max',
+    () {
+      for (final p in [kPlots.first, kPlots.last]) {
+        for (final t in [BuildingTier.workshop, BuildingTier.tower]) {
+          for (final scaffold in [true, false]) {
+            final s = scaffold ? maxStage(t) - 1 : maxStage(t);
+            final w = _build(t, s, scaffold: scaffold, plot: p);
+            for (final b in w.blocks) {
+              expect(b.x, inInclusiveRange(p.originX, p.originX + 6));
+              expect(b.y, inInclusiveRange(p.originY, p.originY + 6));
+            }
+          }
+        }
+      }
+    },
+  );
+
+  test('workshop and tower no longer throw', () {
+    for (final t in [BuildingTier.workshop, BuildingTier.tower]) {
+      expect(() => buildTier(VoxelWorld(), t, 3, 3, stage: 1), returnsNormally);
     }
-  }, skip: 'workshop and tower arrive in T-14.3, castle in T-14.4');
+  });
+
+  test('castle is not built yet', () {
+    expect(
+      () => buildTier(VoxelWorld(), BuildingTier.castle, 3, 3, stage: 1),
+      throwsUnimplementedError,
+    );
+  }, skip: 'the castle arrives in T-14.4');
 }
