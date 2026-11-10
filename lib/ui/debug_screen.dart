@@ -6,6 +6,8 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/voxel_world.dart';
 import 'package:focus_town/ui/event_log_panel.dart';
 import 'package:focus_town/ui/focus_debug_panel.dart';
 
@@ -24,6 +26,11 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   Timer? _timer;
   int _minutes = 25;
   bool _notificationsGranted = false;
+  // Built once: a 32x32 ground of dirt under grass.
+  final VoxelWorld _world = VoxelWorld()
+    ..fill(0, 0, -1, 31, 31, -1, Blocks.dirt)
+    ..fill(0, 0, 0, 31, 31, 0, Blocks.grass);
+  late final int _visibleBlocks = _world.sortedVisible().length;
 
   @override
   void initState() {
@@ -89,6 +96,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Tier: ${tier.name}'),
             Text('Workers at risk: ${tier.workersAtRisk}'),
             FocusDebugPanel(minutes: _minutes),
+            Text('World: ${_world.blockCount} blocks, $_visibleBlocks visible'),
             const _StoredTownCard(),
             const SizedBox(height: 16),
             FilledButton(

@@ -215,13 +215,13 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 13: isometric math and voxel world
 - [ ] Paste Prompt 0 + Prompt 13 (attach prototype HTML)
-- [ ] `project` / `unproject` implemented
-- [ ] `BlockMaterial` palette with precomputed texture variants
-- [ ] `VoxelWorld` set/get/remove/fill/ring
-- [ ] Visible-face culling (top, +x, +y)
-- [ ] Depth sort (x + y + z, stable tie-break)
-- [ ] Tests passing
-- [ ] "World stats" line on `DebugScreen`
+- [x] `project` / `unproject` implemented
+- [x] `BlockMaterial` palette with precomputed texture variants
+- [x] `VoxelWorld` set/get/remove/fill/ring
+- [x] Visible-face culling (top, +x, +y)
+- [x] Depth sort (x + y + z, stable tie-break)
+- [x] Tests passing
+- [x] "World stats" line on `DebugScreen`
 - [ ] Committed: `step 13`
 
 ### Step 14: building definitions and town layout

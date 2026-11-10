@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
+import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/voxel_world.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
@@ -26,6 +28,7 @@ List<Override> _overrides(FakeClock clock) {
 void main() {
   _storedTownTest();
   _notificationTests();
+  _worldStatsTest();
   _sliderTests();
   _elapsedTests();
   _simulatorWiringTest();
@@ -173,5 +176,20 @@ void _notificationTests() {
     await settle(tester);
     expect(_notifier.calls, ['requestPermission']);
     expect(find.text('Notifications: granted'), findsOneWidget);
+  });
+}
+
+void _worldStatsTest() {
+  testWidgets('world stats show the block and visible counts', (tester) async {
+    final expected = VoxelWorld()
+      ..fill(0, 0, -1, 31, 31, -1, Blocks.dirt)
+      ..fill(0, 0, 0, 31, 31, 0, Blocks.grass);
+    final visible = expected.sortedVisible().length;
+    expect(expected.blockCount, 2048);
+    expect(visible, 1087); // 1024 grass tops + 63 exposed dirt edge blocks
+
+    await _pump(tester);
+    await tester.ensureVisible(find.textContaining('World:'));
+    expect(find.text('World: 2048 blocks, $visible visible'), findsOneWidget);
   });
 }
