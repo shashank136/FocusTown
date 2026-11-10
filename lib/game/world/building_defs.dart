@@ -32,6 +32,10 @@ void buildTier(
 }) {
   final ox = plotOriginX + 1;
   final oy = plotOriginY + 1;
+  if (t == BuildingTier.castle) {
+    _castle(w, plotOriginX, plotOriginY, stage);
+    return;
+  }
   switch (t) {
     case BuildingTier.hut:
       _hut(w, ox, oy, stage);
@@ -46,7 +50,7 @@ void buildTier(
       _tower(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 3, 3, 9);
     case BuildingTier.castle:
-      throw UnimplementedError('$t is not built yet');
+      break; // handled above
   }
 }
 
@@ -142,4 +146,89 @@ void _tower(VoxelWorld w, int ox, int oy, int stage) {
   }
   if (stage >= 7) w.fill(ox + 1, oy + 1, 10, ox + 1, oy + 1, 12, Blocks.log);
   if (stage >= 8) w.fill(ox + 2, oy + 1, 11, ox + 3, oy + 1, 12, Blocks.wool);
+}
+
+/// The castle. The prototype castle is 9x9; this one is shrunk to fit one 7x7
+/// plot, so it uses the plot origin itself (no margin) and has no scaffold.
+void _castle(VoxelWorld w, int ox, int oy, int stage) {
+  // Stages 1-4: wall rings from the ground up; the gate gap is cleared as the
+  // rings are placed.
+  for (var z = 1; z <= math.min(stage, 4); z++) {
+    w.ring(ox, oy, 7, 7, z, Blocks.stone);
+    if (z <= 3) {
+      for (var x = ox + 2; x <= ox + 4; x++) {
+        w.remove(x, oy + 6, z);
+      }
+    }
+  }
+  // Stage 5: battlements on every other wall cell (counted from the corner).
+  if (stage >= 5) {
+    for (var dx = 0; dx < 7; dx++) {
+      for (var dy = 0; dy < 7; dy++) {
+        final onWall = dx == 0 || dx == 6 || dy == 0 || dy == 6;
+        if (onWall && (dx + dy).isEven) {
+          w.set(ox + dx, oy + dy, 5, Blocks.stone);
+        }
+      }
+    }
+  }
+  const corners = [(0, 0), (5, 0), (0, 5), (5, 5)];
+  // Stages 6 and 7: corner towers up to z 3, then z 6. Stage 8: merlons.
+  if (stage >= 6) {
+    final top = stage >= 7 ? 6 : 3;
+    for (final (dx, dy) in corners) {
+      w.fill(ox + dx, oy + dy, 1, ox + dx + 1, oy + dy + 1, top, Blocks.stone);
+    }
+  }
+  if (stage >= 8) {
+    for (final (dx, dy) in corners) {
+      w
+        ..set(ox + dx, oy + dy, 7, Blocks.stone)
+        ..set(ox + dx + 1, oy + dy + 1, 7, Blocks.stone);
+    }
+  }
+  // Stages 9-11: keep, slate roof, roof peak. Stage 12: two flags.
+  if (stage >= 9) w.fill(ox + 2, oy + 2, 1, ox + 4, oy + 4, 4, Blocks.cobble);
+  if (stage >= 10) w.fill(ox + 2, oy + 2, 5, ox + 4, oy + 4, 5, Blocks.slate);
+  if (stage >= 11) w.set(ox + 3, oy + 3, 6, Blocks.slate);
+  if (stage >= 12) {
+    _flag(w, ox, oy, 8);
+    _flag(w, ox + 5, oy, 8);
+  }
+}
+
+// A log pole three blocks high with a wool pennant on its +x side.
+void _flag(VoxelWorld w, int x, int y, int z) {
+  w
+    ..fill(x, y, z, x, y, z + 2, Blocks.log)
+    ..set(x + 1, y, z + 1, Blocks.wool)
+    ..set(x + 1, y, z + 2, Blocks.wool);
+}
+
+/// A burnt-out building left by a failed session, on the plot at
+/// ([plotOriginX], [plotOriginY]).
+void buildRuin(VoxelWorld w, int plotOriginX, int plotOriginY) {
+  final ox = plotOriginX + 1;
+  final oy = plotOriginY + 1;
+  for (final (dx, dy) in [
+    (0, 0),
+    (1, 0),
+    (0, 1),
+    (4, 0),
+    (4, 1),
+    (0, 3),
+    (0, 4),
+    (3, 4),
+    (4, 4),
+  ]) {
+    w.set(ox + dx, oy + dy, 1, Blocks.cobble);
+  }
+  for (final (dx, dy) in [(0, 0), (0, 1), (4, 0)]) {
+    w.set(ox + dx, oy + dy, 2, Blocks.plank);
+  }
+  w
+    ..set(ox, oy, 3, Blocks.char)
+    ..set(ox + 4, oy + 4, 2, Blocks.char)
+    ..fill(ox + 1, oy + 2, 1, ox + 3, oy + 2, 1, Blocks.char)
+    ..set(ox + 2, oy + 3, 1, Blocks.cobble);
 }

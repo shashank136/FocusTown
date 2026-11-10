@@ -1,9 +1,18 @@
+import 'dart:math' as math;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
+
+/// Pinned: blocks in the finished castle (computed once from the shape).
+const kCastleBlocks = 207;
+
+extension on VoxelWorld {
+  void buildRuinAt(Plot p) => buildRuin(this, p.originX, p.originY);
+}
 
 VoxelWorld _build(
   BuildingTier t,
@@ -277,10 +286,117 @@ void main() {
     }
   });
 
-  test('castle is not built yet', () {
-    expect(
-      () => buildTier(VoxelWorld(), BuildingTier.castle, 3, 3, stage: 1),
-      throwsUnimplementedError,
-    );
-  }, skip: 'the castle arrives in T-14.4');
+  group('castle', () {
+    // The castle uses the plot origin itself (no margin).
+    final cx = plot0.originX;
+    final cy = plot0.originY;
+
+    test('block count never decreases across 12 stages', () {
+      var last = 0;
+      for (var s = 1; s <= 12; s++) {
+        final n = _build(BuildingTier.castle, s).blockCount;
+        expect(n, greaterThanOrEqualTo(last), reason: 'stage $s');
+        last = n;
+      }
+      expect(last, kCastleBlocks);
+    });
+
+    test('every stage fits the 7x7 plot, plots 0 and 63', () {
+      for (final p in [kPlots.first, kPlots.last]) {
+        for (var s = 1; s <= 12; s++) {
+          for (final b in _build(BuildingTier.castle, s, plot: p).blocks) {
+            expect(b.x, inInclusiveRange(p.originX, p.originX + 6));
+            expect(b.y, inInclusiveRange(p.originY, p.originY + 6));
+          }
+        }
+      }
+    });
+
+    test('the gate gap is open from stage 1 at z 1..3', () {
+      for (var s = 1; s <= 12; s++) {
+        final w = _build(BuildingTier.castle, s);
+        for (var x = cx + 2; x <= cx + 4; x++) {
+          for (var z = 1; z <= math.min(s, 3); z++) {
+            expect(w.has(x, cy + 6, z), isFalse, reason: 'stage $s ($x, $z)');
+          }
+        }
+      }
+      expect(_build(BuildingTier.castle, 4).has(cx + 3, cy + 6, 4), isTrue);
+    });
+
+    test('stages add their parts in order', () {
+      expect(_build(BuildingTier.castle, 4).has(cx, cy, 5), isFalse);
+      expect(_build(BuildingTier.castle, 5).has(cx, cy, 5), isTrue); // merlon
+      expect(_build(BuildingTier.castle, 5).has(cx + 1, cy, 5), isFalse);
+      expect(_build(BuildingTier.castle, 6).has(cx + 1, cy + 1, 3), isTrue);
+      expect(_build(BuildingTier.castle, 6).has(cx + 1, cy + 1, 4), isFalse);
+      expect(_build(BuildingTier.castle, 7).has(cx + 1, cy + 1, 6), isTrue);
+      expect(_build(BuildingTier.castle, 7).has(cx + 1, cy + 1, 7), isFalse);
+      expect(_build(BuildingTier.castle, 8).has(cx + 1, cy + 1, 7), isTrue);
+      expect(_build(BuildingTier.castle, 8).has(cx + 3, cy + 3, 1), isFalse);
+      expect(
+        _build(BuildingTier.castle, 9).get(cx + 3, cy + 3, 4),
+        Blocks.cobble,
+      );
+      expect(_build(BuildingTier.castle, 9).has(cx + 3, cy + 3, 5), isFalse);
+      expect(
+        _build(BuildingTier.castle, 10).get(cx + 3, cy + 3, 5),
+        Blocks.slate,
+      );
+      expect(_build(BuildingTier.castle, 10).has(cx + 3, cy + 3, 6), isFalse);
+      expect(
+        _build(BuildingTier.castle, 11).get(cx + 3, cy + 3, 6),
+        Blocks.slate,
+      );
+      expect(_build(BuildingTier.castle, 11).has(cx, cy, 8), isFalse);
+      expect(_build(BuildingTier.castle, 12).get(cx, cy, 8), Blocks.log);
+      expect(_build(BuildingTier.castle, 12).get(cx + 1, cy, 10), Blocks.wool);
+    });
+
+    test('the castle ignores the scaffold flag', () {
+      final a = _build(BuildingTier.castle, 12, scaffold: true);
+      final b = _build(BuildingTier.castle, 12);
+      expect(a.blockCount, b.blockCount);
+      expect(
+        a.blocks.map((e) => (e.x, e.y, e.z)).toSet(),
+        b.blocks.map((e) => (e.x, e.y, e.z)).toSet(),
+      );
+    });
+  });
+
+  group('ruin', () {
+    VoxelWorld ruin([Plot? plot]) {
+      final p = plot ?? kPlots.first;
+      return VoxelWorld()..buildRuinAt(p);
+    }
+
+    test('only cobble, plank and char blocks', () {
+      final allowed = {Blocks.cobble, Blocks.plank, Blocks.char};
+      for (final b in ruin().blocks) {
+        expect(allowed, contains(b.material));
+      }
+    });
+
+    test('fits the footprint and has a stable block count', () {
+      for (final p in [kPlots.first, kPlots.last]) {
+        final w = ruin(p);
+        expect(w.blockCount, ruin(p).blockCount);
+        for (final b in w.blocks) {
+          expect(b.x, inInclusiveRange(p.originX, p.originX + 6));
+          expect(b.y, inInclusiveRange(p.originY, p.originY + 6));
+        }
+      }
+      expect(ruin().blockCount, 9 + 3 + 2 + 3 + 1);
+    });
+
+    test('has the prototype pieces', () {
+      final w = ruin();
+      expect(w.get(ox, oy, 1), Blocks.cobble);
+      expect(w.get(ox, oy, 2), Blocks.plank);
+      expect(w.get(ox, oy, 3), Blocks.char);
+      expect(w.get(ox + 4, oy + 4, 2), Blocks.char);
+      expect(w.get(ox + 2, oy + 2, 1), Blocks.char);
+      expect(w.get(ox + 2, oy + 3, 1), Blocks.cobble);
+    });
+  });
 }

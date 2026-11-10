@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-14.4 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
-- What's left on it: T-14.1-T-14.3 done: building_defs.dart now builds hut, house, workshop (final 71 blocks) and tower (final 90 blocks); only the castle still throws UnimplementedError (its test is skipped: un-skip in T-14.4). Next: T-14.4 (castle and ruin).
+- Current task: T-14.5 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
+- What's left on it: T-14.1-T-14.4 done: all five tiers build via buildTier (castle uses the plot origin, no scaffold, final 207 blocks; battlement parity is relative to the castle corner, not absolute) plus buildRuin. Next: T-14.5 (seeded scenery).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-14.3 done)
+- Last updated: 2026-11-09 (T-14.4 done)
 
 ## Status of steps
 
@@ -986,7 +986,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-14.3: workshop and tower`
 
-### T-14.4 [ ] Castle and ruin
+### T-14.4 [x] Castle and ruin
 - Step: 14 (docs/prompt_plan.md, Prompt 14)
 - Depends on: T-14.3
 - Goal: the castle (12 stages, shrunk to fit one 7x7 plot) and the ruin shape.
