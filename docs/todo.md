@@ -226,14 +226,14 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 14: building definitions and town layout
 - [ ] Paste Prompt 0 + Prompt 14
-- [ ] Plot layout: at least 40 deterministic plots around crossing roads, 0–5 nearest the center
-- [ ] Hut, house, workshop, tower, castle defined with construction stages
-- [ ] Castle shrunk to fit a 7x7 plot (documented)
-- [ ] Ruin, tree, and scenery builders; scenery deterministic from a seed
-- [ ] `maxStage` and `stageForProgress`
-- [ ] `buildTownWorld` from real `TownState`, incl. active site and full-plots case
-- [ ] Tests: footprints, non-decreasing stages, plot placement, ruins, deterministic scenery, no overlaps
-- [ ] `DebugScreen` world stats use real town data
+- [x] Plot layout: at least 40 deterministic plots around crossing roads, 0–5 nearest the center
+- [x] Hut, house, workshop, tower, castle defined with construction stages
+- [x] Castle shrunk to fit a 7x7 plot (documented)
+- [x] Ruin, tree, and scenery builders; scenery deterministic from a seed
+- [x] `maxStage` and `stageForProgress`
+- [x] `buildTownWorld` from real `TownState`, incl. active site and full-plots case
+- [x] Tests: footprints, non-decreasing stages, plot placement, ruins, deterministic scenery, no overlaps
+- [x] `DebugScreen` world stats use real town data
 - [ ] Committed: `step 14`
 
 ### Step 15: Flame renderer with cached static layer

@@ -5,6 +5,11 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/session.dart';
+import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/world/building_defs.dart';
+import 'package:focus_town/game/world/town_world_builder.dart';
+import 'package:focus_town/game/world/voxel_world.dart';
 import 'package:focus_town/platform/fallback_lifecycle_source.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/lifecycle_router.dart';
@@ -69,3 +74,28 @@ final lifecycleRouterProvider = Provider<LifecycleRouter>((ref) {
 
 /// Shows away warnings. `main()` overrides it with an initialized notifier.
 final notifierProvider = Provider<warnings.Notifier>((ref) => LocalNotifier());
+
+/// What the town world depends on. `stage` is 0 when nothing is building.
+typedef TownWorldKey = ({TownState town, Session? active, int stage});
+
+/// The town as blocks. Rebuilt only when the town or the build stage changes,
+/// never on a plain redraw.
+// ignore: specify_nonobvious_property_types, the family type is not exported
+final townWorldProvider = Provider.family<VoxelWorld, TownWorldKey>((ref, key) {
+  final active = key.active;
+  // Mid-stage progress, so floating point can never land on a stage edge.
+  final progress = active == null
+      ? 0.0
+      : (key.stage - 0.5) / maxStage(active.tier);
+  return buildTownWorld(key.town, active: active, progress: progress);
+});
+
+/// The blocks of the town world that show a face, back to front.
+// ignore: specify_nonobvious_property_types, the family type is not exported
+final visibleBlocksProvider = Provider.family<List<VisibleBlock>, TownWorldKey>(
+  (ref, key) => ref.watch(townWorldProvider(key)).sortedVisible(),
+);
+
+/// The build stage of [active] at [progress] (0..1), or 0 without a session.
+int activeStage(Session? active, double progress) =>
+    active == null ? 0 : stageForProgress(active.tier, progress);
