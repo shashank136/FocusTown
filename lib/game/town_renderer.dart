@@ -39,6 +39,9 @@ class TownRenderer {
     _worldVersion++;
   }
 
+  /// The workers currently drawn.
+  List<PlacedWorker> get workers => _workers;
+
   /// The workers drawn on top of the town every frame (they never re-record
   /// the static layer).
   // ignore: use_setters_to_change_properties, a command, not a property

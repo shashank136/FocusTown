@@ -7,8 +7,11 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/frame_limiter.dart';
 import 'package:focus_town/game/town_game.dart';
+import 'package:focus_town/game/workers/worker_model.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
+import 'package:focus_town/platform/power_state.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/home_screen.dart';
 
@@ -47,7 +50,19 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
 }
 
-Future<ProviderContainer> _pump(WidgetTester tester) async {
+class _FakePower implements PowerState {
+  new({required this.low});
+  final bool low;
+
+  @override
+  Future<bool> isLowPower() async => low;
+}
+
+Future<ProviderContainer> _pump(
+  WidgetTester tester, {
+  bool lowPower = false,
+  bool reducedMotion = false,
+}) async {
   _clock = FakeClock();
   _game = _SpyGame();
   final db = AppDatabase(NativeDatabase.memory());
@@ -58,8 +73,16 @@ Future<ProviderContainer> _pump(WidgetTester tester) async {
         clockProvider.overrideWithValue(_clock),
         databaseProvider.overrideWithValue(db),
         notifierProvider.overrideWithValue(FakeNotifier()),
+        powerStateProvider.overrideWithValue(_FakePower(low: lowPower)),
       ],
-      child: MaterialApp(home: HomeScreen(game: _game)),
+      child: MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(disableAnimations: reducedMotion),
+          child: child!,
+        ),
+        home: HomeScreen(game: _game),
+      ),
     ),
   );
   await _settle(tester);
@@ -174,5 +197,56 @@ void main() {
     await tester.tap(find.byTooltip('Recenter town'));
     await tester.pump();
     expect(_game.recentered, 1);
+  });
+
+  testWidgets('going to the background pauses the game, returning resumes', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(_game.limiter.mode, FrameMode.normal);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(_game.inBackground, isTrue);
+    expect(_game.limiter.mode, FrameMode.paused);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(_game.inBackground, isFalse);
+    expect(_game.limiter.mode, FrameMode.normal);
+  });
+
+  testWidgets('low power mode lowers the frame rate', (tester) async {
+    await _pump(tester, lowPower: true);
+    expect(_game.limiter.mode, FrameMode.lowPower);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+    expect(_game.limiter.mode, FrameMode.paused); // paused wins
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pump();
+    expect(_game.limiter.mode, FrameMode.lowPower);
+  });
+
+  testWidgets('reduced motion reaches the game', (tester) async {
+    await _pump(tester, reducedMotion: true);
+    expect(_game.reducedMotion, isTrue);
+  });
+
+  testWidgets('motion is on by default', (tester) async {
+    await _pump(tester);
+    expect(_game.reducedMotion, isFalse);
+  });
+
+  testWidgets('a running session puts hammering workers on the site', (
+    tester,
+  ) async {
+    final c = await _pump(tester);
+    await tester.runAsync(
+      () => c.read(focusControllerProvider.notifier).start(25),
+    );
+    await _settle(tester);
+    _game.update(0.1);
+    final hammering = _game.renderer.workers.where(
+      (w) => w.pose == Pose.hammerUp || w.pose == Pose.hammerDown,
+    );
+    expect(hammering, hasLength(2)); // a house risks 2 workers
   });
 }

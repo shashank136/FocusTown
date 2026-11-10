@@ -27,6 +27,7 @@ void main() {
   _storedTownTest();
   _notificationTests();
   _worldStatsTest();
+  _fpsTest();
   _sliderTests();
   _elapsedTests();
   _simulatorWiringTest();
@@ -185,5 +186,19 @@ void _worldStatsTest() {
     await tester.ensureVisible(find.textContaining('World:'));
     expect(find.textContaining(' blocks, '), findsOneWidget);
     expect(find.textContaining('house complete plot 0:'), findsOneWidget);
+  });
+}
+
+void _fpsTest() {
+  testWidgets('the debug screen shows the measured fps', (tester) async {
+    await _pump(tester);
+    await tester.ensureVisible(find.textContaining('FPS:'));
+    expect(find.text('FPS: 0'), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(DebugScreen)),
+    );
+    container.read(fpsProvider).value = 12.4;
+    await tester.pump();
+    expect(find.text('FPS: 12'), findsOneWidget);
   });
 }

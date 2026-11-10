@@ -3,11 +3,16 @@ import 'dart:ui';
 
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
+import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/camera_transition.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
+import 'package:focus_town/game/frame_limiter.dart';
 import 'package:focus_town/game/town_renderer.dart';
+import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
+import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
 /// The Flame game that draws the town and lets the user pan and zoom it.
@@ -21,8 +26,31 @@ class TownGame extends FlameGame
         // with the other two; the newer callbacks would add a second system.
         // ignore: deprecated_member_use
         DoubleTapDetector {
+  /// Creates the game. [fps] (optional) receives the measured frames per
+  /// second once a second.
+  // ignore: prefer_initializing_formals, a named parameter cannot be private
+  new({ValueNotifier<double>? fps}) : _fps = fps;
+
+  final ValueNotifier<double>? _fps;
+
   /// Draws the sky and the town.
   final TownRenderer renderer = TownRenderer();
+
+  /// Caps how often a fresh frame is drawn.
+  final FrameLimiter limiter = FrameLimiter();
+
+  /// How many fresh frames were drawn so far (the rest replayed the last one).
+  int framesDrawn = 0;
+
+  FocusState? _focus;
+  TownState? _town;
+  Duration _elapsed = Duration.zero;
+  Picture? _lastFrame;
+  bool _redraw = true;
+  bool _inBackground = false;
+  bool _lowPower = false;
+  Duration _fpsWindowStart = Duration.zero;
+  int _fpsWindowFrames = 0;
 
   double _lastScale = 1;
   Vec2? _doubleTapAt;
@@ -30,23 +58,66 @@ class TownGame extends FlameGame
   Plot? _siteToFocus;
 
   /// Shows [town]; call on every change of the stored town.
-  void setTown(TownState town) => renderer.setTown(town);
+  void setTown(TownState town) {
+    _redraw = true;
+    renderer.setTown(town);
+  }
+
+  /// Gives the game what to draw: the town (rebuilt only when it changed) and
+  /// the running session (which decides where the workers are).
+  void setFocus(FocusState focus) {
+    if (focus.town != _town) {
+      _town = focus.town;
+      setTown(focus.town);
+    }
+    _focus = focus;
+  }
+
+  /// True while the app is in the background: no frames, engine paused.
+  bool get inBackground => _inBackground;
+  set inBackground(bool value) {
+    _inBackground = value;
+    _applyMode();
+    if (value) {
+      pauseEngine();
+    } else {
+      resumeEngine();
+      _redraw = true;
+    }
+  }
+
+  /// True while the battery saver is on: fewer frames per second.
+  bool get lowPower => _lowPower;
+  set lowPower(bool value) {
+    _lowPower = value;
+    _applyMode();
+  }
+
+  /// True when the system asked for less motion: workers stand still.
+  bool reducedMotion = false;
+
+  void _applyMode() => limiter.mode = _inBackground
+      ? FrameMode.paused
+      : (_lowPower ? FrameMode.lowPower : FrameMode.normal);
 
   /// One finger dragged by [delta] pixels.
   void onPan(Vec2 delta) {
     _transition = null;
+    _redraw = true;
     renderer.camera?.panBy(delta);
   }
 
   /// Pinch around [focal]; [factor] is the change since the last update.
   void onPinch(Vec2 focal, double factor) {
     _transition = null;
+    _redraw = true;
     renderer.camera?.zoomAt(focal, factor);
   }
 
   /// Mouse wheel at [pos]; a negative [dy] (wheel up) zooms in.
   void onWheel(Vec2 pos, double dy) {
     _transition = null;
+    _redraw = true;
     renderer.camera?.zoomAt(pos, math.exp(-dy * 0.002));
   }
 
@@ -54,6 +125,7 @@ class TownGame extends FlameGame
   /// mixin already owns that name with another signature.)
   void onDoubleTapAt(Vec2 pos) {
     _transition = null;
+    _redraw = true;
     renderer.camera?.zoomAt(pos, 1.5);
   }
 
@@ -74,6 +146,15 @@ class TownGame extends FlameGame
   @override
   void update(double dt) {
     super.update(dt);
+    _elapsed += Duration(microseconds: (dt * 1e6).round());
+    _updateCamera(dt);
+    if (limiter.allow(_elapsed)) {
+      _simulateWorkers();
+      _redraw = true;
+    }
+  }
+
+  void _updateCamera(double dt) {
     final cam = renderer.camera;
     if (cam == null) return;
     final site = _siteToFocus;
@@ -88,7 +169,39 @@ class TownGame extends FlameGame
     if (t == null) return;
     final pose = t.step(Duration(microseconds: (dt * 1e6).round()));
     cam.setPose(pose.center, pose.tile);
+    _redraw = true;
     if (t.isDone) _transition = null;
+  }
+
+  // Where every worker is at the current game time.
+  void _simulateWorkers() {
+    final focus = _focus;
+    if (focus == null) return;
+    final seconds = _elapsed.inMicroseconds / 1e6;
+    final active = focus.active;
+    var spare = spareWorkerCount(focus.town, active);
+    final site = <PlacedWorker>[];
+    if (active != null) {
+      var onSite = active.workersAssigned;
+      if (onSite == 0 && focus.town.inRecoveryMode) {
+        // The Last Builder works the site alone instead of walking the road.
+        onSite = 1;
+        spare = 0;
+      }
+      site.addAll(
+        siteWorkers(
+          activeSitePlot(focus.town),
+          active.tier,
+          onSite,
+          seconds,
+          reducedMotion: reducedMotion,
+        ),
+      );
+    }
+    renderer.setWorkers([
+      ...site,
+      ...spareWalkers(spare, seconds, reducedMotion: reducedMotion),
+    ]);
   }
 
   @override
@@ -127,8 +240,28 @@ class TownGame extends FlameGame
   @override
   void render(Canvas canvas) {
     super.render(canvas);
-    // The renderer is given the size every frame, so a resize needs no extra
-    // handling: the static layer re-records when the size changes.
-    renderer.paint(canvas, Size(size.x, size.y));
+    // A fresh frame only when the limiter allowed one (or the user moved the
+    // view); otherwise the last frame is replayed without re-drawing blocks.
+    if (_redraw || _lastFrame == null) {
+      _redraw = false;
+      final recorder = PictureRecorder();
+      renderer.paint(Canvas(recorder), Size(size.x, size.y));
+      _lastFrame?.dispose();
+      _lastFrame = recorder.endRecording();
+      framesDrawn++;
+      _countFrame();
+    }
+    canvas.drawPicture(_lastFrame!);
+  }
+
+  // Publishes frames per second once a second.
+  void _countFrame() {
+    _fpsWindowFrames++;
+    final window = _elapsed - _fpsWindowStart;
+    if (window >= const Duration(seconds: 1)) {
+      _fps?.value = _fpsWindowFrames * 1e6 / window.inMicroseconds;
+      _fpsWindowStart = _elapsed;
+      _fpsWindowFrames = 0;
+    }
   }
 }

@@ -263,15 +263,15 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 17: workers and frame cap
 - [ ] Paste Prompt 0 + Prompt 17
-- [ ] Worker box model about 1.6 blocks tall, matching the close-up reference
-- [ ] Poses: idle, hammerUp, hammerDown, walk1, walk2, dead
-- [ ] Site workers = assigned workers; up to 4 spare workers walk the roads
-- [ ] Local occlusion redraw for workers near buildings (documented)
-- [ ] `FrameLimiter`: 15 fps normal, 10 fps low power, 0 when hidden/locked
-- [ ] Low-power mode read through the platform channel on both OSes
-- [ ] Reduced motion keeps workers idle
-- [ ] Tests passing
-- [ ] fps shown on `DebugScreen`
+- [x] Worker box model about 1.6 blocks tall, matching the close-up reference
+- [x] Poses: idle, hammerUp, hammerDown, walk1, walk2, dead
+- [x] Site workers = assigned workers; up to 4 spare workers walk the roads
+- [x] Local occlusion redraw for workers near buildings (documented)
+- [x] `FrameLimiter`: 15 fps normal, 10 fps low power, 0 when hidden/locked
+- [ ] Low-power mode read through the platform channel on both OSes (iOS done; Android Kotlin half deferred)
+- [x] Reduced motion keeps workers idle
+- [x] Tests passing
+- [x] fps shown on `DebugScreen`
 - [ ] Profiler: about 15 fps in use, near-zero GPU when locked
 - [ ] Committed: `step 17`
 

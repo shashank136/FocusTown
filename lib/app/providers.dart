@@ -141,3 +141,10 @@ final lowPowerProvider = StreamProvider<bool>((ref) {
   });
   return controller.stream;
 });
+
+/// The measured frames per second of the town, updated once a second.
+final fpsProvider = Provider<ValueNotifier<double>>((ref) {
+  final fps = ValueNotifier<double>(0);
+  ref.onDispose(fps.dispose);
+  return fps;
+});

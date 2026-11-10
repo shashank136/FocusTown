@@ -20,18 +20,25 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  late final TownGame _game = widget.game ?? TownGame();
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
+  late final TownGame _game =
+      widget.game ?? TownGame(fps: ref.read(fpsProvider));
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Battery saver: fewer frames per second.
+    ref.listenManual(lowPowerProvider, (prev, next) {
+      _game.lowPower = next.value ?? false;
+    }, fireImmediately: true);
     // The bridge: the game redraws only when the stored town itself changes,
     // not on every session event.
     ref.listenManual(focusControllerProvider, (prev, next) {
       final focus = next.value;
       if (focus == null) return;
-      if (focus.town != prev?.value?.town) _game.setTown(focus.town);
+      _game.setFocus(focus);
       // A session just became active (or was found running at launch): glide
       // the camera to its site.
       if (focus.active != null && prev?.value?.active == null) {
@@ -41,7 +48,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Nothing is drawn while the app is not in the foreground.
+    _game.inBackground = state != AppLifecycleState.resumed;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _game.reducedMotion = MediaQuery.of(context).disableAnimations;
     return Scaffold(
       body: Stack(
         children: [

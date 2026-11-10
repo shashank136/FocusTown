@@ -91,6 +91,10 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Workers at risk: ${tier.workersAtRisk}'),
             FocusDebugPanel(minutes: _minutes),
             const WorldStatsCard(),
+            ValueListenableBuilder<double>(
+              valueListenable: ref.watch(fpsProvider),
+              builder: (_, fps, _) => Text('FPS: ${fps.round()}'),
+            ),
             const _StoredTownCard(),
             const SizedBox(height: 16),
             FilledButton(
