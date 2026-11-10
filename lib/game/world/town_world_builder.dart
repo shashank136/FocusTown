@@ -1,6 +1,7 @@
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
+import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
@@ -15,9 +16,13 @@ Plot activeSitePlot(TownState town) {
 }
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
-/// buildings and ruins, and the site of the [active] session at [progress].
+/// buildings and ruins, and the building under construction.
+///
+/// The site is either given as [site] (a tier and an exact stage) or derived
+/// from the [active] session at [progress] (0 to 1).
 VoxelWorld buildTownWorld(
   TownState town, {
+  ActiveSite? site,
   Session? active,
   double progress = 0,
 }) {
@@ -41,16 +46,20 @@ VoxelWorld buildTownWorld(
       buildRuin(w, p.originX, p.originY);
     }
   }
-  if (active != null) {
-    final site = activeSitePlot(town);
-    final stage = stageForProgress(active.tier, progress);
+  final building =
+      site ??
+      (active == null
+          ? null
+          : ActiveSite(active.tier, stageForProgress(active.tier, progress)));
+  if (building != null) {
+    final plot = activeSitePlot(town);
     buildTier(
       w,
-      active.tier,
-      site.originX,
-      site.originY,
-      stage: stage,
-      scaffold: stage < maxStage(active.tier),
+      building.tier,
+      plot.originX,
+      plot.originY,
+      stage: building.stage,
+      scaffold: building.stage < maxStage(building.tier),
     );
   }
   return w;

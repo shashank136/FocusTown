@@ -6,6 +6,7 @@ import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/render/worker_painter.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
+import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
@@ -20,6 +21,8 @@ class TownRenderer {
   BlockIndex? _index;
   List<PlacedWorker> _workers = const [];
   int _worldVersion = 0;
+  TownState? _town;
+  ActiveSite? _site;
   int _plotsUnlocked = 6;
   TownCamera? _camera;
   bool _fitted = false;
@@ -30,12 +33,35 @@ class TownRenderer {
   /// How often the static layer was recorded (a spy for tests).
   int get recordCount => _cache.recordCount;
 
+  /// How many blocks show a face (a spy for tests).
+  int get visibleBlockCount => _visible?.length ?? 0;
+
   /// Rebuilds the world for [town]; the next paint re-records the layer.
   void setTown(TownState town) {
-    final visible = buildTownWorld(town).sortedVisible();
+    _town = town;
+    _plotsUnlocked = town.plotsUnlocked;
+    _rebuild();
+  }
+
+  /// Shows the building under construction at its current stage, or nothing
+  /// for null. The static layer is re-recorded only when the tier or stage
+  /// really changed, which is at most once per stage of a session.
+  ///
+  /// Design note: the site is built into the same world as the town (not a
+  /// separate dynamic layer), so its depth order against neighbors is exactly
+  /// right and the cost is a handful of re-records per session.
+  void setSite(ActiveSite? site) {
+    if (site == _site) return;
+    _site = site;
+    _rebuild();
+  }
+
+  void _rebuild() {
+    final town = _town;
+    if (town == null) return; // a site set early waits for the town
+    final visible = buildTownWorld(town, site: _site).sortedVisible();
     _visible = visible;
     _index = BlockIndex(visible);
-    _plotsUnlocked = town.plotsUnlocked;
     _worldVersion++;
   }
 
