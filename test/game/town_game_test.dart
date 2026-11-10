@@ -132,6 +132,29 @@ void main() {
     });
   });
 
+  group('fps publishing', () {
+    test('never changes the notifier while painting', () {
+      // A listener that rebuilds widgets would assert "build during paint".
+      var painting = false;
+      var duringPaint = 0;
+      final fps = ValueNotifier<double>(0)
+        ..addListener(() {
+          if (painting) duringPaint++;
+        });
+      final g = TownGame(fps: fps)
+        ..onGameResize(Vector2(400, 700))
+        ..setFocus(FocusState(town: TownState.initial()));
+      for (var i = 0; i < 40; i++) {
+        g.update(0.1);
+        painting = true;
+        g.render(ui.Canvas(ui.PictureRecorder()));
+        painting = false;
+      }
+      expect(fps.value, greaterThan(0));
+      expect(duringPaint, 0);
+    });
+  });
+
   group('setFocus', () {
     test('an unchanged town and no session never re-records', () {
       final g = _game();

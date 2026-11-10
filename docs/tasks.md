@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-18.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-18.4 done: failure show. SiteTransition.fail (3 s), `deadWorkers` (dead pose in place), smoke = ParticleSystem.burst(life, speed) topped up to ~25 char-colored particles each frame of the phase, cleared at the end, none in low power. Goldens town_mid_construction.png and town_failed_site.png generated on macOS and reviewed by eye. The ruin itself comes from the town (applyFailed). Next: T-18.5 (queued 'Ready to place' outline+label, wiring, widget test) = milestone.
+- Current task: T-18.6 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-18.5 done = step 18 code milestone. Queued result: SiteTransition.ready (2 s), TownRenderer.setPreview draws the final stage at <=0.4 alpha lifted 2 blocks, TownGame.readyLabel (screen point) drives a 'Ready to place' Text overlay in HomeScreen; widget test with a full town through the real FocusController. Also fixed a real bug found in the simulator: the FPS notifier was set during paint (debug screen threw 'build scheduled during frame'); frames are counted in render, published in update. Shortcut: the floating preview sits on the old site plot, not beside it on the road. Next: T-18.6 [device] (parked).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-18.4 done)
+- Last updated: 2026-11-09 (T-18.5 done)
 
 ## Status of steps
 
@@ -1317,7 +1317,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green; goldens reviewed.
 - Commit: `T-18.4: failure transition and goldens`
 
-### T-18.5 [ ] Queued transition and full wiring
+### T-18.5 [x] Queued transition and full wiring
 - Step: 18 (docs/prompt_plan.md, Prompt 18)
 - Depends on: T-18.4
 - Goal: when a finished building has no free plot, show it briefly as "ready to place" then queue it. Wire everything to the real controller. Ends step 18 code.

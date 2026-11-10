@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
+import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
 /// The town, full screen. Debug builds add a small bug button (top-left) that
@@ -67,6 +68,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: Stack(
         children: [
           GameWidget(game: _game),
+          // "Ready to place": follows the floating building while it shows.
+          ValueListenableBuilder<Vec2?>(
+            valueListenable: _game.readyLabel,
+            builder: (context, at, _) => at == null
+                ? const SizedBox.shrink()
+                : Positioned(
+                    left: at.x - 60,
+                    top: at.y - 24,
+                    width: 120,
+                    child: const IgnorePointer(
+                      child: Text(
+                        'Ready to place',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          shadows: [Shadow(blurRadius: 4)],
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
           SafeArea(
             child: Align(
               alignment: Alignment.bottomRight,

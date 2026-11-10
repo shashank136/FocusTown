@@ -1,19 +1,37 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/effects/particles.dart';
+import 'package:focus_town/game/render/block_painter.dart';
 import 'package:focus_town/game/render/particle_painter.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/render/worker_painter.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
+
+/// A finished building drawn as a see-through floating copy.
+class ReadyPreview {
+  /// Creates a preview of [tier] above [plot] at opacity [alpha].
+  const new(this.tier, this.plot, this.alpha);
+
+  /// Which building.
+  final BuildingTier tier;
+
+  /// Where it floats.
+  final Plot plot;
+
+  /// 0 to 1.
+  final double alpha;
+}
 
 /// Draws the sky and the cached static town. Plain Dart, no Flame, so it can
 /// be tested into a [PictureRecorder].
@@ -24,6 +42,9 @@ class TownRenderer {
   List<PlacedWorker> _workers = const [];
   List<Particle> _particles = const [];
   double _particleAlpha = 1;
+  ReadyPreview? _preview;
+  List<VisibleBlock> _previewBlocks = const [];
+  (BuildingTier, int)? _previewKey;
   int _worldVersion = 0;
   TownState? _town;
   ActiveSite? _site;
@@ -89,6 +110,27 @@ class TownRenderer {
     _particleAlpha = alpha;
   }
 
+  /// The floating "ready to place" building, if shown.
+  ReadyPreview? get preview => _preview;
+
+  /// Shows (or with null hides) the floating finished building.
+  void setPreview(ReadyPreview? preview) {
+    _preview = preview;
+    if (preview == null) return;
+    final key = (preview.tier, preview.plot.index);
+    if (key == _previewKey) return;
+    _previewKey = key;
+    final w = VoxelWorld();
+    buildTier(
+      w,
+      preview.tier,
+      preview.plot.originX,
+      preview.plot.originY,
+      stage: maxStage(preview.tier),
+    );
+    _previewBlocks = w.sortedVisible();
+  }
+
   /// Draws everything into [canvas], which is [size] big.
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(
@@ -127,6 +169,24 @@ class TownRenderer {
         viewSize: size,
         index: _index,
       );
+    }
+    final preview = _preview;
+    if (preview != null) {
+      // Lifted 2 blocks, drawn at the preview's opacity.
+      canvas
+        ..saveLayer(
+          null,
+          Paint()..color = Color.fromRGBO(0, 0, 0, preview.alpha.clamp(0, 1)),
+        )
+        ..translate(0, -2 * cam.tile);
+      paintBlocks(
+        canvas,
+        _previewBlocks,
+        tile: cam.tile,
+        origin: cam.origin,
+        viewSize: size,
+      );
+      canvas.restore();
     }
     if (_particles.isNotEmpty) {
       paintParticles(

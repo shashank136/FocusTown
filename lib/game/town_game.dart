@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -18,6 +19,7 @@ import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/building_defs.dart';
+import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
@@ -43,6 +45,9 @@ class TownGame extends FlameGame
 
   final ValueNotifier<double>? _fps;
   final Clock _clock;
+
+  /// Where the "Ready to place" label goes on screen, or null when hidden.
+  final ValueNotifier<Vec2?> readyLabel = ValueNotifier(null);
 
   /// Draws the sky and the town.
   final TownRenderer renderer = TownRenderer();
@@ -75,6 +80,8 @@ class TownGame extends FlameGame
   SiteTransition? _show;
   List<PlacedWorker> _leaving = const [];
   Plot? _smokeAt;
+  Plot? _readyPlot;
+  BuildingTier? _readyTier;
   final ParticleSystem _particles = ParticleSystem(1);
 
   /// Shows [town]; call on every change of the stored town.
@@ -93,6 +100,7 @@ class TownGame extends FlameGame
         plot != null) {
       if (result.outcome == SessionOutcome.completed) _celebrate(plot);
       if (result.outcome == SessionOutcome.failed) _fail(plot);
+      if (result.outcome == SessionOutcome.queued) _queue(plot, result.tier);
     }
     final active = focus.active;
     if (active != null) _lastPlot = activeSitePlot(focus.town);
@@ -113,6 +121,33 @@ class TownGame extends FlameGame
         40,
       );
     }
+  }
+
+  void _queue(Plot plot, BuildingTier tier) {
+    _show = SiteTransition.ready();
+    _readyPlot = plot;
+    _readyTier = tier;
+    _leaving = _lastSiteWorkers;
+  }
+
+  // The floating building and its label follow the show, 0.4 opaque at most.
+  void _updateReady() {
+    final plot = _readyPlot;
+    final tier = _readyTier;
+    final show = _show;
+    final cam = renderer.camera;
+    if (plot == null ||
+        tier == null ||
+        cam == null ||
+        show?.phase != TransitionPhase.ready) {
+      renderer.setPreview(null);
+      readyLabel.value = null;
+      return;
+    }
+    renderer.setPreview(ReadyPreview(tier, plot, 0.4 * show!.fade));
+    final top = maxStage(tier) + 4.0;
+    final at = project(plot.center.x, plot.center.y, top, cam.tile, cam.origin);
+    readyLabel.value = at;
   }
 
   void _fail(Plot plot) {
@@ -211,17 +246,20 @@ class TownGame extends FlameGame
     super.update(dt);
     _elapsed += Duration(microseconds: (dt * 1e6).round());
     _updateCamera(dt);
+    _publishFps();
     final step = Duration(microseconds: (dt * 1e6).round());
     _particles.step(step);
     _show?.step(step);
     if (_show?.phase == TransitionPhase.done) {
       _show = null;
       _smokeAt = null;
+      _readyPlot = null;
       _particles.clear();
     }
     _topUpSmoke();
     if (limiter.allow(_elapsed)) {
       _updateSite();
+      _updateReady();
       _simulateWorkers();
       renderer.setParticles(_particles.alive, _show?.fade ?? 0);
       _redraw = true;
@@ -350,9 +388,12 @@ class TownGame extends FlameGame
     canvas.drawPicture(_lastFrame!);
   }
 
+  // Frames are counted while painting but published from update: a listener
+  // that rebuilds widgets must not be told in the middle of a paint.
+  void _countFrame() => _fpsWindowFrames++;
+
   // Publishes frames per second once a second.
-  void _countFrame() {
-    _fpsWindowFrames++;
+  void _publishFps() {
     final window = _elapsed - _fpsWindowStart;
     if (window >= const Duration(seconds: 1)) {
       _fps?.value = _fpsWindowFrames * 1e6 / window.inMicroseconds;

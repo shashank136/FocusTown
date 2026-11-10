@@ -95,6 +95,18 @@ void main() {
     });
   });
 
+  group('SiteTransition.ready', () {
+    test('lasts exactly 2 s and fades 1 to 0', () {
+      final t = SiteTransition.ready();
+      expect(t.phase, TransitionPhase.ready);
+      t.step(const Duration(milliseconds: 1999));
+      expect(t.phase, TransitionPhase.ready);
+      expect(t.fade, closeTo(0, 0.001));
+      t.step(const Duration(milliseconds: 1));
+      expect(t.phase, TransitionPhase.done);
+    });
+  });
+
   group('deadWorkers', () {
     test('lie where they stood', () {
       final w = PlacedWorker(
@@ -331,6 +343,87 @@ void main() {
         ..setFocus(FocusState(town: town, lastResult: result0))
         ..update(0.1);
       expect(dead(g), isEmpty);
+    });
+  });
+
+  group('TownGame queued', () {
+    final clock = FakeClock();
+    final town = TownState.initial().copyWith(workers: 5);
+    final session = SessionEngine.start(
+      id: 's',
+      minutes: 10,
+      workersAvailable: 5,
+      now: TimeStamp.now(clock),
+    );
+    const queued = SessionResult(
+      outcome: SessionOutcome.queued,
+      tier: BuildingTier.hut,
+      workersLost: 0,
+      workersGained: 0,
+      newStreak: 1,
+      plotGranted: false,
+    );
+
+    TownGame running() => TownGame(clock: clock)
+      ..onGameResize(Vector2(400, 700))
+      ..setFocus(FocusState(town: town, active: session))
+      ..update(0.1)
+      ..render(ui.Canvas(ui.PictureRecorder()));
+
+    void finish(TownGame g, SessionResult r) =>
+        g.setFocus(FocusState(town: town, lastResult: r));
+
+    test('the finished building floats above its plot for 2 s', () {
+      final g = running();
+      finish(g, queued);
+      g.update(0.1);
+      final preview = g.renderer.preview;
+      expect(preview, isNotNull);
+      expect(preview!.tier, BuildingTier.hut);
+      expect(preview.alpha, lessThanOrEqualTo(0.4));
+      expect(g.renderer.particles, isEmpty);
+      for (var i = 0; i < 18; i++) {
+        g.update(0.1);
+      }
+      expect(g.renderer.preview, isNotNull);
+      g
+        ..update(0.1)
+        ..update(0.1);
+      expect(g.renderer.preview, isNull);
+    });
+
+    test('the Ready to place label has a screen position only while shown', () {
+      final g = running();
+      expect(g.readyLabel.value, isNull);
+      finish(g, queued);
+      g.update(0.1);
+      final at = g.readyLabel.value;
+      expect(at, isNotNull);
+      expect(at!.x, inInclusiveRange(0, 400));
+      for (var i = 0; i < 21; i++) {
+        g.update(0.1);
+      }
+      expect(g.readyLabel.value, isNull);
+    });
+
+    test('completed and failed results show no label or preview', () {
+      for (final r in [
+        result0,
+        const SessionResult(
+          outcome: SessionOutcome.failed,
+          tier: BuildingTier.hut,
+          workersLost: 1,
+          workersGained: 0,
+          newStreak: 0,
+          plotGranted: false,
+        ),
+      ]) {
+        final g = running();
+        finish(g, r);
+        g.update(0.1);
+        expect(g.readyLabel.value, isNull);
+        expect(g.renderer.preview, isNull);
+      }
     });
   });
 }

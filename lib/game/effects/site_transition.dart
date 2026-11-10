@@ -6,6 +6,9 @@ enum TransitionPhase {
   /// Dust and the site workers leaving (1 second).
   celebrate,
 
+  /// The finished building floats, waiting for a free plot (2 seconds).
+  ready,
+
   /// Dead workers and smoke over the ruin (3 seconds).
   fail,
 
@@ -24,6 +27,11 @@ class SiteTransition {
   new fail()
     : _phase = TransitionPhase.fail,
       _length = const Duration(seconds: 3);
+
+  /// The show for a finished building that has no free plot.
+  new ready()
+    : _phase = TransitionPhase.ready,
+      _length = const Duration(seconds: 2);
 
   final TransitionPhase _phase;
   final Duration _length;

@@ -276,16 +276,16 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Committed: `step 17`
 
 ### Step 18: live construction
-- [ ] Paste Prompt 0 + Prompt 18
-- [ ] Active site on its own dynamic layer with scaffolding until the last stage
-- [ ] Dynamic layer re-recorded only on stage change
-- [ ] Completion: scaffolding removed, 1-second celebration, building merged into static town
-- [ ] Failure: dead workers, ruin, 3-second smoke
-- [ ] Queued: floating outline with "ready to place" label
-- [ ] Progress computed live from `SessionEngine.progress`
-- [ ] Tests and goldens (house stage 4, failure state) passing
+- [x] Paste Prompt 0 + Prompt 18
+- [x] Active site on its own dynamic layer with scaffolding until the last stage (same cached layer, re-recorded on stage change; no separate layer)
+- [x] Dynamic layer re-recorded only on stage change
+- [x] Completion: scaffolding removed, 1-second celebration, building merged into static town
+- [x] Failure: dead workers, ruin, 3-second smoke
+- [x] Queued: floating outline with "ready to place" label
+- [x] Progress computed live from `SessionEngine.progress`
+- [x] Tests and goldens (house stage 4, failure state) passing
 - [ ] Device: a 10-minute session visibly builds a hut
-- [ ] Committed: `step 18`
+- [x] Committed: T-18.1 to T-18.5
 
 ### Phase D review
 - [ ] Battery: under 5% per hour with screen on (iPhone 12 or newer), measured

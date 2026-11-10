@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
+import 'package:focus_town/data/mappers.dart';
+import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/frame_limiter.dart';
@@ -64,11 +68,28 @@ Future<ProviderContainer> _pump(
   WidgetTester tester, {
   bool lowPower = false,
   bool reducedMotion = false,
+  TownState? seed,
 }) async {
   _clock = FakeClock();
   _game = _SpyGame(clock: _clock);
   final db = AppDatabase(NativeDatabase.memory());
   addTearDown(db.close);
+  if (seed != null) {
+    await db.transaction(() async {
+      await db
+          .into(db.towns)
+          .insert(
+            townToRow(seed)
+                .copyWith(id: const Value(1), createdAt: const Value(0)),
+          );
+      await db.batch(
+        (b) => b.insertAll(
+          db.buildings,
+          buildingsToRows(seed, now: _clock.nowWall()),
+        ),
+      );
+    });
+  }
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -250,5 +271,36 @@ void main() {
       (w) => w.pose == Pose.hammerUp || w.pose == Pose.hammerDown,
     );
     expect(hammering, hasLength(2)); // a house risks 2 workers
+  });
+
+  testWidgets('a building with no free plot shows Ready to place, then not', (
+    tester,
+  ) async {
+    final c = await _pump(
+      tester,
+      seed: TownState.initial().copyWith(
+        buildings: [
+          for (var i = 0; i < 6; i++)
+            TownBuilding(
+              id: 'b$i',
+              tier: BuildingTier.hut,
+              status: BuildingStatus.complete,
+              plotIndex: i,
+            ),
+        ],
+        lastPlotGrantDate: LocalDate.fromDateTime(_clock.nowWall()),
+      ),
+    );
+    final controller = c.read(focusControllerProvider.notifier);
+    expect(find.text('Ready to place'), findsNothing);
+    await tester.runAsync(() => controller.start(10));
+    _clock.advance(const Duration(minutes: 10));
+    await tester.runAsync(controller.tick);
+    await _settle(tester);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('Ready to place'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.text('Ready to place'), findsNothing);
   });
 }
