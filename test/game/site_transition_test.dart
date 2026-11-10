@@ -18,6 +18,15 @@ import 'package:focus_town/game/world/plot_layout.dart';
 
 const _ms100 = Duration(milliseconds: 100);
 
+const result0 = SessionResult(
+  outcome: SessionOutcome.completed,
+  tier: BuildingTier.hut,
+  workersLost: 0,
+  workersGained: 0,
+  newStreak: 1,
+  plotGranted: false,
+);
+
 void main() {
   group('ParticleSystem', () {
     test('the same seed gives the same particles', () {
@@ -72,6 +81,29 @@ void main() {
         last = t.fade;
       }
       expect(last, 0);
+    });
+  });
+
+  group('SiteTransition.fail', () {
+    test('lasts exactly 3 s', () {
+      final t = SiteTransition.fail();
+      expect(t.phase, TransitionPhase.fail);
+      t.step(const Duration(milliseconds: 2999));
+      expect(t.phase, TransitionPhase.fail);
+      t.step(const Duration(milliseconds: 1));
+      expect(t.phase, TransitionPhase.done);
+    });
+  });
+
+  group('deadWorkers', () {
+    test('lie where they stood', () {
+      final w = PlacedWorker(
+        Worker(x: 20, y: 40, shirt: FlatColor.of(0xFF808080)),
+        Pose.hammerUp,
+      );
+      final dead = deadWorkers([w]).single;
+      expect(dead.pose, Pose.dead);
+      expect((dead.worker.x, dead.worker.y), (20.0, 40.0));
     });
   });
 
@@ -206,7 +238,7 @@ void main() {
       expect(siteWorkers, isEmpty);
     });
 
-    test('a failed result does not celebrate', () {
+    test('a failed result throws no dust, only smoke', () {
       final g = running();
       finish(
         g,
@@ -220,7 +252,85 @@ void main() {
         ),
       );
       g.update(0.1);
+      expect(g.renderer.particles.every((p) => p.color == 0xFF4a4038), isTrue);
+    });
+  });
+
+  group('TownGame failure', () {
+    final clock = FakeClock();
+    final town = TownState.initial().copyWith(workers: 5);
+    final session = SessionEngine.start(
+      id: 's',
+      minutes: 10,
+      workersAvailable: 5,
+      now: TimeStamp.now(clock),
+    );
+    const failed = SessionResult(
+      outcome: SessionOutcome.failed,
+      tier: BuildingTier.hut,
+      workersLost: 1,
+      workersGained: 0,
+      newStreak: 0,
+      plotGranted: false,
+    );
+
+    TownGame running() => TownGame(clock: clock)
+      ..onGameResize(Vector2(400, 700))
+      ..setFocus(FocusState(town: town, active: session))
+      ..update(0.1)
+      ..render(ui.Canvas(ui.PictureRecorder()));
+
+    void fail(TownGame g) =>
+        g.setFocus(FocusState(town: town, lastResult: failed));
+
+    Iterable<PlacedWorker> dead(TownGame g) =>
+        g.renderer.workers.where((w) => w.pose == Pose.dead);
+
+    test('the site workers lie dead for 3 s, then are gone', () {
+      final g = running();
+      fail(g);
+      for (var i = 0; i < 29; i++) {
+        g.update(0.1);
+      }
+      expect(dead(g), hasLength(session.workersAssigned));
+      for (var i = 0; i < 3; i++) {
+        g.update(0.1);
+      }
+      expect(dead(g), isEmpty);
+    });
+
+    test('smoke rises during the phase and is gone after it', () {
+      final g = running();
+      fail(g);
+      g.update(0.1);
+      expect(g.renderer.particles.length, inInclusiveRange(20, 30));
+      for (var i = 0; i < 15; i++) {
+        g.update(0.1);
+      }
+      expect(g.renderer.particles.length, inInclusiveRange(20, 30));
+      for (var i = 0; i < 16; i++) {
+        g.update(0.1);
+      }
       expect(g.renderer.particles, isEmpty);
+    });
+
+    test('smoke is char colored and never in low power', () {
+      final g = running();
+      fail(g);
+      g.update(0.1);
+      expect(g.renderer.particles.every((p) => p.color == 0xFF4a4038), isTrue);
+      final low = running()..lowPower = true;
+      fail(low);
+      low.update(0.1);
+      expect(low.renderer.particles, isEmpty);
+      expect(dead(low), isNotEmpty);
+    });
+
+    test('a completed result shows no dead workers', () {
+      final g = running()
+        ..setFocus(FocusState(town: town, lastResult: result0))
+        ..update(0.1);
+      expect(dead(g), isEmpty);
     });
   });
 }

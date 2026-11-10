@@ -54,23 +54,33 @@ class ParticleSystem {
   List<Particle> get alive => List.unmodifiable(_alive);
 
   /// Throws [count] particles up from [origin], colored from [colors]. They
-  /// rise 1.5 to 3 blocks per second, spread a little, and live one second.
-  void burst(Vec3 origin, List<int> colors, int count) {
+  /// rise 1.5 to 3 blocks per second, spread a little, and live [life]
+  /// seconds; [speed] scales how fast they move.
+  void burst(
+    Vec3 origin,
+    List<int> colors,
+    int count, {
+    double life = 1,
+    double speed = 1,
+  }) {
     for (var i = 0; i < count; i++) {
       _alive.add(
         Particle(
           x: origin.$1,
           y: origin.$2,
           z: origin.$3,
-          vx: (_random.nextDouble() - 0.5) * 2,
-          vy: (_random.nextDouble() - 0.5) * 2,
-          vz: 1.5 + _random.nextDouble() * 1.5,
-          life: 1,
+          vx: (_random.nextDouble() - 0.5) * 2 * speed,
+          vy: (_random.nextDouble() - 0.5) * 2 * speed,
+          vz: (1.5 + _random.nextDouble() * 1.5) * speed,
+          life: life,
           color: colors[_random.nextInt(colors.length)],
         ),
       );
     }
   }
+
+  /// Removes every particle.
+  void clear() => _alive.clear();
 
   /// Moves everything by [dt] and drops the particles whose life ran out.
   void step(Duration dt) {

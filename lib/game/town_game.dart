@@ -74,6 +74,7 @@ class TownGame extends FlameGame
   List<PlacedWorker> _lastSiteWorkers = const [];
   SiteTransition? _show;
   List<PlacedWorker> _leaving = const [];
+  Plot? _smokeAt;
   final ParticleSystem _particles = ParticleSystem(1);
 
   /// Shows [town]; call on every change of the stored town.
@@ -89,9 +90,9 @@ class TownGame extends FlameGame
     final plot = _lastPlot;
     if (result != null &&
         !identical(result, _focus?.lastResult) &&
-        result.outcome == SessionOutcome.completed &&
         plot != null) {
-      _celebrate(plot);
+      if (result.outcome == SessionOutcome.completed) _celebrate(plot);
+      if (result.outcome == SessionOutcome.failed) _fail(plot);
     }
     final active = focus.active;
     if (active != null) _lastPlot = activeSitePlot(focus.town);
@@ -112,6 +113,27 @@ class TownGame extends FlameGame
         40,
       );
     }
+  }
+
+  void _fail(Plot plot) {
+    _show = SiteTransition.fail();
+    _smokeAt = plot;
+    _leaving = _lastSiteWorkers;
+  }
+
+  // Smoke keeps coming for the whole failure phase: top up to about 25.
+  void _topUpSmoke() {
+    final plot = _smokeAt;
+    if (plot == null || _lowPower) return;
+    final missing = 25 - _particles.alive.length;
+    if (missing <= 0) return;
+    _particles.burst(
+      (plot.center.x, plot.center.y, 2),
+      const [0xFF4a4038],
+      missing,
+      life: 1.5,
+      speed: 0.4,
+    );
   }
 
   /// True while the app is in the background: no frames, engine paused.
@@ -192,7 +214,12 @@ class TownGame extends FlameGame
     final step = Duration(microseconds: (dt * 1e6).round());
     _particles.step(step);
     _show?.step(step);
-    if (_show?.phase == TransitionPhase.done) _show = null;
+    if (_show?.phase == TransitionPhase.done) {
+      _show = null;
+      _smokeAt = null;
+      _particles.clear();
+    }
+    _topUpSmoke();
     if (limiter.allow(_elapsed)) {
       _updateSite();
       _simulateWorkers();
@@ -260,8 +287,12 @@ class TownGame extends FlameGame
       _lastSiteWorkers = site;
     }
     final show = _show;
-    if (show != null && !reducedMotion) {
-      site.addAll(workersLeaving(_leaving, show.progress));
+    if (show != null) {
+      if (show.phase == TransitionPhase.fail) {
+        site.addAll(deadWorkers(_leaving));
+      } else if (!reducedMotion) {
+        site.addAll(workersLeaving(_leaving, show.progress));
+      }
     }
     renderer.setWorkers([
       ...site,

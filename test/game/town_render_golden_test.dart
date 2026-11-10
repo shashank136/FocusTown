@@ -4,11 +4,15 @@ import 'package:flame/components.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/effects/particles.dart';
+import 'package:focus_town/game/effects/site_transition.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/workers/worker_model.dart';
+import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 
 const _size = ui.Size(400, 700);
 
@@ -110,5 +114,48 @@ void main() {
     expect(r.recordCount, 1); // workers never re-record the static layer
     r.setWorkers(const []);
     expect(await _bytes(tester, r), bare);
+  });
+
+  testWidgets('golden: a house at stage 4 with 3 builders', (tester) async {
+    final town = TownState.initial().copyWith(workers: 5);
+    final r = TownRenderer()
+      ..setTown(town)
+      ..setSite(const ActiveSite(BuildingTier.house, 4))
+      ..setWorkers(siteWorkers(kPlots[1], BuildingTier.house, 3, 0))
+      ..paint(ui.Canvas(ui.PictureRecorder()), _size)
+      ..camera!.setPose(kPlots[1].center, 26);
+    final image = await _render(tester, r);
+    await expectLater(
+      image,
+      matchesGoldenFile('goldens/town_mid_construction.png'),
+    );
+  });
+
+  testWidgets('golden: a ruin with dead workers and smoke', (tester) async {
+    final initial = TownState.initial().copyWith(workers: 5);
+    final smoke = ParticleSystem(1)
+      ..burst(
+        (kPlots[1].center.x, kPlots[1].center.y, 2),
+        const [0xFF4a4038],
+        25,
+        life: 1.5,
+        speed: 0.4,
+      )
+      ..step(const Duration(milliseconds: 500));
+    final r = TownRenderer()
+      ..setTown(
+        initial.copyWith(
+          buildings: [
+            ...initial.buildings,
+            _b(1, BuildingTier.hut, BuildingStatus.ruin),
+          ],
+        ),
+      )
+      ..setWorkers(deadWorkers(siteWorkers(kPlots[1], BuildingTier.hut, 3, 0)))
+      ..setParticles(smoke.alive, 1)
+      ..paint(ui.Canvas(ui.PictureRecorder()), _size)
+      ..camera!.setPose(kPlots[1].center, 26);
+    final image = await _render(tester, r);
+    await expectLater(image, matchesGoldenFile('goldens/town_failed_site.png'));
   });
 }

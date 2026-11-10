@@ -6,6 +6,9 @@ enum TransitionPhase {
   /// Dust and the site workers leaving (1 second).
   celebrate,
 
+  /// Dead workers and smoke over the ruin (3 seconds).
+  fail,
+
   /// Nothing more to show.
   done,
 }
@@ -13,14 +16,22 @@ enum TransitionPhase {
 /// The short show after a session ends. Pure: time goes in through [step].
 class SiteTransition {
   /// A celebration after a completed building.
-  new celebrate() : _length = const Duration(seconds: 1);
+  new celebrate()
+    : _phase = TransitionPhase.celebrate,
+      _length = const Duration(seconds: 1);
 
+  /// The show after a failed session.
+  new fail()
+    : _phase = TransitionPhase.fail,
+      _length = const Duration(seconds: 3);
+
+  final TransitionPhase _phase;
   final Duration _length;
   Duration _elapsed = Duration.zero;
 
   /// The current phase.
   TransitionPhase get phase =>
-      _elapsed >= _length ? TransitionPhase.done : TransitionPhase.celebrate;
+      _elapsed >= _length ? TransitionPhase.done : _phase;
 
   /// How far the show has come, 0 to 1.
   double get progress =>
@@ -32,6 +43,11 @@ class SiteTransition {
   /// Moves time on by [dt].
   void step(Duration dt) => _elapsed += dt;
 }
+
+/// [workers] lying where they stood.
+List<PlacedWorker> deadWorkers(List<PlacedWorker> workers) => [
+  for (final w in workers) PlacedWorker(w.worker, Pose.dead),
+];
 
 // The roads run along x = 31.6 and y = 32.4.
 const _roadX = 31.6;
