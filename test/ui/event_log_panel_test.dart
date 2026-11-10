@@ -8,6 +8,7 @@ import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/testing/fake_lifecycle_source.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/event_log_panel.dart';
 
 TimeStamp _at(DateTime wall) => TimeStamp(wall, Duration.zero);
@@ -23,6 +24,7 @@ void main() {
         overrides: [
           clockProvider.overrideWithValue(FakeClock()),
           databaseProvider.overrideWithValue(db),
+          notifierProvider.overrideWithValue(FakeNotifier()),
           lifecycleSourceProvider.overrideWithValue(source),
         ],
       );

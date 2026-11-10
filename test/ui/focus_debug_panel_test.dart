@@ -6,6 +6,7 @@ import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/focus_debug_panel.dart';
 
 late FakeClock _clock;
@@ -40,6 +41,7 @@ Future<void> _pump(WidgetTester tester, {int minutes = 10}) async {
       overrides: [
         clockProvider.overrideWithValue(_clock),
         databaseProvider.overrideWithValue(db),
+        notifierProvider.overrideWithValue(FakeNotifier()),
         focusControllerProvider.overrideWith(_CountingController.new),
       ],
       child: MaterialApp(

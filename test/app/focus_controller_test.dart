@@ -16,6 +16,7 @@ import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
 
 const _result = SessionResult(
   outcome: SessionOutcome.completed,
@@ -52,6 +53,7 @@ ProviderContainer _container({List<Override> extra = const []}) {
     overrides: [
       clockProvider.overrideWithValue(_clock),
       databaseProvider.overrideWithValue(db),
+      notifierProvider.overrideWithValue(FakeNotifier()),
       ...extra,
     ],
   );

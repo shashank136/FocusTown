@@ -10,6 +10,7 @@ import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/lifecycle_router.dart';
 import 'package:focus_town/platform/testing/fake_lifecycle_source.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
 
 void main() {
   late FakeClock clock;
@@ -27,6 +28,7 @@ void main() {
       overrides: [
         clockProvider.overrideWithValue(clock),
         databaseProvider.overrideWithValue(db),
+        notifierProvider.overrideWithValue(FakeNotifier()),
       ],
     );
     addTearDown(container.dispose);

@@ -8,6 +8,7 @@ import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/testing/fake_lifecycle_source.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
 
 Future<void> _settle(WidgetTester tester) async {
   await tester.runAsync(
@@ -29,6 +30,7 @@ void main() {
         overrides: [
           clockProvider.overrideWithValue(clock),
           databaseProvider.overrideWithValue(db),
+          notifierProvider.overrideWithValue(FakeNotifier()),
           lifecycleSourceProvider.overrideWithValue(source),
         ],
         child: const FocusTownApp(),

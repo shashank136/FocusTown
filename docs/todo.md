@@ -196,9 +196,9 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] flutter_local_notifications added and configured for iOS and Android
 - [ ] Android channel `focus_warnings` (high importance)
 - [ ] `Notifier` interface, `LocalNotifier`, `FakeNotifier`
-- [ ] Immediate warning on leave; pass warning at +10s when a pass is available
-- [ ] Warnings cancelled on return, lock, completion, failure, abandon
-- [ ] Notifier errors caught and never affect session outcome
+- [x] Immediate warning on leave; pass warning at +10s when a pass is available
+- [x] Warnings cancelled on return, lock, completion, failure, abandon
+- [x] Notifier errors caught and never affect session outcome
 - [ ] Tests passing
 - [ ] Permission button and status on `DebugScreen`
 - [ ] Device: warning appears within 1 second of switching apps; second notification cancelled on return

@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-12.2 (Android tasks T-11.x deferred by the user: iOS first; T-09.6 and T-10.5 [device] stay open for a physical iPhone)
-- What's left on it: T-12.1 done (iOS only): `lib/platform/notifier.dart` (interface), `local_notifier.dart` (flutter_local_notifications 23.0.0 + timezone 0.11.2, ids 1001/1002, time zone FIXED to America/New_York with a `shortcut:` comment; detecting the device zone later needs another package, ask the user first), `testing/fake_notifier.dart` (`FakeNotifier({grants = true})`, `calls`, `permissionGranted`), `notifierProvider` (main() overrides it with an initialized LocalNotifier; tests that touch the controller after T-12.2 must override it with FakeNotifier). Riverpod's `Notifier` clashes with ours: import `platform/notifier.dart` with a prefix where riverpod is imported. iOS builds use Swift Package Manager (no Podfile). Next: T-12.2 (controller schedules and cancels warnings). Runtime check: app launched in the simulator after adding the plugin, no prompt, no crash; notifications themselves are verified on device in T-12.4.
+- Current task: T-12.3 (Android tasks T-11.x deferred by the user: iOS first; T-09.6 and T-10.5 [device] stay open for a physical iPhone)
+- What's left on it: T-12.1-T-12.2 done (iOS only). The controller now calls the notifier: `_forward` schedules warnings when a session first becomes away (`passAvailable: !passUsed`), cancels on onForegrounded/onLocked, `_finish` cancels, `build()` cancels when resuming a running session; every call goes through `_safeNotify` (errors only `debugPrint`). Every test that builds the controller must override `notifierProvider` with `FakeNotifier()` (done for all existing tests). Time zone for scheduled warnings is FIXED to America/New_York (see `local_notifier.dart`). Next: T-12.3 (debug permission button and status). Verified in the simulator: Leave then Return works with the real LocalNotifier; no notification is shown until permission is granted (T-12.3 adds the button).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-12.1 done)
+- Last updated: 2026-11-09 (T-12.2 done)
 
 ## Status of steps
 
@@ -834,7 +834,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; app builds and launches on both platforms (`flutter build ios --no-codesign`, `flutter build apk --debug`).
 - Commit: `T-12.1: notifier interface and local notifier`
 
-### T-12.2 [ ] Controller schedules and cancels warnings
+### T-12.2 [x] Controller schedules and cancels warnings
 - Step: 12 (docs/prompt_plan.md, Prompt 12)
 - Depends on: T-12.1
 - Goal: wire the notifier into session events; notification failures never affect outcomes.

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
 /// Fake clock plus an in-memory database, so no test touches the disk.
@@ -15,6 +16,7 @@ List<Override> _overrides(FakeClock clock) {
   return [
     clockProvider.overrideWithValue(clock),
     databaseProvider.overrideWithValue(db),
+    notifierProvider.overrideWithValue(FakeNotifier()),
   ];
 }
 
