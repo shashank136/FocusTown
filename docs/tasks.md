@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-16.2 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
-- What's left on it: T-16.1 done: lib/game/camera/town_camera.dart (TownCamera(viewSize): tile/origin, fitMapTile, minTile, fitToMap, fitToRegion (8% padding), panBy, zoomAt (focal fixed), focusOn, resize; origin clamp keeps >=30% of the map box on screen, capped by the view size at high zoom). Not used by the renderer yet. Loop request: build step 16 (T-16.1-T-16.3) then stop. Next: T-16.2 (gestures drive the camera).
+- Current task: T-16.3 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
+- What's left on it: T-16.1-T-16.2 done: TownRenderer owns a TownCamera (created on the first frame, fitted once to the unlocked plots + 4-tile margin so the town starts bigger and textured); TownGame handles one-finger pan and pinch (ScaleDetector), wheel (ScrollDetector) and double tap (DoubleTapDetector, deprecated in Flame 1.38 but kept with the other legacy detectors) through plain handlers onPan/onPinch/onWheel/onDoubleTapAt (not onDoubleTap: the Flame mixin owns that name). Goldens town_initial/town_five_buildings regenerated for the new fit and reviewed. Next: T-16.3 (focus-on-site animation and recenter button).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-16.1 done)
+- Last updated: 2026-11-09 (T-16.2 done)
 
 ## Status of steps
 
@@ -1129,7 +1129,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-16.1: town camera`
 
-### T-16.2 [ ] Pan, pinch, wheel, and double-tap gestures
+### T-16.2 [x] Pan, pinch, wheel, and double-tap gestures
 - Step: 16 (docs/prompt_plan.md, Prompt 16)
 - Depends on: T-16.1
 - Goal: drive the camera from touch and mouse input in the game, replacing the fixed fit.

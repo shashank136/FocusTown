@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
@@ -15,6 +16,12 @@ class TownRenderer {
   final StaticLayerCache _cache = StaticLayerCache();
   List<VisibleBlock>? _visible;
   int _worldVersion = 0;
+  int _plotsUnlocked = 6;
+  TownCamera? _camera;
+  bool _fitted = false;
+
+  /// The camera, once the first frame has been drawn.
+  TownCamera? get camera => _camera;
 
   /// How often the static layer was recorded (a spy for tests).
   int get recordCount => _cache.recordCount;
@@ -22,6 +29,7 @@ class TownRenderer {
   /// Rebuilds the world for [town]; the next paint re-records the layer.
   void setTown(TownState town) {
     _visible = buildTownWorld(town).sortedVisible();
+    _plotsUnlocked = town.plotsUnlocked;
     _worldVersion++;
   }
 
@@ -36,22 +44,34 @@ class TownRenderer {
         ]),
     );
     final visible = _visible;
+    final view = Vec2(size.width, size.height);
+    final cam = _camera ??= TownCamera(view);
+    if (cam.viewSize != view) cam.resize(view);
     if (visible == null) return;
-    // The prototype's fit, for the 64-tile map. T-16.1 replaces it.
-    const n = kMapSize;
-    final tile = math.min(size.width / (2 * n + 6), size.height / (n + 18));
-    final origin = Vec2(
-      size.width / 2,
-      size.height / 2 - n * tile * 0.5 + 5 * tile,
-    );
+    if (!_fitted) {
+      // First layout: show the unlocked plots, not the whole map.
+      cam.fitToRegion(_unlockedRegion());
+      _fitted = true;
+    }
     _cache
       ..update(
         worldVersion: _worldVersion,
         blocks: visible,
-        tile: tile,
-        origin: origin,
+        tile: cam.tile,
+        origin: cam.origin,
         viewSize: size,
       )
-      ..paint(canvas, origin);
+      ..paint(canvas, cam.origin);
+  }
+
+  // The unlocked plots plus a 4-tile margin.
+  Rect _unlockedRegion() {
+    final plots = kPlots.take(_plotsUnlocked);
+    return Rect.fromLTRB(
+      plots.map((p) => p.originX).reduce(math.min) - 4.0,
+      plots.map((p) => p.originY).reduce(math.min) - 4.0,
+      plots.map((p) => p.originX + kPlotSize).reduce(math.max) + 4.0,
+      plots.map((p) => p.originY + kPlotSize).reduce(math.max) + 4.0,
+    );
   }
 }
