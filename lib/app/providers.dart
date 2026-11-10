@@ -5,7 +5,6 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/clock.dart';
-import 'package:focus_town/domain/town.dart';
 
 /// The app-wide [Clock]; tests override it with a fake.
 final clockProvider = Provider<Clock>((ref) => SystemClock());
@@ -21,11 +20,6 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 final townRepositoryProvider = Provider<TownRepository>(
   (ref) =>
       TownRepository(ref.watch(databaseProvider), ref.watch(clockProvider)),
-);
-
-/// The stored town, seeded on first run. Replaced by controller state later.
-final storedTownProvider = FutureProvider<TownState>(
-  (ref) => ref.watch(townRepositoryProvider).loadOrCreate(),
 );
 
 /// The session controller.

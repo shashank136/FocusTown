@@ -118,16 +118,19 @@ void _elapsedTests() {
 }
 
 void _simulatorWiringTest() {
-  testWidgets('simulator uses the slider minutes (25 → +1 min is 4%)', (
+  testWidgets('the controller panel starts a session with the slider minutes', (
     tester,
   ) async {
     await _pump(tester);
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
     await tester.ensureVisible(find.text('Start'));
     await tester.tap(find.text('Start'));
     await tester.pump();
-    await tester.tap(find.text('+1 min'));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
-    expect(find.text('Progress: 4%'), findsOneWidget);
+    expect(find.text('State: running'), findsOneWidget);
+    expect(find.text('Planned: 25 min'), findsOneWidget);
   });
 }
 

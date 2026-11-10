@@ -128,13 +128,13 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 8: focus controller
 - [ ] Paste Prompt 0 + Prompt 8
-- [ ] `FocusController`, `FocusState`, `SessionResult` implemented
-- [ ] `init()` resolves any active session from timestamps on launch
-- [ ] start, lifecycle methods, tick, abandon, clearResult implemented
-- [ ] Tests: completion persisted, 90s failure, 30s pass, kill-and-relaunch failure, kill-and-relaunch completion, no workers, recovery end-to-end
-- [ ] `DebugScreen` simulator now uses the real controller and database
-- [ ] 1-second tick timer while a session is active
-- [ ] Result dialog shown and cleared
+- [x] `FocusController`, `FocusState`, `SessionResult` implemented
+- [x] `init()` resolves any active session from timestamps on launch
+- [x] start, lifecycle methods, tick, abandon, clearResult implemented
+- [x] Tests: completion persisted, 90s failure, 30s pass, kill-and-relaunch failure, kill-and-relaunch completion, no workers, recovery end-to-end
+- [x] `DebugScreen` simulator now uses the real controller and database
+- [x] 1-second tick timer while a session is active
+- [x] Result dialog shown and cleared
 - [ ] Device check: start 10-min session, force-quit, reopen, outcome correct
 - [ ] Committed: `step 08`
 

@@ -6,7 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/time_stamp.dart';
-import 'package:focus_town/ui/session_simulator_panel.dart';
+import 'package:focus_town/ui/focus_debug_panel.dart';
 
 /// Developer screen showing live wall time and uptime.
 class DebugScreen extends ConsumerStatefulWidget {
@@ -75,7 +75,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Minutes: $_minutes'),
             Text('Tier: ${tier.name}'),
             Text('Workers at risk: ${tier.workersAtRisk}'),
-            SessionSimulatorPanel(minutes: _minutes),
+            FocusDebugPanel(minutes: _minutes),
             const _StoredTownCard(),
           ],
         ),
@@ -84,13 +84,13 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   }
 }
 
-/// What the database holds, loaded once through [storedTownProvider].
+/// What the database holds, from the controller state.
 class _StoredTownCard extends ConsumerWidget {
   const new();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stored = ref.watch(storedTownProvider);
+    final stored = ref.watch(focusControllerProvider);
     return Padding(
       padding: const EdgeInsets.only(top: 16),
       child: Column(
@@ -98,13 +98,18 @@ class _StoredTownCard extends ConsumerWidget {
         children: [
           const Text('Stored town'),
           ...stored.when(
-            data: (t) => [
-              Text('Stored workers: ${t.workers}'),
-              Text('Stored plots unlocked: ${t.plotsUnlocked}'),
-              Text('Stored XP: ${t.xp}'),
-              Text('Stored streak: ${t.streakCount}'),
-              Text('Stored buildings: ${t.buildings.length + t.queue.length}'),
-            ],
+            data: (f) {
+              final t = f.town;
+              return [
+                Text('Stored workers: ${t.workers}'),
+                Text('Stored plots unlocked: ${t.plotsUnlocked}'),
+                Text('Stored XP: ${t.xp}'),
+                Text('Stored streak: ${t.streakCount}'),
+                Text(
+                  'Stored buildings: ${t.buildings.length + t.queue.length}',
+                ),
+              ];
+            },
             loading: () => [const Text('Loading...')],
             error: (e, _) => [Text('Error: $e')],
           ),
