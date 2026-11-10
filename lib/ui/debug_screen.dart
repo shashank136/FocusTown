@@ -23,18 +23,30 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   late final TimeStamp _start;
   Timer? _timer;
   int _minutes = 25;
+  bool _notificationsGranted = false;
 
   @override
   void initState() {
     super.initState();
     _start = TimeStamp.now(ref.read(clockProvider));
     _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+    unawaited(_refreshPermission());
   }
 
   @override
   void dispose() {
     _timer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _refreshPermission() async {
+    final granted = await ref.read(notifierProvider).hasPermission();
+    if (mounted) setState(() => _notificationsGranted = granted);
+  }
+
+  Future<void> _requestPermission() async {
+    await ref.read(notifierProvider).requestPermission();
+    await _refreshPermission();
   }
 
   static String _hms(Duration d) {
@@ -78,6 +90,15 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Workers at risk: ${tier.workersAtRisk}'),
             FocusDebugPanel(minutes: _minutes),
             const _StoredTownCard(),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: _requestPermission,
+              child: const Text('Request notification permission'),
+            ),
+            Text(
+              'Notifications: '
+              '${_notificationsGranted ? 'granted' : 'denied'}',
+            ),
             const SizedBox(height: 16),
             const EventLogPanel(),
           ],

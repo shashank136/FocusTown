@@ -200,7 +200,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Warnings cancelled on return, lock, completion, failure, abandon
 - [x] Notifier errors caught and never affect session outcome
 - [ ] Tests passing
-- [ ] Permission button and status on `DebugScreen`
+- [x] Permission button and status on `DebugScreen`
 - [ ] Device: warning appears within 1 second of switching apps; second notification cancelled on return
 - [ ] Committed: `step 12`
 

@@ -10,18 +10,22 @@ import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
 /// Fake clock plus an in-memory database, so no test touches the disk.
+late FakeNotifier _notifier;
+
 List<Override> _overrides(FakeClock clock) {
+  _notifier = FakeNotifier();
   final db = AppDatabase(NativeDatabase.memory());
   addTearDown(db.close);
   return [
     clockProvider.overrideWithValue(clock),
     databaseProvider.overrideWithValue(db),
-    notifierProvider.overrideWithValue(FakeNotifier()),
+    notifierProvider.overrideWithValue(_notifier),
   ];
 }
 
 void main() {
   _storedTownTest();
+  _notificationTests();
   _sliderTests();
   _elapsedTests();
   _simulatorWiringTest();
@@ -148,5 +152,26 @@ void _storedTownTest() {
     expect(find.text('Stored XP: 0'), findsOneWidget);
     expect(find.text('Stored streak: 0'), findsOneWidget);
     expect(find.text('Stored buildings: 1'), findsOneWidget);
+  });
+}
+
+void _notificationTests() {
+  Future<void> settle(WidgetTester tester) async {
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump();
+  }
+
+  testWidgets('permission starts denied and a request grants it', (
+    tester,
+  ) async {
+    await _pump(tester);
+    await settle(tester);
+    await tester.ensureVisible(find.text('Notifications: denied'));
+    expect(find.text('Notifications: denied'), findsOneWidget);
+
+    await tester.tap(find.text('Request notification permission'));
+    await settle(tester);
+    expect(_notifier.calls, ['requestPermission']);
+    expect(find.text('Notifications: granted'), findsOneWidget);
   });
 }
