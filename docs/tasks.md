@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-12.1 (Android tasks T-11.1-T-11.4 are deferred by the user: iOS first; T-09.6 and T-10.5 [device] stay open for a physical iPhone). T-12.1 needs the `timezone` package for `zonedSchedule`: ask the user before adding it, and skip the Android parts of T-12.1 (manifest, apk build).
-- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-10.1-T-10.4 done: lib/platform/native_uptime_clock.dart, lib/platform/platform_bootstrap.dart (bootstrapPlatform with 1 s timeout falls back to SystemClock + FallbackLifecycleSource), async main.dart overrides clockProvider and lifecycleSourceProvider. Verified in the iPhone 18 Pro simulator: header 'Event log (native)'; Settings and back gave backgrounded + foregrounded rows. Lock/call/sleep-uptime cannot be exercised in the simulator. Next: T-10.5 ([device], waiting on the user). Open device tasks: T-08.7, T-09.6, T-10.5. Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
+- Current task: T-12.2 (Android tasks T-11.x deferred by the user: iOS first; T-09.6 and T-10.5 [device] stay open for a physical iPhone)
+- What's left on it: T-12.1 done (iOS only): `lib/platform/notifier.dart` (interface), `local_notifier.dart` (flutter_local_notifications 23.0.0 + timezone 0.11.2, ids 1001/1002, time zone FIXED to America/New_York with a `shortcut:` comment; detecting the device zone later needs another package, ask the user first), `testing/fake_notifier.dart` (`FakeNotifier({grants = true})`, `calls`, `permissionGranted`), `notifierProvider` (main() overrides it with an initialized LocalNotifier; tests that touch the controller after T-12.2 must override it with FakeNotifier). Riverpod's `Notifier` clashes with ours: import `platform/notifier.dart` with a prefix where riverpod is imported. iOS builds use Swift Package Manager (no Podfile). Next: T-12.2 (controller schedules and cancels warnings). Runtime check: app launched in the simulator after adding the plugin, no prompt, no crash; notifications themselves are verified on device in T-12.4.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-08.7 done on the simulator)
+- Last updated: 2026-11-09 (T-12.1 done)
 
 ## Status of steps
 
@@ -819,7 +819,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: results recorded; failures filed as new tasks; flutter analyze clean; flutter test green.
 - Commit: `T-11.4: record android bridge device check`
 
-### T-12.1 [ ] Notifier interface, FakeNotifier, LocalNotifier
+### T-12.1 [x] Notifier interface, FakeNotifier, LocalNotifier
 - Step: 12 (docs/prompt_plan.md, Prompt 12)
 - Depends on: T-11.4
 - Goal: the notification abstraction, a test double, and the real implementation behind a provider.

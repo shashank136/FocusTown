@@ -8,6 +8,8 @@ import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/platform/fallback_lifecycle_source.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/lifecycle_router.dart';
+import 'package:focus_town/platform/local_notifier.dart';
+import 'package:focus_town/platform/notifier.dart' as warnings;
 
 /// The app-wide [Clock]; tests override it with a fake.
 final clockProvider = Provider<Clock>((ref) => SystemClock());
@@ -64,3 +66,6 @@ final lifecycleRouterProvider = Provider<LifecycleRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
+
+/// Shows away warnings. `main()` overrides it with an initialized notifier.
+final notifierProvider = Provider<warnings.Notifier>((ref) => LocalNotifier());
