@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/iso.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
 TownGame _game() {
@@ -85,5 +86,72 @@ void main() {
     expect(() => game.onPinch(const Vec2(1, 1), 2), returnsNormally);
     expect(() => game.onWheel(const Vec2(1, 1), 5), returnsNormally);
     expect(() => game.onDoubleTapAt(const Vec2(1, 1)), returnsNormally);
+  });
+
+  group('focus and recenter', () {
+    test('focusOnSite glides to the plot center at tile >= 14', () {
+      final game = _game();
+      final cam = game.renderer.camera!;
+      final plot = kPlots[3];
+      game
+        ..focusOnSite(plot)
+        ..update(0.5); // longer than the 400 ms glide
+      expect(cam.centerWorld.x, closeTo(plot.center.x, 1e-6));
+      expect(cam.centerWorld.y, closeTo(plot.center.y, 1e-6));
+      expect(cam.tile, greaterThanOrEqualTo(14));
+    });
+
+    test('the glide moves a little each frame', () {
+      final game = _game();
+      final cam = game.renderer.camera!;
+      final start = cam.centerWorld;
+      game
+        ..focusOnSite(kPlots[5])
+        ..update(0.05);
+      final mid = cam.centerWorld;
+      expect(mid, isNot(start));
+      game.update(0.05);
+      expect(cam.centerWorld, isNot(mid));
+    });
+
+    test('a user pan cancels the glide', () {
+      final game = _game();
+      final cam = game.renderer.camera!;
+      game
+        ..focusOnSite(kPlots[5])
+        ..update(0.05)
+        ..onPan(const Vec2(1, 0));
+      final after = cam.origin;
+      game.update(0.3);
+      expect(cam.origin, after);
+    });
+
+    test('recenter glides back to the unlocked plots', () {
+      final game = _game();
+      final cam = game.renderer.camera!;
+      final fitted = cam.tile;
+      game.onPinch(const Vec2(200, 350), 3);
+      expect(cam.tile, greaterThan(fitted));
+      game
+        ..recenter()
+        ..update(0.5);
+      expect(cam.tile, closeTo(fitted, 1e-6));
+    });
+
+    test(
+      'focusOnSite before the first frame starts once the camera exists',
+      () {
+        final game = TownGame()
+          ..onGameResize(Vector2(400, 700))
+          ..setTown(TownState.initial())
+          ..focusOnSite(kPlots[2]);
+        _frame(game); // creates the camera
+        game.update(0.5);
+        expect(
+          game.renderer.camera!.centerWorld.x,
+          closeTo(kPlots[2].center.x, 1e-6),
+        );
+      },
+    );
   });
 }

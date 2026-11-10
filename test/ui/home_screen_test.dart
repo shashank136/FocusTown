@@ -8,12 +8,27 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/home_screen.dart';
 
 /// A game that remembers every town it was given.
 class _SpyGame extends TownGame {
   final List<TownState> towns = [];
+  final List<Plot> focused = [];
+  int recentered = 0;
+
+  @override
+  void focusOnSite(Plot plot) {
+    focused.add(plot);
+    super.focusOnSite(plot);
+  }
+
+  @override
+  void recenter() {
+    recentered++;
+    super.recenter();
+  }
 
   @override
   void setTown(TownState town) {
@@ -108,5 +123,56 @@ void main() {
     final box = tester.getRect(find.byTooltip('Open debug screen'));
     expect(box.left, lessThan(80));
     expect(box.width, greaterThanOrEqualTo(44)); // easy to hit
+  });
+
+  testWidgets('starting a session focuses the camera on its plot once', (
+    tester,
+  ) async {
+    final c = await _pump(tester);
+    expect(_game.focused, isEmpty);
+    final controller = c.read(focusControllerProvider.notifier);
+    await tester.runAsync(() => controller.start(25));
+    await _settle(tester);
+    expect(_game.focused, [kPlots[1]]); // plot 0 holds the starter house
+    await tester.runAsync(controller.onBackgroundedUnlocked);
+    await _settle(tester);
+    expect(_game.focused, [kPlots[1]]);
+  });
+
+  testWidgets('a session already running at launch focuses the camera', (
+    tester,
+  ) async {
+    _clock = FakeClock();
+    final db = AppDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+    final overrides = [
+      clockProvider.overrideWithValue(_clock),
+      databaseProvider.overrideWithValue(db),
+      notifierProvider.overrideWithValue(FakeNotifier()),
+    ];
+    // First launch starts a session, the second launch resumes it.
+    final first = ProviderContainer(overrides: overrides);
+    addTearDown(first.dispose);
+    await tester.runAsync(() async {
+      await first.read(focusControllerProvider.future);
+      await first.read(focusControllerProvider.notifier).start(25);
+    });
+    _game = _SpyGame();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: overrides,
+        child: MaterialApp(home: HomeScreen(game: _game)),
+      ),
+    );
+    await _settle(tester);
+    expect(_game.focused, [kPlots[1]]);
+  });
+
+  testWidgets('the recenter button calls recenter', (tester) async {
+    await _pump(tester);
+    expect(find.byTooltip('Recenter town'), findsOneWidget);
+    await tester.tap(find.byTooltip('Recenter town'));
+    await tester.pump();
+    expect(_game.recentered, 1);
   });
 }

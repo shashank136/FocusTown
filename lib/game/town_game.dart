@@ -4,7 +4,10 @@ import 'dart:ui';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/camera/camera_transition.dart';
+import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/town_renderer.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
 /// The Flame game that draws the town and lets the user pan and zoom it.
@@ -23,24 +26,70 @@ class TownGame extends FlameGame
 
   double _lastScale = 1;
   Vec2? _doubleTapAt;
+  CameraTransition? _transition;
+  Plot? _siteToFocus;
 
   /// Shows [town]; call on every change of the stored town.
   void setTown(TownState town) => renderer.setTown(town);
 
   /// One finger dragged by [delta] pixels.
-  void onPan(Vec2 delta) => renderer.camera?.panBy(delta);
+  void onPan(Vec2 delta) {
+    _transition = null;
+    renderer.camera?.panBy(delta);
+  }
 
   /// Pinch around [focal]; [factor] is the change since the last update.
-  void onPinch(Vec2 focal, double factor) =>
-      renderer.camera?.zoomAt(focal, factor);
+  void onPinch(Vec2 focal, double factor) {
+    _transition = null;
+    renderer.camera?.zoomAt(focal, factor);
+  }
 
   /// Mouse wheel at [pos]; a negative [dy] (wheel up) zooms in.
-  void onWheel(Vec2 pos, double dy) =>
-      renderer.camera?.zoomAt(pos, math.exp(-dy * 0.002));
+  void onWheel(Vec2 pos, double dy) {
+    _transition = null;
+    renderer.camera?.zoomAt(pos, math.exp(-dy * 0.002));
+  }
 
   /// Double tap at [pos]: zoom in 1.5x around it. (Not `onDoubleTap`: Flame's
   /// mixin already owns that name with another signature.)
-  void onDoubleTapAt(Vec2 pos) => renderer.camera?.zoomAt(pos, 1.5);
+  void onDoubleTapAt(Vec2 pos) {
+    _transition = null;
+    renderer.camera?.zoomAt(pos, 1.5);
+  }
+
+  /// Glides the camera to [plot] (zooming in to at least tile 14). If the first
+  /// frame has not been drawn yet the glide starts as soon as it has.
+  // ignore: use_setters_to_change_properties, a command, not a property
+  void focusOnSite(Plot plot) => _siteToFocus = plot;
+
+  /// Glides back to the unlocked plots.
+  void recenter() {
+    final cam = renderer.camera;
+    if (cam == null) return;
+    final target = TownCamera(cam.viewSize)
+      ..fitToRegion(renderer.unlockedRegion);
+    _transition = CameraTransition(from: cam.pose, to: target.pose);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
+    final cam = renderer.camera;
+    if (cam == null) return;
+    final site = _siteToFocus;
+    if (site != null) {
+      _siteToFocus = null;
+      _transition = CameraTransition(
+        from: cam.pose,
+        to: CameraPose(site.center, math.max(cam.tile, 14)),
+      );
+    }
+    final t = _transition;
+    if (t == null) return;
+    final pose = t.step(Duration(microseconds: (dt * 1e6).round()));
+    cam.setPose(pose.center, pose.tile);
+    if (t.isDone) _transition = null;
+  }
 
   @override
   void onScaleStart(ScaleStartInfo info) => _lastScale = 1;

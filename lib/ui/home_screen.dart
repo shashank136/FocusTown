@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/game/town_game.dart';
+import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
 /// The town, full screen. Debug builds add a small bug button (top-left) that
@@ -28,8 +29,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // The bridge: the game redraws only when the stored town itself changes,
     // not on every session event.
     ref.listenManual(focusControllerProvider, (prev, next) {
-      final town = next.value?.town;
-      if (town != null && town != prev?.value?.town) _game.setTown(town);
+      final focus = next.value;
+      if (focus == null) return;
+      if (focus.town != prev?.value?.town) _game.setTown(focus.town);
+      // A session just became active (or was found running at launch): glide
+      // the camera to its site.
+      if (focus.active != null && prev?.value?.active == null) {
+        _game.focusOnSite(activeSitePlot(focus.town));
+      }
     }, fireImmediately: true);
   }
 
@@ -39,6 +46,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Stack(
         children: [
           GameWidget(game: _game),
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: IconButton(
+                tooltip: 'Recenter town',
+                icon: const Icon(Icons.my_location),
+                color: Colors.black54,
+                iconSize: 28,
+                onPressed: _game.recenter,
+              ),
+            ),
+          ),
           // Debug builds only: a small button, below the status bar.
           if (kDebugMode)
             SafeArea(

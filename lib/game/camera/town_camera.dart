@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui' show Rect;
 
+import 'package:focus_town/game/camera/camera_transition.dart';
+import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
@@ -95,6 +97,19 @@ class TownCamera {
       viewSize.y / 2 - (worldPoint.x + worldPoint.y) * tile / 2,
     );
     _clampOrigin();
+  }
+
+  /// The ground point shown at the view center.
+  Vec2 get centerWorld =>
+      unprojectGround(viewSize.x / 2, viewSize.y / 2, tile, origin);
+
+  /// The current [CameraPose].
+  CameraPose get pose => CameraPose(centerWorld, tile);
+
+  /// Looks at [center] with tile size [tile] (clamped).
+  void setPose(Vec2 center, double tile) {
+    this.tile = _clampTile(tile);
+    focusOn(center);
   }
 
   /// Stores a new view size and re-clamps.

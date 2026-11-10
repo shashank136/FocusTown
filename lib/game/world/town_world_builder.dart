@@ -7,6 +7,13 @@ import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/scenery.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
+/// The plot a running session builds on: the next free unlocked plot, or when
+/// none is free the first locked plot as a temporary site.
+Plot activeSitePlot(TownState town) {
+  final free = TownRules.nextFreePlot(town);
+  return kPlots[free ?? town.plotsUnlocked.clamp(0, kPlots.length - 1)];
+}
+
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
 /// buildings and ruins, and the site of the [active] session at [progress].
 VoxelWorld buildTownWorld(
@@ -35,9 +42,7 @@ VoxelWorld buildTownWorld(
     }
   }
   if (active != null) {
-    final free = TownRules.nextFreePlot(town);
-    // Out of free plots: borrow the first locked plot as a temporary site.
-    final site = kPlots[free ?? town.plotsUnlocked.clamp(0, kPlots.length - 1)];
+    final site = activeSitePlot(town);
     final stage = stageForProgress(active.tier, progress);
     buildTier(
       w,

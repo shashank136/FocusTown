@@ -253,11 +253,11 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 16: camera pan and zoom
 - [ ] Paste Prompt 0 + Prompt 16
-- [ ] `TownCamera`: fitToTown, panBy, zoomAt, clamps, focusOn
-- [ ] Drag, pinch, wheel, and double-tap gestures
-- [ ] Animated focus on the active site when a session starts
-- [ ] Recenter button on `HomeScreen`
-- [ ] Camera tests passing
+- [x] `TownCamera`: fitToTown, panBy, zoomAt, clamps, focusOn
+- [x] Drag, pinch, wheel, and double-tap gestures
+- [x] Animated focus on the active site when a session starts
+- [x] Recenter button on `HomeScreen`
+- [x] Camera tests passing
 - [ ] Device: pan, pinch, and double-tap feel right; can zoom close enough to see one worker
 - [ ] Committed: `step 16`
 

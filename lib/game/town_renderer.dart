@@ -50,7 +50,7 @@ class TownRenderer {
     if (visible == null) return;
     if (!_fitted) {
       // First layout: show the unlocked plots, not the whole map.
-      cam.fitToRegion(_unlockedRegion());
+      cam.fitToRegion(unlockedRegion);
       _fitted = true;
     }
     _cache
@@ -64,8 +64,8 @@ class TownRenderer {
       ..paint(canvas, cam.origin);
   }
 
-  // The unlocked plots plus a 4-tile margin.
-  Rect _unlockedRegion() {
+  /// The unlocked plots plus a 4-tile margin (tile coordinates).
+  Rect get unlockedRegion {
     final plots = kPlots.take(_plotsUnlocked);
     return Rect.fromLTRB(
       plots.map((p) => p.originX).reduce(math.min) - 4.0,

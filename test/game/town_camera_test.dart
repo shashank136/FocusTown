@@ -149,6 +149,26 @@ void main() {
     });
   });
 
+  group('pose', () {
+    test('centerWorld is the ground point at the view center', () {
+      final c = _camera()..focusOn(const Vec2(20, 30));
+      expect(c.centerWorld.x, closeTo(20, 1e-6));
+      expect(c.centerWorld.y, closeTo(30, 1e-6));
+    });
+
+    test('setPose centers a point at a tile size', () {
+      final c = _camera()..setPose(const Vec2(25, 25), 12);
+      expect(c.tile, 12);
+      expect(c.centerWorld.x, closeTo(25, 1e-6));
+      expect(c.centerWorld.y, closeTo(25, 1e-6));
+    });
+
+    test('setPose clamps the tile', () {
+      final c = _camera()..setPose(const Vec2(25, 25), 1000);
+      expect(c.tile, kMaxTile);
+    });
+  });
+
   group('resize', () {
     test('re-clamps the origin and the tile to the new view', () {
       final c = _camera()
