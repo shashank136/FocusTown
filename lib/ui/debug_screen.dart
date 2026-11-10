@@ -6,6 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/ui/event_log_panel.dart';
 import 'package:focus_town/ui/focus_debug_panel.dart';
 
 /// Developer screen showing live wall time and uptime.
@@ -77,6 +78,8 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Workers at risk: ${tier.workersAtRisk}'),
             FocusDebugPanel(minutes: _minutes),
             const _StoredTownCard(),
+            const SizedBox(height: 16),
+            const EventLogPanel(),
           ],
         ),
       ),
