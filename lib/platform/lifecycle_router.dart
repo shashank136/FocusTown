@@ -2,7 +2,12 @@ import 'dart:async';
 
 import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
+
+/// How long a backgrounded event waits for a lock to follow it.
+const kLockWindow = Duration(milliseconds: 500);
 
 /// Routes lifecycle events to the [FocusController], one at a time.
 class LifecycleRouter {
@@ -11,7 +16,6 @@ class LifecycleRouter {
 
   final LifecycleSource _source;
   final FocusController _controller;
-  // ignore: unused_field, used by the lock window in T-09.4
   final Clock _clock;
 
   /// Called for every event first (the event log uses it).
@@ -20,21 +24,27 @@ class LifecycleRouter {
   StreamSubscription<LifecycleEvent>? _subscription;
   Future<void> _queue = Future<void>.value();
   bool _inCall = false;
+  BackgroundedEvent? _pending;
 
   /// Completes when every event received so far has been handled.
   Future<void> get idle => _queue;
 
+  /// Forwards a held backgrounded event once the lock window has passed.
+  Future<void> flushExpired() => _enqueue(() async {
+    final pending = _pending;
+    if (pending == null) return;
+    if (elapsedBetween(pending.timestamp, TimeStamp.now(_clock)) <
+        kLockWindow) {
+      return;
+    }
+    _pending = null;
+    await _controller.onBackgroundedUnlocked(at: pending.timestamp);
+  });
+
   /// Starts listening to the source.
   void start() {
-    // Handle events one at a time, in arrival order.
     _subscription = _source.events.listen((e) {
-      _queue = _queue
-          .then((_) => _handle(e))
-          .catchError(
-            // Report but keep the queue alive for later events.
-            (Object error, StackTrace stack) =>
-                Zone.current.handleUncaughtError(error, stack),
-          );
+      unawaited(_enqueue(() => _handle(e)));
     });
   }
 
@@ -42,10 +52,38 @@ class LifecycleRouter {
   Future<void> dispose() async {
     await _subscription?.cancel();
     _subscription = null;
+    _pending = null;
   }
+
+  // Runs [task] after everything queued before it, so events keep their order.
+  Future<void> _enqueue(Future<void> Function() task) => _queue = _queue
+      .then((_) => task())
+      .catchError(
+        // Report but keep the queue alive for later events.
+        (Object error, StackTrace stack) =>
+            Zone.current.handleUncaughtError(error, stack),
+      );
 
   Future<void> _handle(LifecycleEvent e) async {
     onEvent?.call(e);
+    final pending = _pending;
+    if (pending != null) {
+      switch (e) {
+        case BackgroundedEvent():
+          return; // keep the earlier timestamp
+        case CallStartedEvent():
+          _pending = null; // calls are allowed
+        case LockedEvent() || ForegroundedEvent():
+          _pending = null;
+          // Within the window the switch was a lock or a blip: no penalty.
+          if (!_withinWindow(pending, e)) await _forward(pending);
+        case UnlockedEvent() || CallEndedEvent():
+          if (!_withinWindow(pending, e)) {
+            _pending = null;
+            await _forward(pending);
+          }
+      }
+    }
     switch (e) {
       case LockedEvent():
         await _controller.onLocked(at: e.timestamp);
@@ -55,11 +93,17 @@ class LifecycleRouter {
       case CallEndedEvent():
         _inCall = false;
       case BackgroundedEvent():
-        if (!_inCall) await _controller.onBackgroundedUnlocked(at: e.timestamp);
+        if (!_inCall) _pending = e;
       case ForegroundedEvent():
         await _controller.onForegrounded(at: e.timestamp);
       case UnlockedEvent():
         break;
     }
   }
+
+  bool _withinWindow(LifecycleEvent pending, LifecycleEvent next) =>
+      elapsedBetween(pending.timestamp, next.timestamp) <= kLockWindow;
+
+  Future<void> _forward(LifecycleEvent pending) =>
+      _controller.onBackgroundedUnlocked(at: pending.timestamp);
 }

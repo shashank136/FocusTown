@@ -73,6 +73,8 @@ void main() {
       final at = now();
       clock.advance(const Duration(seconds: 2));
       await send(BackgroundedEvent(at));
+      clock.advance(const Duration(milliseconds: 600));
+      await router.flushExpired();
       expect(active()!.state, SessionState.away);
       expect(active()!.leftAt, at);
     },
@@ -103,6 +105,8 @@ void main() {
       expect(active()!.state, SessionState.running);
       await send(CallEndedEvent(now()));
       await send(BackgroundedEvent(now()));
+      clock.advance(const Duration(milliseconds: 600));
+      await router.flushExpired();
       expect(active()!.state, SessionState.away);
     },
   );
@@ -132,5 +136,115 @@ void main() {
     await router.dispose();
     await send(BackgroundedEvent(now()));
     expect(active()!.state, SessionState.running);
+  });
+
+  group('lock window', () {
+    TimeStamp after(TimeStamp t, int ms) => TimeStamp(
+      t.wall.add(Duration(milliseconds: ms)),
+      t.uptime + Duration(milliseconds: ms),
+    );
+
+    Future<void> flushAfter(int ms) async {
+      clock.advance(Duration(milliseconds: ms));
+      await router.flushExpired();
+      await router.idle;
+    }
+
+    test('locked 200 ms after backgrounded never goes away', () async {
+      await controller.start(25);
+      final t = now();
+      await send(BackgroundedEvent(t));
+      await send(LockedEvent(after(t, 200)));
+      final s = active()!;
+      expect(s.state, SessionState.running);
+      expect(s.leftAt, isNull);
+      expect(s.passUsed, isFalse);
+    });
+
+    test(
+      'locked 600 ms after backgrounded goes away at the pending time',
+      () async {
+        await controller.start(25);
+        final t = now();
+        await send(BackgroundedEvent(t));
+        await send(LockedEvent(after(t, 600)));
+        expect(active()!.state, SessionState.away);
+        expect(active()!.leftAt, t);
+      },
+    );
+
+    test('flushExpired after 600 ms forwards the pending event', () async {
+      await controller.start(25);
+      final t = now();
+      await send(BackgroundedEvent(t));
+      expect(active()!.state, SessionState.running);
+      await flushAfter(600);
+      expect(active()!.state, SessionState.away);
+      expect(active()!.leftAt, t);
+    });
+
+    test('flushExpired after 400 ms keeps it pending', () async {
+      await controller.start(25);
+      await send(BackgroundedEvent(now()));
+      await flushAfter(400);
+      expect(active()!.state, SessionState.running);
+    });
+
+    test('foregrounded within 300 ms cancels it with no pass', () async {
+      await controller.start(25);
+      final t = now();
+      await send(BackgroundedEvent(t));
+      await send(ForegroundedEvent(after(t, 300)));
+      expect(active()!.state, SessionState.running);
+      expect(active()!.passUsed, isFalse);
+      await flushAfter(1000);
+      expect(active()!.state, SessionState.running);
+    });
+
+    test(
+      'foregrounded after the window forwards the pending event first',
+      () async {
+        await controller.start(25);
+        final t = now();
+        await send(BackgroundedEvent(t));
+        clock.advance(const Duration(seconds: 30));
+        await send(ForegroundedEvent(now()));
+        expect(active()!.state, SessionState.running);
+        expect(active()!.passUsed, isTrue);
+      },
+    );
+
+    test('callStarted drops the pending event', () async {
+      await controller.start(25);
+      final t = now();
+      await send(BackgroundedEvent(t));
+      await send(CallStartedEvent(after(t, 100)));
+      await flushAfter(1000);
+      expect(active()!.state, SessionState.running);
+    });
+
+    test('backgrounded during a call is never pending', () async {
+      await controller.start(25);
+      await send(CallStartedEvent(now()));
+      await send(BackgroundedEvent(now()));
+      await flushAfter(1000);
+      expect(active()!.state, SessionState.running);
+    });
+
+    test('two backgrounded events in a row keep the earlier time', () async {
+      await controller.start(25);
+      final t = now();
+      await send(BackgroundedEvent(t));
+      await send(BackgroundedEvent(after(t, 100)));
+      await flushAfter(600);
+      expect(active()!.leftAt, t);
+    });
+
+    test('flush and events with no active session are no-ops', () async {
+      await send(BackgroundedEvent(now()));
+      await flushAfter(1000);
+      await send(LockedEvent(now()));
+      expect(active(), isNull);
+    });
   });
 }

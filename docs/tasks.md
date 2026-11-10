@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-09.4 (T-08.7 [device] still open, waiting on the user)
-- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-09.1-T-09.3 done: `LifecycleRouter(source, controller, clock, onEvent)` in lib/platform/lifecycle_router.dart maps events to the controller one at a time (`idle` future for tests; errors go to the zone but keep the queue alive). `_clock` is unused until T-09.4 (has an ignore comment to remove). Next: T-09.4 (500 ms lock window). Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
+- Current task: T-09.5 (T-08.7 [device] still open, waiting on the user)
+- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-09.1-T-09.4 done: LifecycleRouter now holds a non-call BackgroundedEvent as pending for `kLockWindow` (500 ms) and decides by event timestamps; `flushExpired()` (must be called by a ~100 ms timer, wired in T-09.5) forwards it after the window with leftAt = the event time. Next: T-09.5 (providers, router start, event log panel). Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-09.3 done)
+- Last updated: 2026-11-09 (T-09.4 done)
 
 ## Status of steps
 
@@ -645,7 +645,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-09.3: lifecycle router mapping`
 
-### T-09.4 [ ] LifecycleRouter: 500 ms lock window
+### T-09.4 [x] LifecycleRouter: 500 ms lock window
 - Step: 9 (docs/prompt_plan.md, Prompt 9)
 - Depends on: T-09.3
 - Goal: tolerate `backgrounded` arriving a moment before `locked` without a penalty or a false warning notification. Testable because it uses event timestamps and the Clock, not `Future.delayed`.
