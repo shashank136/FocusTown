@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-13.1 (user loop request: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 are parked for a physical iPhone)
-- What's left on it: Phase C code is done (T-12.3: debug screen has a `Request notification permission` button and a `Notifications: granted|denied` line). Verified in the simulator: tapping the button shows the real iOS prompt and Allow gives `granted`; whether a banner shows after Leave could not be confirmed from screenshots (verify in T-12.4 on a device). Next: Phase D rendering, T-13.1 (Vec2 and isometric projection). Milestone for this loop: T-15.4 (town visible on the home screen).
+- Current task: T-13.2 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
+- What's left on it: T-13.1 done: lib/game/world/vec2.dart and iso.dart (project, unprojectGround, pure Dart). Next: T-13.2 (block materials and palette).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-12.3 done)
+- Last updated: 2026-11-09 (T-13.1 done)
 
 ## Status of steps
 
@@ -877,7 +877,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 
 Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html` (open it in a browser; its JavaScript is the source for projection, palette, shapes, and drawing order). Rendering is 2D isometric: each block is three flat faces. Not real 3D.
 
-### T-13.1 [ ] Vec2 and isometric projection
+### T-13.1 [x] Vec2 and isometric projection
 - Step: 13 (docs/prompt_plan.md, Prompt 13)
 - Depends on: T-12.4
 - Goal: pure projection math so rendering bugs are caught by unit tests, not by eye.
