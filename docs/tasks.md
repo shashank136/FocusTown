@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-09.2 (T-08.7 [device] still open, waiting on the user)
-- What's left on it: T-08.7 steps need the user (no iPhone; they test in the Device Hub simulator, steps include 10+ minute waits). T-09.1 done: `lib/platform/lifecycle_events.dart` (sealed LifecycleEvent + 6 events, LifecycleSource) and `lib/platform/testing/fake_lifecycle_source.dart`. Next: T-09.2 (FallbackLifecycleSource). Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user). Debug screen runs on `FocusController` via `lib/ui/focus_debug_panel.dart`; verified in the simulator (start, kill+relaunch resume, abandon dialog).
+- Current task: T-09.3 (T-08.7 [device] still open, waiting on the user)
+- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-09.1-T-09.2 done: lifecycle event types, FakeLifecycleSource, FallbackLifecycleSource (paused→locked, resumed→unlocked+foregrounded, rest ignored; uses WidgetsBindingObserver). Next: T-09.3 (LifecycleRouter mapping). Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-09.1 done)
+- Last updated: 2026-11-09 (T-09.2 done)
 
 ## Status of steps
 
@@ -617,7 +617,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green (these types are used by T-09.2 and T-09.3).
 - Commit: `T-09.1: lifecycle event types and fake source`
 
-### T-09.2 [ ] FallbackLifecycleSource (Flutter-only)
+### T-09.2 [x] FallbackLifecycleSource (Flutter-only)
 - Step: 9 (docs/prompt_plan.md, Prompt 9)
 - Depends on: T-09.1
 - Goal: a lenient source that works before any native code exists.
