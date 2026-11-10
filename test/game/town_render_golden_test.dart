@@ -6,6 +6,9 @@ import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/town_renderer.dart';
+import 'package:focus_town/game/workers/worker_layout.dart';
+import 'package:focus_town/game/workers/worker_model.dart';
+import 'package:focus_town/game/world/block_material.dart';
 
 const _size = ui.Size(400, 700);
 
@@ -16,6 +19,12 @@ Future<ui.Image> _render(WidgetTester tester, TownRenderer renderer) async {
     return recorder.endRecording().toImage(400, 700);
   });
   return image!;
+}
+
+Future<List<int>> _bytes(WidgetTester tester, TownRenderer r) async {
+  final image = await _render(tester, r);
+  final data = await tester.runAsync(image.toByteData);
+  return data!.buffer.asUint8List().toList();
 }
 
 TownBuilding _b(int plot, BuildingTier t, [BuildingStatus? s]) => TownBuilding(
@@ -81,5 +90,25 @@ void main() {
       game.render(ui.Canvas(recorder));
     });
     expect(game.renderer.recordCount, 1);
+  });
+
+  testWidgets('workers set on the renderer change the picture', (tester) async {
+    final r = TownRenderer()..setTown(TownState.initial());
+    final bare = await _bytes(tester, r);
+    r.setWorkers([
+      PlacedWorker(
+        Worker(x: 31.6, y: 20, shirt: FlatColor.of(WorkerColors.shirt)),
+        Pose.walk1,
+      ),
+      PlacedWorker(
+        Worker(x: 27, y: 33, shirt: FlatColor.of(WorkerColors.vest)),
+        Pose.hammerUp,
+      ),
+    ]);
+    final withWorkers = await _bytes(tester, r);
+    expect(withWorkers, isNot(bare));
+    expect(r.recordCount, 1); // workers never re-record the static layer
+    r.setWorkers(const []);
+    expect(await _bytes(tester, r), bare);
   });
 }
