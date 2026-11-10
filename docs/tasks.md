@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-09.6 ([device], waiting on the user); T-08.7 [device] also open; code work continues at T-10.1
-- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-09.1-T-09.5 done: lifecycle wiring: `lifecycleSourceProvider` (FallbackLifecycleSource), `eventLogProvider` (last 20, newest first), `lifecycleRouterProvider`; `FocusTownApp` starts the router and a 100 ms `flushExpired` timer; `EventLogPanel` at the bottom of DebugScreen. In the simulator the header 'Event log (fallback)' is present but I could not scroll the screen from the shell to see rows (XcodeBuildMCP swipe stopped scrolling), so the user should check the log by hand (T-09.6). Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
+- Current task: T-10.2 (device tasks T-08.7 and T-09.6 still open, waiting on the user)
+- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-10.1 done: lib/platform/native_lifecycle_source.dart (NativeLifecycleSource over EventChannel 'focus/lifecycle/events'; malformed data and stream errors go to onMalformed). Not wired until T-10.4. Next: T-10.2 (iOS Swift plugin: lock/background/foreground/uptime via CLOCK_MONOTONIC_RAW). Device tasks T-08.7 and T-09.6 are open and wait for the user. Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-09.5 done)
+- Last updated: 2026-11-09 (T-10.1 done)
 
 ## Status of steps
 
@@ -693,7 +693,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: results recorded; flutter analyze clean; flutter test green.
 - Commit: `T-09.6: record step 9 device check`
 
-### T-10.1 [ ] NativeLifecycleSource (Dart side)
+### T-10.1 [x] NativeLifecycleSource (Dart side)
 - Step: 10 (docs/prompt_plan.md, Prompt 10)
 - Depends on: T-09.6
 - Goal: a Dart `LifecycleSource` over the platform channels, tolerant of bad data. Same contract is used on Android in step 11.
