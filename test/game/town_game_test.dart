@@ -133,10 +133,17 @@ void main() {
   });
 
   group('setFocus', () {
-    test('only rebuilds the world when the town changes', () {
+    test('an unchanged town and no session never re-records', () {
       final g = _game();
       final records = g.renderer.recordCount;
-      _drawn(g);
+      g.setFocus(FocusState(town: TownState.initial()));
+      _drawn(g, seconds: 2);
+      expect(g.renderer.recordCount, records);
+    });
+
+    test('a session adds the site once, then frames re-record nothing', () {
+      final g = _game();
+      final records = g.renderer.recordCount;
       g.setFocus(
         FocusState(
           town: TownState.initial(),
@@ -144,7 +151,9 @@ void main() {
         ),
       );
       _drawn(g);
-      expect(g.renderer.recordCount, records);
+      expect(g.renderer.recordCount, records + 1);
+      _drawn(g, seconds: 2);
+      expect(g.renderer.recordCount, records + 1);
     });
   });
 }

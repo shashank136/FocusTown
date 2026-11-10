@@ -17,6 +17,8 @@ import 'package:focus_town/ui/home_screen.dart';
 
 /// A game that remembers every town it was given.
 class _SpyGame extends TownGame {
+  new({super.clock});
+
   final List<TownState> towns = [];
   final List<Plot> focused = [];
   int recentered = 0;
@@ -64,7 +66,7 @@ Future<ProviderContainer> _pump(
   bool reducedMotion = false,
 }) async {
   _clock = FakeClock();
-  _game = _SpyGame();
+  _game = _SpyGame(clock: _clock);
   final db = AppDatabase(NativeDatabase.memory());
   addTearDown(db.close);
   await tester.pumpWidget(
@@ -180,7 +182,7 @@ void main() {
       await first.read(focusControllerProvider.future);
       await first.read(focusControllerProvider.notifier).start(25);
     });
-    _game = _SpyGame();
+    _game = _SpyGame(clock: _clock);
     await tester.pumpWidget(
       ProviderScope(
         overrides: overrides,

@@ -33,6 +33,9 @@ class TownRenderer {
   /// How often the static layer was recorded (a spy for tests).
   int get recordCount => _cache.recordCount;
 
+  /// The building under construction, if any.
+  ActiveSite? get site => _site;
+
   /// How many blocks show a face (a spy for tests).
   int get visibleBlockCount => _visible?.length ?? 0;
 

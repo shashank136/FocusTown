@@ -5,12 +5,17 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/session_engine.dart';
+import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/camera_transition.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/frame_limiter.dart';
 import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
+import 'package:focus_town/game/world/active_site.dart';
+import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
@@ -27,11 +32,15 @@ class TownGame extends FlameGame
         // ignore: deprecated_member_use
         DoubleTapDetector {
   /// Creates the game. [fps] (optional) receives the measured frames per
-  /// second once a second.
-  // ignore: prefer_initializing_formals, a named parameter cannot be private
-  new({ValueNotifier<double>? fps}) : _fps = fps;
+  /// second once a second; [clock] (default: the system clock) decides how far
+  /// the construction has come.
+  new({ValueNotifier<double>? fps, Clock? clock})
+    // ignore: prefer_initializing_formals, a named parameter cannot be private
+    : _fps = fps,
+      _clock = clock ?? SystemClock();
 
   final ValueNotifier<double>? _fps;
+  final Clock _clock;
 
   /// Draws the sky and the town.
   final TownRenderer renderer = TownRenderer();
@@ -149,6 +158,7 @@ class TownGame extends FlameGame
     _elapsed += Duration(microseconds: (dt * 1e6).round());
     _updateCamera(dt);
     if (limiter.allow(_elapsed)) {
+      _updateSite();
       _simulateWorkers();
       _redraw = true;
     }
@@ -171,6 +181,19 @@ class TownGame extends FlameGame
     cam.setPose(pose.center, pose.tile);
     _redraw = true;
     if (t.isDone) _transition = null;
+  }
+
+  // The stage comes from the clock on every frame, never from stored state.
+  void _updateSite() {
+    final active = _focus?.active;
+    if (active == null) {
+      renderer.setSite(null);
+      return;
+    }
+    final progress = SessionEngine.progress(active, TimeStamp.now(_clock));
+    renderer.setSite(
+      ActiveSite(active.tier, stageForProgress(active.tier, progress)),
+    );
   }
 
   // Where every worker is at the current game time.

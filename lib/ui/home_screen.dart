@@ -23,7 +23,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   late final TownGame _game =
-      widget.game ?? TownGame(fps: ref.read(fpsProvider));
+      widget.game ??
+      TownGame(fps: ref.read(fpsProvider), clock: ref.read(clockProvider));
 
   @override
   void initState() {
