@@ -144,32 +144,32 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 9: lifecycle event stream and fallback
 - [ ] Paste Prompt 0 + Prompt 9
-- [ ] `LifecycleEvent` and `LifecycleSource` defined
-- [ ] `FallbackLifecycleSource` maps paused → locked (lenient)
-- [ ] `LifecycleRouter` maps events to controller calls
-- [ ] Backgrounded-then-locked within 500 ms treated as lock (clock-driven, testable)
-- [ ] Backgrounded during a call ignored
-- [ ] `FakeLifecycleSource` for tests
-- [ ] Router tests passing
-- [ ] Event log panel on `DebugScreen` (last 20 events, source type)
+- [x] `LifecycleEvent` and `LifecycleSource` defined
+- [x] `FallbackLifecycleSource` maps paused → locked (lenient)
+- [x] `LifecycleRouter` maps events to controller calls
+- [x] Backgrounded-then-locked within 500 ms treated as lock (clock-driven, testable)
+- [x] Backgrounded during a call ignored
+- [x] `FakeLifecycleSource` for tests
+- [x] Router tests passing
+- [x] Event log panel on `DebugScreen` (last 20 events, source type)
 - [ ] Committed: `step 09`
 
 ### Step 10: iOS native bridge
 - [ ] Paste Prompt 0 + Prompt 10
-- [ ] Swift `FocusLifecyclePlugin` registered in `AppDelegate`
-- [ ] Event channel `focus/lifecycle/events` and method channel `focus/lifecycle` working
-- [ ] Lock/unlock via protected-data notifications
-- [ ] Background/foreground events
-- [ ] Call detection via `CXCallObserver`
-- [ ] Locked emitted before backgrounded on lock
-- [ ] Native uptime (`systemUptime`) used for the clock on iOS
-- [ ] `NativeLifecycleSource` parsing tests passing; malformed events ignored
-- [ ] `docs/device_tests.md` created with iOS checklist
+- [x] Swift `FocusLifecyclePlugin` registered in `AppDelegate`
+- [x] Event channel `focus/lifecycle/events` and method channel `focus/lifecycle` working (checked in the iPhone simulator: header says native, uptime call answered)
+- [ ] Lock/unlock via protected-data notifications (written, not verified: the simulator lock sends no events; needs a physical iPhone)
+- [x] Background/foreground events (simulator: backgrounded and foregrounded logged)
+- [ ] Call detection via `CXCallObserver` (written, not verified: needs a physical iPhone)
+- [ ] Locked emitted before backgrounded on lock (written, not verified: needs a physical iPhone)
+- [x] Native uptime (`systemUptime`) used for the clock on iOS (uses CLOCK_MONOTONIC_RAW, which keeps counting during sleep; systemUptime would not)
+- [x] `NativeLifecycleSource` parsing tests passing; malformed events ignored
+- [x] `docs/device_tests.md` created with iOS checklist
 - [ ] Device: lock 1 min, no penalty
-- [ ] Device: app switch triggers away path
+- [x] Device: app switch triggers away path (simulator only; physical iPhone still to do)
 - [ ] Device: phone call, no penalty
 - [ ] Device: Control Center pull-down, no events
-- [ ] Event log shows "native"
+- [x] Event log shows "native" (simulator)
 - [ ] Committed: `step 10`
 
 ### Step 11: Android native bridge (deferred: building iOS first, revisit when Android is needed)
@@ -193,13 +193,13 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 12: notifications
 - [ ] Paste Prompt 0 + Prompt 12
-- [ ] flutter_local_notifications added and configured for iOS and Android
-- [ ] Android channel `focus_warnings` (high importance)
-- [ ] `Notifier` interface, `LocalNotifier`, `FakeNotifier`
+- [ ] flutter_local_notifications added and configured for iOS and Android (iOS done, Android deferred)
+- [ ] Android channel `focus_warnings` (high importance) (Android deferred)
+- [x] `Notifier` interface, `LocalNotifier`, `FakeNotifier`
 - [x] Immediate warning on leave; pass warning at +10s when a pass is available
 - [x] Warnings cancelled on return, lock, completion, failure, abandon
 - [x] Notifier errors caught and never affect session outcome
-- [ ] Tests passing
+- [x] Tests passing
 - [x] Permission button and status on `DebugScreen`
 - [ ] Device: warning appears within 1 second of switching apps; second notification cancelled on return
 - [ ] Committed: `step 12`
