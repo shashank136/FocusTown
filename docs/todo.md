@@ -172,7 +172,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Event log shows "native"
 - [ ] Committed: `step 10`
 
-### Step 11: Android native bridge
+### Step 11: Android native bridge (deferred: building iOS first, revisit when Android is needed)
 - [ ] Paste Prompt 0 + Prompt 11
 - [ ] Kotlin `FocusLifecyclePlugin` registered in `MainActivity`
 - [ ] Same channel names and event format as iOS

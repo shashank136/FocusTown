@@ -13,7 +13,7 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-09.6 and T-10.5 [device] stay open: simulator checks done and recorded; lock, calls, Control Center and the fallback source need a physical iPhone (user has none). Code continues at T-11.1 (needs Android SDK) or T-12.1
+- Current task: T-12.1 (Android tasks T-11.1-T-11.4 are deferred by the user: iOS first; T-09.6 and T-10.5 [device] stay open for a physical iPhone). T-12.1 needs the `timezone` package for `zonedSchedule`: ask the user before adding it, and skip the Android parts of T-12.1 (manifest, apk build).
 - What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-10.1-T-10.4 done: lib/platform/native_uptime_clock.dart, lib/platform/platform_bootstrap.dart (bootstrapPlatform with 1 s timeout falls back to SystemClock + FallbackLifecycleSource), async main.dart overrides clockProvider and lifecycleSourceProvider. Verified in the iPhone 18 Pro simulator: header 'Event log (native)'; Settings and back gave backgrounded + foregrounded rows. Lock/call/sleep-uptime cannot be exercised in the simulator. Next: T-10.5 ([device], waiting on the user). Open device tasks: T-08.7, T-09.6, T-10.5. Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
@@ -761,7 +761,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: all iOS checks pass or failures are filed as new tasks; results recorded; flutter analyze clean; flutter test green.
 - Commit: `T-10.5: record ios bridge device check`
 
-### T-11.1 [ ] Android plugin: foreground/background events and uptime
+### T-11.1 [!] Android plugin: foreground/background events and uptime (deferred: iOS first, no Android SDK; user decision 2026-11-09)
 - Step: 11 (docs/prompt_plan.md, Prompt 11)
 - Depends on: T-10.5
 - Goal: Kotlin side with the same channels as iOS: background/foreground events and uptime.
@@ -775,7 +775,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; debug apk builds.
 - Commit: `T-11.1: android lifecycle plugin`
 
-### T-11.2 [ ] Android plugin: lock detection
+### T-11.2 [!] Android plugin: lock detection (deferred: iOS first, no Android SDK; user decision 2026-11-09)
 - Step: 11 (docs/prompt_plan.md, Prompt 11)
 - Depends on: T-11.1
 - Goal: tell a screen lock from an app switch.
@@ -788,7 +788,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; debug apk builds.
 - Commit: `T-11.2: android lock detection`
 
-### T-11.3 [ ] Android plugin: call detection and phone permission
+### T-11.3 [!] Android plugin: call detection and phone permission (deferred: iOS first, no Android SDK; user decision 2026-11-09)
 - Step: 11 (docs/prompt_plan.md, Prompt 11)
 - Depends on: T-11.2
 - Goal: report phone calls where the OS allows it, and degrade safely where it does not.
@@ -802,7 +802,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; debug apk builds.
 - Commit: `T-11.3: android call detection`
 
-### T-11.4 [ ] [device] Android lock, switch, and call checks
+### T-11.4 [!] [device] Android lock, switch, and call checks (deferred: iOS first, no Android SDK; user decision 2026-11-09)
 - Step: 11 (docs/prompt_plan.md, Prompt 11)
 - Depends on: T-11.3
 - Goal: prove the Android bridge on a physical phone (Samsung or Xiaomi if possible).
