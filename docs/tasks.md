@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-16.4 [device] (loop stopped: camera built; next code task T-17.1) (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
-- What's left on it: Step 16 code done (T-16.1-T-16.3): camera. `CameraTransition`/`CameraPose` (400 ms ease-out cubic), `TownCamera.centerWorld/pose/setPose`, `TownGame.focusOnSite(plot)` (stored and applied on the next update, so it also works before the first frame), `recenter()`, user pan/pinch/wheel/double-tap cancel a glide; `HomeScreen` calls focusOnSite when a session becomes active or is found running at launch (`activeSitePlot(town)` in town_world_builder.dart is the shared site rule) and has a 'Recenter town' IconButton (bottom-right). Verified in the iPhone 18 Pro simulator: the town starts zoomed on the unlocked plots; a drag pans it; recenter returns to exactly the first view; Start glides and zooms to the next free plot. Pinch, wheel and double tap are covered by unit tests only (cannot be driven from the shell). Next: T-16.4 is a [device] check; code continues at T-17.1 (worker model).
+- Current task: T-17.2 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-17.1 done: lib/game/workers/worker_model.dart (Pose, Worker, WorkerBox with depthKey, boxesFor: 4-6 boxes per pose; the ~1.6 block height rule applies to the body (first four boxes), a raised hammer reaches 1.77). Next: T-17.2 (worker layout: spare count, site workers, road walkers).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-16.3 done)
+- Last updated: 2026-11-09 (T-17.1 done)
 
 ## Status of steps
 
@@ -1172,7 +1172,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: results recorded (tuning issues filed as new tasks); flutter analyze clean; flutter test green.
 - Commit: `T-16.4: record step 16 device check`
 
-### T-17.1 [ ] Worker model and poses
+### T-17.1 [x] Worker model and poses
 - Step: 17 (docs/prompt_plan.md, Prompt 17)
 - Depends on: T-16.4
 - Goal: the blocky worker built from 4–6 boxes with several poses.
