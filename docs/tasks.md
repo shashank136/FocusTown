@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-10.4 (device tasks T-08.7 and T-09.6 still open, waiting on the user)
-- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-10.1-T-10.3 done: CallKit observer in FocusLifecyclePlugin.swift (Set<UUID> of active calls; callStarted on empty→non-empty, callEnded on non-empty→empty); both iOS builds compile. Not exercised at runtime (CallKit cannot be driven in the simulator). Next: T-10.4 (platform bootstrap, native clock, source selection, wire into main.dart). Device tasks T-08.7 and T-09.6 are open and wait for the user. Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
+- Current task: T-10.5 [device]; T-08.7 and T-09.6 [device] also open, all waiting on the user
+- What's left on it: T-08.7 needs the user (no iPhone; they test in the Device Hub simulator, 10+ minute waits). T-10.1-T-10.4 done: lib/platform/native_uptime_clock.dart, lib/platform/platform_bootstrap.dart (bootstrapPlatform with 1 s timeout falls back to SystemClock + FallbackLifecycleSource), async main.dart overrides clockProvider and lifecycleSourceProvider. Verified in the iPhone 18 Pro simulator: header 'Event log (native)'; Settings and back gave backgrounded + foregrounded rows. Lock/call/sleep-uptime cannot be exercised in the simulator. Next: T-10.5 ([device], waiting on the user). Open device tasks: T-08.7, T-09.6, T-10.5. Loop request from the user: finish tasks up to step 10 (device tasks T-08.7, T-09.6, T-10.5 wait for the user).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-10.3 done)
+- Last updated: 2026-11-09 (T-10.4 done)
 
 ## Status of steps
 
@@ -732,7 +732,7 @@ Focus Town is an iOS 17+ / Android 10+ (minSdk 29) Flutter app. The user starts 
 - Done when: flutter analyze clean; flutter test green; ios build compiles.
 - Commit: `T-10.3: ios call detection`
 
-### T-10.4 [ ] Platform bootstrap: native uptime clock and source selection
+### T-10.4 [x] Platform bootstrap: native uptime clock and source selection
 - Step: 10 (docs/prompt_plan.md, Prompt 10)
 - Depends on: T-10.3
 - Goal: use the native clock and source when the channel responds, otherwise fall back. Wire it into the app. Ends step 10 code (works unchanged on Android in step 11).

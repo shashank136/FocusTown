@@ -22,7 +22,7 @@ Notes:
 
 Checklist:
 
-- [ ] Event log header says `native`.
+- [x] Event log header says `native` (iPhone 18 Pro simulator, checked by Claude 2026-11-09; also saw `backgrounded` then `foregrounded` after switching to Settings and back; still to confirm on a physical iPhone).
 - [ ] Lock for 1 minute: log shows `locked` before `backgrounded`; unlock shows `unlocked`, `foregrounded`; a running session shows no penalty.
 - [ ] Lock for 5 minutes during a 10-minute session: after unlocking, progress is about 50% (uptime counts sleep).
 - [ ] Switch to another app: `backgrounded` only (no `locked`). Return within 5 s: no penalty. Away 30 s: pass used. Away 90 s: failed.
