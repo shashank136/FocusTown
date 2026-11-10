@@ -6,7 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 
-/// The town, full screen. In debug builds a long press in the top-left corner
+/// The town, full screen. Debug builds add a small bug button (top-left) that
 /// opens the debug screen.
 class HomeScreen extends ConsumerStatefulWidget {
   /// Creates the home screen. [game] is for tests; it defaults to a new game.
@@ -39,16 +39,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Stack(
         children: [
           GameWidget(game: _game),
+          // Debug builds only: a small button, below the status bar.
           if (kDebugMode)
-            Positioned(
-              left: 0,
-              top: 0,
-              width: 56,
-              height: 56,
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onLongPress: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(builder: (_) => const DebugScreen()),
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  tooltip: 'Open debug screen',
+                  icon: const Icon(Icons.bug_report_outlined),
+                  color: Colors.black54,
+                  iconSize: 28,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const DebugScreen(),
+                    ),
+                  ),
                 ),
               ),
             ),

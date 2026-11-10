@@ -86,19 +86,27 @@ void main() {
     expect(_game.towns.length, before);
   });
 
-  testWidgets('a long press in the top-left corner opens the debug screen', (
-    tester,
-  ) async {
+  testWidgets('the debug button opens the debug screen', (tester) async {
     await _pump(tester);
-    await tester.longPressAt(const Offset(10, 10));
+    expect(find.byTooltip('Open debug screen'), findsOneWidget);
+    await tester.tap(find.byTooltip('Open debug screen'));
+    await tester.pump(); // starts the route
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.text('Focus Town debug'), findsOneWidget);
   });
 
-  testWidgets('a long press elsewhere does nothing', (tester) async {
+  testWidgets('tapping elsewhere does nothing', (tester) async {
     await _pump(tester);
+    await tester.tapAt(const Offset(300, 300));
     await tester.longPressAt(const Offset(300, 300));
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.text('Focus Town debug'), findsNothing);
+  });
+
+  testWidgets('the debug button sits below the status bar', (tester) async {
+    await _pump(tester);
+    final box = tester.getRect(find.byTooltip('Open debug screen'));
+    expect(box.left, lessThan(80));
+    expect(box.width, greaterThanOrEqualTo(44)); // easy to hit
   });
 }
