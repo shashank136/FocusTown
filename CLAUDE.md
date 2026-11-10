@@ -17,7 +17,7 @@ Focus Town is a mobile app where a block-style isometric town is built by small 
 
 ## Repo status
 
-The Flutter project exists and is built task by task. Phase A (steps 1-6: clock, tiers, session engine, town rules, progression) is done as pure, tested Dart in `lib/domain`, driven by a debug screen in `lib/ui` that now runs on the real `FocusController` (`lib/app`) and the drift database. `lib/data` (drift database, mappers, `TownRepository`) is done and read by the debug screen; `lib/platform` and `lib/game` are still empty. The Handoff notes at the top of `docs/tasks.md` name the current task; check them and `git log` rather than relying on this paragraph for progress.
+The Flutter project exists and is built task by task. Phases A to C are done: the pure domain rules, the drift database and `TownRepository`, the `FocusController`, lifecycle events (Flutter fallback plus an iOS Swift bridge) and away-warning notifications (iOS only; the Android tasks are deferred). Phase D has reached its first visible milestone: the app launches into the isometric block town (`HomeScreen`, a Flame `TownGame`, `lib/game/`), and the debug screen stays reachable by a long press in the top-left corner (debug builds). Camera, workers and the build animations are still to come. The Handoff notes at the top of `docs/tasks.md` name the current task; check them and `git log` rather than relying on this paragraph for progress.
 
 ## Commands
 

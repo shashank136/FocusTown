@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
-import 'package:focus_town/ui/debug_screen.dart';
+import 'package:focus_town/ui/home_screen.dart';
 
 /// Root widget of the app; starts routing lifecycle events.
 class FocusTownApp extends ConsumerStatefulWidget {
@@ -35,5 +35,5 @@ class _FocusTownAppState extends ConsumerState<FocusTownApp> {
   }
 
   @override
-  Widget build(BuildContext context) => const MaterialApp(home: DebugScreen());
+  Widget build(BuildContext context) => const MaterialApp(home: HomeScreen());
 }

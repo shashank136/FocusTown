@@ -238,15 +238,15 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 15: Flame renderer with cached static layer
 - [ ] Paste Prompt 0 + Prompt 15
-- [ ] Flame added
-- [ ] `TownGame` draws textured faces (plain when tile < 9 px)
-- [ ] Static town cached to a picture/image; re-recorded only on town or zoom change
-- [ ] Viewport culling during recording
-- [ ] Sky gradient
-- [ ] `HomeScreen` with `GameWidget` is now the app's home
-- [ ] `DebugScreen` reachable via long-press (debug builds only)
-- [ ] Golden tests for initial and 5-building towns
-- [ ] Cache re-record spy test passing
+- [x] Flame added
+- [x] `TownGame` draws textured faces (plain when tile < 9 px)
+- [x] Static town cached to a picture/image; re-recorded only on town or zoom change
+- [x] Viewport culling during recording
+- [x] Sky gradient
+- [x] `HomeScreen` with `GameWidget` is now the app's home
+- [x] `DebugScreen` reachable via long-press (debug builds only)
+- [x] Golden tests for initial and 5-building towns
+- [x] Cache re-record spy test passing
 - [ ] Device: real town visible, smooth scrolling
 - [ ] Visual check against the reference images above
 - [ ] Committed: `step 15`
