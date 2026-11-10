@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-13.2 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
-- What's left on it: T-13.1 done: lib/game/world/vec2.dart and iso.dart (project, unprojectGround, pure Dart). Next: T-13.2 (block materials and palette).
+- Current task: T-13.3 (user loop: finish until the first visible town, T-15.4; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4 parked for a physical iPhone)
+- What's left on it: T-13.1-T-13.2 done: lib/game/world/block_material.dart (shade, BlockMaterial with 5 shades per face, Blocks.* 14 types + allBlocks, FlatColor, WorkerColors, kSky*). Private ctor lint: write `const new _(...)`. Next: T-13.3 (VoxelWorld storage).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-13.1 done)
+- Last updated: 2026-11-09 (T-13.2 done)
 
 ## Status of steps
 
@@ -890,7 +890,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-13.1: isometric projection`
 
-### T-13.2 [ ] Block materials and palette
+### T-13.2 [x] Block materials and palette
 - Step: 13 (docs/prompt_plan.md, Prompt 13)
 - Depends on: T-13.1
 - Goal: the prototype's palette as data, with 4 precomputed texture variants per face.
