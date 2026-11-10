@@ -20,14 +20,15 @@ Notes:
 - Lock detection uses protected-data notifications, so it needs a device passcode. Without a passcode a lock is seen only as a background.
 - Uptime uses `CLOCK_MONOTONIC_RAW`, which keeps counting while the phone sleeps. `ProcessInfo.systemUptime` is not used because it pauses during sleep.
 
-Checklist:
+Checklist (simulator results by Claude, iPhone 18 Pro simulator, 2026-11-09; the lock and call rows need a physical iPhone):
 
-- [x] Event log header says `native` (iPhone 18 Pro simulator, checked by Claude 2026-11-09; also saw `backgrounded` then `foregrounded` after switching to Settings and back; still to confirm on a physical iPhone).
-- [ ] Lock for 1 minute: log shows `locked` before `backgrounded`; unlock shows `unlocked`, `foregrounded`; a running session shows no penalty.
-- [ ] Lock for 5 minutes during a 10-minute session: after unlocking, progress is about 50% (uptime counts sleep).
-- [ ] Switch to another app: `backgrounded` only (no `locked`). Return within 5 s: no penalty. Away 30 s: pass used. Away 90 s: failed.
-- [ ] Phone call mid-session (incoming answered, incoming declined, outgoing, ended): `callStarted` then `callEnded`; backgrounding during the call causes no penalty and no pass.
-- [ ] Control Center and the notification shade: no events.
+- [x] Event log header says `native`; `backgrounded` then `foregrounded` appear after switching to Settings and back (simulator).
+- [ ] Lock for 1 minute: log shows `locked` before `backgrounded`, then `unlocked`, `foregrounded`. The simulator lock button (via XcodeBuildMCP) produced no events and no penalty: a 25-minute session stayed `running`, progress 6% after 1 min 38 s, matching elapsed time. Needs a physical iPhone.
+- [ ] Lock for 5 minutes during a 10-minute session: progress about 50% (uptime counts sleep). Needs a physical iPhone. Seen so far: native uptime `458:29:36` is the host's continuous time, and progress matched elapsed time.
+- [x] Switch to another app (simulator, Settings and back, 25-minute session): away 3 s: running, no pass. Away 30 s: running, `Pass used: true` (29.4 s away stored). Away 90 s after the pass: failed `leftTooLong` (118.8 s away stored), "Session failed" dialog, workers reduced.
+- [ ] Phone call mid-session (incoming answered, incoming declined, outgoing, ended): `callStarted` then `callEnded`; no penalty and no pass when backgrounding during the call. Cannot be tested in the simulator. Needs a physical iPhone.
+- [ ] Control Center and the notification shade: no events. The simulator top-edge swipe did not visibly open Control Center, so this is inconclusive (the session was unaffected). Needs a physical iPhone.
+
 
 ### Step 8: controller
 
