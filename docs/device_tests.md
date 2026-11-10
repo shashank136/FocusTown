@@ -29,4 +29,15 @@ Checklist:
 - [ ] Phone call mid-session (incoming answered, incoming declined, outgoing, ended): `callStarted` then `callEnded`; backgrounding during the call causes no penalty and no pass.
 - [ ] Control Center and the notification shade: no events.
 
+### Step 8: controller
+
+Run on the iPhone 18 Pro **simulator** (Device Hub), 2026-11-09, debug build. No physical iPhone yet; repeat on one when available. "Force-quit" here is `xcrun simctl terminate`.
+
+- [x] Pick 10 minutes, Start: `State: running` (user-confirmed; session saved as `running` in the database).
+- [x] Force-quit and reopen mid-session: still `running` (Claude checked earlier: progress 1% after relaunch; user relaunched the 10-minute session at about 70% and it kept going).
+- [x] Force-quit, reopen after the 10 minutes passed: "Session completed" dialog, workers gained 1, Workers 4, XP 10, streak 1, hut on plot 1 (user-confirmed; database matches).
+- [x] Start, Leave, wait, Return: "Session failed", workers reduced by 1 (user-confirmed; session failed as `leftTooLong` after about 71 s away, resolved by the live tick).
+- [x] Start, Leave, force-quit, wait 100 s, reopen: "Session failed" popup at launch, `Workers lost: 2`, session resolved at 20:47:53 (reopen time), not earlier (Claude ran this).
+- [ ] Same checks on a physical iPhone.
+
 ## Android

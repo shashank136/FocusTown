@@ -135,7 +135,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] `DebugScreen` simulator now uses the real controller and database
 - [x] 1-second tick timer while a session is active
 - [x] Result dialog shown and cleared
-- [ ] Device check: start 10-min session, force-quit, reopen, outcome correct
+- [x] Device check: start 10-min session, force-quit, reopen, outcome correct
 - [ ] Committed: `step 08`
 
 ---
