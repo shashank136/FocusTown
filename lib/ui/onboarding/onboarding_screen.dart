@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:focus_town/game/demo/demo_script.dart';
 import 'package:focus_town/ui/onboarding/page_indicator.dart';
+import 'package:focus_town/ui/onboarding/town_demo.dart';
 
 const _titles = [
   'Your town grows while you focus.',
@@ -57,12 +59,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // The live town demo goes here (T-21.3).
                           Flexible(
                             child: AspectRatio(
                               key: ValueKey('demo-area-$i'),
                               aspectRatio: 1,
-                              child: const SizedBox.expand(),
+                              child: TownDemo(
+                                kind: DemoKind.values[i],
+                                active: i == _page,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 24),

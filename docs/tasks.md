@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-21.3 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-21.2 done: OnboardingScreen (3 pages, PageIndicator, Next/Start, demo-area-N placeholders for T-21.3), not routed until T-21.6. Next: T-21.3 looping demos.
+- Current task: T-21.4 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-21.3 done: pure demoFrame script (build/ruin/start, 6 s loop), DemoGame on the real TownRenderer, TownDemo widget (active flag, reduced motion = still frame), used on the 3 onboarding pages. Onboarding tests use pump(400ms) not pumpAndSettle (demos animate forever). Next: T-21.4 permissions + start (Android parts deferred).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-21.2 done)
+- Last updated: 2026-11-09 (T-21.3 done)
 
 ## Status of steps
 
@@ -1530,7 +1530,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Done when: flutter analyze clean; flutter test green (screen routed in T-21.6).
 - Commit: `T-21.2: onboarding pages`
 
-### T-21.3 [ ] Looping town demos for onboarding
+### T-21.3 [x] Looping town demos for onboarding
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
 - Depends on: T-21.2
 - Goal: each page shows a small looping render from the real `TownGame`, not a static image.

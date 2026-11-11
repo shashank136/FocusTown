@@ -36,7 +36,8 @@ void main() {
     await _open(tester);
     for (var i = 1; i < 3; i++) {
       await tester.tap(find.text('Next'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
       expect(find.text(_titles[i]), findsOneWidget);
     }
   });
@@ -48,17 +49,20 @@ void main() {
     }
     expect(_dot(tester), 0);
     await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(_dot(tester), 1);
   });
 
   testWidgets('swiping goes forward and back', (tester) async {
     await _open(tester);
     await tester.fling(find.byType(PageView), const Offset(-400, 0), 1000);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(_titles[1]), findsOneWidget);
     await tester.fling(find.byType(PageView), const Offset(400, 0), 1000);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text(_titles[0]), findsOneWidget);
   });
 
@@ -67,7 +71,8 @@ void main() {
     for (var i = 0; i < 3; i++) {
       expect(find.byKey(ValueKey('demo-area-$i')), findsOneWidget);
       await tester.tap(find.text(i < 2 ? 'Next' : 'Start'));
-      await tester.pumpAndSettle();
+      await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     }
   });
 
@@ -77,9 +82,11 @@ void main() {
     var started = 0;
     await _open(tester, onStart: () => started++);
     await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('10-minute hut'), findsOneWidget);
     expect(find.text('Next'), findsNothing);
     await tester.tap(find.text('Start'));
