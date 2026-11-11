@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-20.4 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-20.3 done: SessionResult gained xpGained, awaySeconds, reason (nullable so older constructors keep working), leveledUpTo, recoveryStarted, recoveryEnded, all filled in FocusController._finish; the one earlier equality assertion now lists xpGained 10 and reason completed. Next: T-20.4 (result dialogs).
+- Current task: T-20.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-20.4 done: lib/ui/result_dialogs.dart showResultDialog with completed, queued and failed variants per spec (singular/plural, zero lines hidden, Last Builder text, away time as Xm Ys, one Continue button), no emoji test. Not wired yet. Next: T-20.5 wires HUD, panel, dialogs into HomeScreen and trims the debug panel: step 20 milestone.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-20.3 done)
+- Last updated: 2026-11-09 (T-20.4 done)
 
 ## Status of steps
 
@@ -1479,7 +1479,7 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-20.3: richer session result`
 
-### T-20.4 [ ] Result dialogs
+### T-20.4 [x] Result dialogs
 - Step: 20 (docs/prompt_plan.md, Prompt 20)
 - Depends on: T-20.3
 - Goal: clear feedback for every outcome, in plain active-voice copy with no emoji.
