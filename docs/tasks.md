@@ -1923,56 +1923,67 @@ Open questions (assumed answers):
 
 ## Phase V6: grow your world (after V3)
 
-Idea from the user: the player builds their own world while regaining focus. The world is like a globe: rotate it, pick an area, focus, pick the plot and build there. Later the player can view the whole world or show it off. Gardens and open space count as things to build, so not every plot has to be a building.
+Idea from the user: the player builds their own world while regaining focus. The island is not finite: the player chooses where it grows (for example to keep open land or a garden around a castle). Later the world can be viewed as a rotatable globe and shown off. Gardens and open space count as things to build, so not every plot has to hold a building.
 
-Design decision (assumed, to confirm before work starts): the app stays 2D, as `docs/spec.md` says. The "globe" is a painted, rotatable world view used for choosing an area and for showing off; each area is still the isometric block island the app draws today. Real 3D voxels on a sphere are out of scope.
+Decided with the user: one island that grows parcel by parcel; a second island is a later option (about 25 parcels), not part of the first version.
 
-Open questions (assumed answers):
-- How land is earned: a dedicated "Land" session of 45 minutes or more adds a new area; plots keep unlocking one per focus day. (Assumed; a streak milestone may add one too.)
-- Size of an area: today's island (8 x 8 plots), several areas around the globe. (Assumed.)
-- Gardens, parks, ponds and orchards take a plot and a session, add no workers and leave no ruin. (Assumed.)
-- Showing off: spin the globe and save a picture. Sharing it needs a package (share sheet or photo library), so ask the user first. (Assumed.)
-- Frame rate: a bigger world must stay at 15 fps normal and 10 fps in Low Power Mode; measure on the iPhone (T-17.7) before adding areas.
+Design (assumed, to confirm before work starts):
+- The app stays 2D, as `docs/spec.md` says. Real 3D voxels on a sphere are out of scope.
+- Land comes in parcels: a parcel is one plot-sized square (7 x 7 tiles). The island is a set of parcels (a sparse list in the database), with no fixed size. Today's 64 plots are the starting parcels.
+- Space and buildings are separate: the daily plot unlock still limits how many buildings the town may have; a land session claims a parcel (space). Gardens, parks, ponds and orchards are buildable things that take a plot and a session, add no workers and leave no ruin.
+- The player picks which parcel to claim: in "Extend land" mode the free parcels around the coast are outlined, like the choose-a-plot step. The new parcel starts as forest.
+- Land sessions get longer as the island grows: 25 minutes for the first, rising by 5 minutes per 4 parcels claimed, capped at 90.
+- The coast is organic (a few lakes and bays), not a square.
+- Roads: paths between built parcels and the hub are drawn automatically; the player never places roads.
+- Three views: plot view (today's isometric blocks), island view (zoomed out, low detail, outlined claimable parcels, a "World" button) and globe view (a painted low-poly planet; drag to spin with inertia; the island is a picture of the real island placed on the sphere).
+- Showcase: the globe auto-spins with no buttons and a save-picture button. Saving or sharing needs a package: ask the user and name it before adding anything.
+- Frame rate: a bigger island must stay at 15 fps normal and 10 fps in Low Power Mode. The renderer draws only parcels near the screen. Measure on the iPhone (T-17.7) before growing past today's size.
 
-### T-V6.1 [ ] Spec and world model
+### T-V6.1 [ ] Spec and parcel model
 - Depends on: MVP done (T-22.15), T-V3.1
-- Goal: a town has several areas instead of one fixed island.
-- Files: `docs/spec.md` (first), `lib/domain/town.dart`, `lib/domain/world_layout.dart`, `lib/data/database.dart` (next schema version and a migration), tests.
-- Do: `Area` (id, position on the globe, plot count); the town stores its areas and every building stores its area; old towns get one area holding all their buildings; the 64 x 64 constants become per-area values.
-- Tests first: migration keeps every building on area 0; plot rules work per area; a town with two areas never mixes their plots.
-- Commit: `T-V6.1: world model with areas`
+- Goal: the island is a set of parcels instead of a fixed 64 x 64 map.
+- Files: `docs/spec.md` (first), `lib/domain/parcel.dart`, `lib/domain/town.dart`, `lib/domain/town_rules.dart`, `lib/game/world/plot_layout.dart`, `lib/data/database.dart` (next schema version and a migration), tests.
+- Do: `Parcel` (grid position) and `TownState.parcels`; every plot is a parcel; the map-size and plot constants come from the parcels; old towns get today's 64 parcels so nothing moves; neighbours of the island are the claimable parcels.
+- Tests first: migration keeps every building on the same plot; the 64 starting parcels match today's layout; the claimable set is exactly the free neighbours of the island; plots outside the island are refused.
+- Commit: `T-V6.1: parcel model`
 
-### T-V6.2 [ ] Gardens and open space as buildable things
+### T-V6.2 [ ] Renderer draws only nearby parcels
+- Depends on: T-V6.1
+- Do: the world builder, forest and cached picture work per parcel and draw only parcels near the view; roads and paths are generated between built parcels and the hub; a coast with a few lakes.
+- Tests first: the block count for a 64-parcel island matches today's world; a far parcel adds no blocks while off screen; the world is deterministic for the same parcels.
+- Commit: `T-V6.2: parcel renderer`
+
+### T-V6.3 [ ] Gardens and open space as buildable things
 - Depends on: T-V3.2
 - Do: park, pond, orchard and garden looks: they take a plot and a session, no workers at risk, no ruin on failure (the plot goes back to forest).
-- Tests first: rules for a garden session (no worker loss, no ruin); layouts fit the plot; goldens.
-- Commit: `T-V6.2: gardens`
+- Tests first: a garden session loses no workers and leaves no ruin; layouts fit the plot; goldens.
+- Commit: `T-V6.3: gardens`
 
-### T-V6.3 [ ] Land sessions add areas
-- Depends on: T-V6.1
-- Do: a session kind `land` (45 minutes or more) that adds an area when it completes; a failed one adds nothing; the world builder draws the new area as forest.
-- Tests first: completing adds exactly one area; failing adds none; the cap on areas is explicit; the renderer builds each area.
-- Commit: `T-V6.3: land sessions`
+### T-V6.4 [ ] Land sessions claim parcels
+- Depends on: T-V6.2
+- Do: session kind `land` (length from the parcel count as above); "Extend land" mode outlines the claimable parcels and the player picks one; completing claims it; a failed one claims nothing and costs no workers.
+- Tests first: length rule per parcel count and the 90 minute cap; completing adds exactly the chosen parcel; failing adds none; only a claimable parcel can be chosen.
+- Commit: `T-V6.4: land sessions`
 
-### T-V6.4 [ ] World view: the rotatable globe
-- Depends on: T-V6.3
-- Do: a painted globe screen (a `CustomPainter`, no package): areas as patches that follow a drag-to-rotate gesture with inertia, the current area highlighted, buildings shown as small dots; tap an area to dive into its island.
-- Tests first: rotation maths (pure), picking the area under a tap, a widget test for rotating and tapping, a golden of the globe.
-- Commit: `T-V6.4: world globe`
-
-### T-V6.5 [ ] Choose area, then plot, then focus
+### T-V6.5 [ ] Island view
 - Depends on: T-V6.4
-- Do: the Start flow becomes duration, then area (globe), then plot (today's choose-a-plot step); the island view gets a "World" button back to the globe.
-- Tests first: the flow end to end with a fake clock; cancelling at each step starts nothing.
-- Commit: `T-V6.5: area and plot choice`
+- Do: zoom out to a low-detail island view with outlined claimable parcels and a "World" button; the camera glides between plot view and island view.
+- Tests first: zoom thresholds switch the detail level; the claimable outlines show only in extend mode; widget test for the button.
+- Commit: `T-V6.5: island view`
 
-### T-V6.6 [ ] Show off the world
-- Depends on: T-V6.4
-- Do: a showcase mode (auto-spin, no buttons) and saving a picture of the globe. Saving or sharing needs a package: ask the user and name it before adding anything.
-- Tests first: the showcase hides the controls and spins; the picture has the globe's size (no sharing in tests).
-- Commit: `T-V6.6: showcase`
+### T-V6.6 [ ] World globe
+- Depends on: T-V6.5
+- Do: the painted globe screen (a `CustomPainter`, no package): drag to spin with inertia, the island picture placed on the sphere, tap it to dive into the island.
+- Tests first: rotation and projection maths (pure); picking the island under a tap; a widget test for spin and tap; a golden of the globe.
+- Commit: `T-V6.6: world globe`
 
-### T-V6.7 [ ] [device] Globe and areas on the iPhone
+### T-V6.7 [ ] Show off the world
 - Depends on: T-V6.6
-- Do: give the user steps (earn an area, rotate, pick, build, showcase), measure frame rate and battery, and record in `docs/device_tests.md`.
-- Commit: `T-V6.7: record v6 device check`
+- Do: showcase mode (auto-spin, no controls) and saving a picture. Saving or sharing needs a package: ask the user and name it before adding anything.
+- Tests first: the showcase hides the controls and spins; the picture has the globe's size (no sharing in tests).
+- Commit: `T-V6.7: showcase`
+
+### T-V6.8 [ ] [device] Growing world on the iPhone
+- Depends on: T-V6.7
+- Do: give the user steps (claim a parcel, build a garden beside a castle, zoom out, spin the globe, showcase), measure frame rate and battery, and record in `docs/device_tests.md`.
+- Commit: `T-V6.8: record v6 device check`
