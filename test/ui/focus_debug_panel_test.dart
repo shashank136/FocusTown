@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +12,7 @@ import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/focus_debug_panel.dart';
 
 late FakeClock _clock;
-late ValueNotifier<int> _minutes;
+int _minutes = 10;
 int _ticks = 0;
 
 /// Counts how often the panel asks the controller to tick.
@@ -32,7 +34,7 @@ Future<void> _settle(WidgetTester tester) async {
 
 Future<void> _pump(WidgetTester tester, {int minutes = 10}) async {
   _clock = FakeClock();
-  _minutes = ValueNotifier(minutes);
+  _minutes = minutes;
   _ticks = 0;
   final db = AppDatabase(NativeDatabase.memory());
   addTearDown(db.close);
@@ -44,23 +46,27 @@ Future<void> _pump(WidgetTester tester, {int minutes = 10}) async {
         notifierProvider.overrideWithValue(FakeNotifier()),
         focusControllerProvider.overrideWith(_CountingController.new),
       ],
-      child: MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: ValueListenableBuilder<int>(
-              valueListenable: _minutes,
-              builder: (_, m, _) => FocusDebugPanel(minutes: m),
-            ),
-          ),
-        ),
+      child: const MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: FocusDebugPanel())),
       ),
     ),
   );
   await _settle(tester);
 }
 
+/// Taps a panel button; Start and Abandon are no longer on the panel (the
+/// home screen owns them), so those two drive the controller directly.
 Future<void> _tap(WidgetTester tester, String label) async {
-  await tester.tap(find.text(label));
+  final c = ProviderScope.containerOf(tester.element(find.byType(Scaffold)));
+  final controller = c.read(focusControllerProvider.notifier);
+  switch (label) {
+    case 'Start':
+      unawaited(controller.start(_minutes));
+    case 'Abandon':
+      unawaited(controller.abandon());
+    default:
+      await tester.tap(find.text(label));
+  }
   await tester.pump();
   await _settle(tester);
 }
@@ -72,21 +78,10 @@ Future<void> _advance(WidgetTester tester, Duration d) async {
   await _settle(tester);
 }
 
-Future<void> _dismissDialog(WidgetTester tester) async {
-  if (find.text('OK').evaluate().isEmpty) return;
-  await _tap(tester, 'OK');
-}
+// The panel no longer shows result dialogs (the home screen does).
+Future<void> _dismissDialog(WidgetTester tester) async {}
 
-Future<void> _setMinutes(WidgetTester tester, int m) async {
-  _minutes.value = m;
-  await tester.pump();
-}
-
-bool _startEnabled(WidgetTester tester) =>
-    tester
-        .widget<FilledButton>(find.widgetWithText(FilledButton, 'Start'))
-        .onPressed !=
-    null;
+void _setMinutes(int m) => _minutes = m;
 
 /// Leave, then come back after 90 s without the timer noticing first.
 Future<void> _failSession(WidgetTester tester) async {
@@ -104,7 +99,7 @@ Future<void> _completeHut(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('Start makes a running session of the slider minutes', (
+  testWidgets('a started session shows as running with its minutes', (
     tester,
   ) async {
     await _pump(tester);
@@ -137,17 +132,13 @@ void main() {
     expect(find.text('Pass used: true'), findsOneWidget);
   });
 
-  testWidgets('Leave then Return after 90s fails and shows the dialog', (
-    tester,
-  ) async {
+  testWidgets('Leave then Return after 90s fails the session', (tester) async {
     await _pump(tester);
     await _tap(tester, 'Start');
     await _tap(tester, 'Leave');
     _clock.advance(const Duration(seconds: 90));
     await _tap(tester, 'Return');
     expect(find.text('State: -'), findsOneWidget);
-    expect(find.text('Session failed'), findsOneWidget);
-    expect(find.text('Workers lost: 1'), findsOneWidget);
   });
 
   testWidgets('a session completes by itself through the tick timer', (
@@ -156,8 +147,6 @@ void main() {
     await _pump(tester);
     await _tap(tester, 'Start');
     await _advance(tester, const Duration(minutes: 10));
-    expect(find.text('Session completed'), findsOneWidget);
-    expect(find.text('Workers gained: 1'), findsOneWidget);
     expect(find.text('State: -'), findsOneWidget);
   });
 
@@ -167,6 +156,7 @@ void main() {
     _clock.advance(const Duration(minutes: 5));
     await _tap(tester, 'Lock');
     await tester.pump(const Duration(seconds: 1)); // display refresh
+    await _settle(tester); // let the tick it triggers finish
     expect(find.text('State: running'), findsOneWidget);
     expect(find.text('Progress: 50%'), findsOneWidget);
   });
@@ -176,30 +166,7 @@ void main() {
     await _tap(tester, 'Start');
     await _tap(tester, 'Abandon');
     expect(find.text('State: -'), findsOneWidget);
-    expect(find.text('Session failed'), findsOneWidget);
     expect(find.text('Workers: 2'), findsOneWidget);
-  });
-
-  testWidgets('result dialog appears once and dismissing clears the result', (
-    tester,
-  ) async {
-    await _pump(tester);
-    await _tap(tester, 'Start');
-    await _advance(tester, const Duration(minutes: 10));
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(FocusDebugPanel)),
-    );
-    expect(find.text('Session completed'), findsOneWidget);
-    expect(
-      container.read(focusControllerProvider).requireValue.lastResult,
-      isNotNull,
-    );
-    await _tap(tester, 'OK');
-    expect(find.text('Session completed'), findsNothing);
-    expect(
-      container.read(focusControllerProvider).requireValue.lastResult,
-      isNull,
-    );
   });
 
   testWidgets('the tick timer only asks for ticks while a session is active', (
@@ -261,36 +228,21 @@ void main() {
       expect(find.text('house ruin plot 1'), findsOneWidget);
     });
 
-    testWidgets('castle at 3 workers: Start disabled with the reason', (
-      tester,
-    ) async {
-      await _pump(tester, minutes: 95);
-      expect(_startEnabled(tester), isFalse);
-      expect(find.text('Needs 8 workers, you have 3'), findsOneWidget);
-    });
-
     testWidgets('losing all workers enters recovery: huts only', (
       tester,
     ) async {
       await _pump(tester, minutes: 25);
       await _failSession(tester); // 3 -> 1 worker
-      await _setMinutes(tester, 10);
+      _setMinutes(10);
       await _failSession(tester); // hut risks 1 -> 0 workers
       expect(find.text('Workers: 0'), findsOneWidget);
       expect(find.text('Recovery: true'), findsOneWidget);
-      expect(_startEnabled(tester), isTrue);
-
-      await _setMinutes(tester, 20);
-      expect(_startEnabled(tester), isTrue);
-      await _setMinutes(tester, 25);
-      expect(_startEnabled(tester), isFalse);
-      expect(find.text('Recovery mode: huts only'), findsOneWidget);
     });
 
     testWidgets('a recovery hut that fails costs no workers', (tester) async {
       await _pump(tester, minutes: 25);
       await _failSession(tester);
-      await _setMinutes(tester, 10);
+      _setMinutes(10);
       await _failSession(tester);
       await _failSession(tester); // recovery hut, 0 assigned
       expect(find.text('Workers: 0'), findsOneWidget);

@@ -295,16 +295,16 @@ void main() {
       ),
     );
     final controller = c.read(focusControllerProvider.notifier);
-    expect(find.text('Ready to place'), findsNothing);
+    expect(find.byKey(const ValueKey('ready-label')), findsNothing);
     await tester.runAsync(() => controller.start(10));
     _clock.advance(const Duration(minutes: 10));
     await tester.runAsync(controller.tick);
     await _settle(tester);
     await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('Ready to place'), findsOneWidget);
+    expect(find.byKey(const ValueKey('ready-label')), findsOneWidget);
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 2));
-    expect(find.text('Ready to place'), findsNothing);
+    expect(find.byKey(const ValueKey('ready-label')), findsNothing);
   });
 
   group('choose a plot', () {
@@ -391,20 +391,6 @@ void main() {
       expect(c.read(focusControllerProvider).requireValue.active, isNull);
       expect(find.text('Confirm'), findsNothing);
     });
-
-    testWidgets('Place... on the debug screen returns to the town', (
-      tester,
-    ) async {
-      final c = await _pump(tester);
-      await tester.tap(find.byTooltip('Open debug screen'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
-      await tester.tap(find.text('Place…'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 500));
-      expect(c.read(placementProvider), isNotNull);
-      expect(find.text('Confirm'), findsOneWidget);
-    });
   });
 
   group('Start focus', () {
@@ -461,6 +447,100 @@ void main() {
       c.read(placementProvider.notifier).cancel();
       await tester.pump();
       expect(find.text('Start focus'), findsOneWidget);
+    });
+  });
+
+  group('the whole session loop', () {
+    Future<void> pumpFor(WidgetTester tester, Duration d) async {
+      await tester.pump(d);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 60)),
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400)); // the dialog route
+    }
+
+    testWidgets('the HUD and, in a session, the panel are on screen', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      expect(find.byKey(const ValueKey('hud-workers')), findsOneWidget);
+      expect(find.text('Abandon'), findsNothing);
+      await tester.runAsync(
+        () => c.read(focusControllerProvider.notifier).start(25),
+      );
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.text('Abandon'), findsOneWidget);
+      expect(find.text('25:00'), findsOneWidget);
+    });
+
+    testWidgets('a session completes by itself, then the dialog, then Start', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      await tester.runAsync(
+        () => c.read(focusControllerProvider.notifier).start(25),
+      );
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      _clock.advance(const Duration(minutes: 25));
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.text('House built'), findsOneWidget);
+      expect(find.text('+2 workers'), findsOneWidget);
+      await tester.tap(find.text('Continue'));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.text('House built'), findsNothing);
+      expect(c.read(focusControllerProvider).requireValue.lastResult, isNull);
+      expect(find.text('Start focus'), findsOneWidget);
+      // The HUD now shows the 5 workers.
+      expect(
+        tester.widget<Text>(find.byKey(const ValueKey('hud-workers'))).data,
+        '5',
+      );
+    });
+
+    testWidgets('leaving for 90 seconds fails the build with a dialog', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      final controller = c.read(focusControllerProvider.notifier);
+      await tester.runAsync(() => controller.start(25));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      await tester.runAsync(controller.onBackgroundedUnlocked);
+      _clock.advance(const Duration(seconds: 90));
+      await tester.runAsync(controller.onForegrounded);
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.text('Your builders stopped'), findsOneWidget);
+      expect(find.text('Lost 2 workers'), findsOneWidget);
+      await tester.tap(find.text('Continue'));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.text('Your builders stopped'), findsNothing);
+    });
+
+    testWidgets('abandoning from the panel shows the abandoned dialog', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      await tester.runAsync(
+        () => c.read(focusControllerProvider.notifier).start(10),
+      );
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      await tester.tap(find.text('Abandon'));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      await tester.tap(find.widgetWithText(TextButton, 'Abandon').last);
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.text('You abandoned the build'), findsOneWidget);
+    });
+
+    testWidgets('a result is shown only once', (tester) async {
+      final c = await _pump(tester);
+      await tester.runAsync(
+        () => c.read(focusControllerProvider.notifier).start(10),
+      );
+      _clock.advance(const Duration(minutes: 10));
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.text('Hut built'), findsOneWidget);
+      await pumpFor(tester, const Duration(seconds: 2));
+      expect(find.text('Hut built'), findsOneWidget);
     });
   });
 }

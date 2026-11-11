@@ -62,31 +62,13 @@ Future<void> _pump(WidgetTester tester) => tester.pumpWidget(
 );
 
 void _sliderTests() {
-  testWidgets('defaults to 25 minutes, house, 2 workers at risk', (
+  testWidgets('has no duration slider: starting lives on the home screen', (
     tester,
   ) async {
     await _pump(tester);
-    expect(find.text('Minutes: 25'), findsOneWidget);
-    expect(find.text('Tier: house'), findsOneWidget);
-    expect(find.text('Workers at risk: 2'), findsOneWidget);
-  });
-
-  testWidgets('slider minimum is 10 minutes, hut', (tester) async {
-    await _pump(tester);
-    await tester.drag(find.byType(Slider), const Offset(-2000, 0));
-    await tester.pump();
-    expect(find.text('Minutes: 10'), findsOneWidget);
-    expect(find.text('Tier: hut'), findsOneWidget);
-    expect(find.text('Workers at risk: 1'), findsOneWidget);
-  });
-
-  testWidgets('slider maximum is 120 minutes, castle', (tester) async {
-    await _pump(tester);
-    await tester.drag(find.byType(Slider), const Offset(2000, 0));
-    await tester.pump();
-    expect(find.text('Minutes: 120'), findsOneWidget);
-    expect(find.text('Tier: castle'), findsOneWidget);
-    expect(find.text('Workers at risk: 8'), findsOneWidget);
+    expect(find.byType(Slider), findsNothing);
+    expect(find.text('Start'), findsNothing);
+    expect(find.text('Abandon'), findsNothing);
   });
 }
 
@@ -126,19 +108,17 @@ void _elapsedTests() {
 }
 
 void _simulatorWiringTest() {
-  testWidgets('the controller panel starts a session with the slider minutes', (
+  testWidgets('the controller panel keeps the simulators and the readout', (
     tester,
   ) async {
     await _pump(tester);
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
-    await tester.ensureVisible(find.text('Start'));
-    await tester.tap(find.text('Start'));
-    await tester.pump();
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-    await tester.pump();
-    expect(find.text('State: running'), findsOneWidget);
-    expect(find.text('Planned: 25 min'), findsOneWidget);
+    for (final label in ['Leave', 'Return', 'Lock']) {
+      await tester.ensureVisible(find.text(label));
+      expect(find.text(label), findsOneWidget);
+    }
+    expect(find.text('State: -'), findsOneWidget);
   });
 }
 

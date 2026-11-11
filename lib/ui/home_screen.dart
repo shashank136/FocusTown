@@ -11,6 +11,9 @@ import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/ui/debug_screen.dart';
+import 'package:focus_town/ui/hud.dart';
+import 'package:focus_town/ui/result_dialogs.dart';
+import 'package:focus_town/ui/session_panel.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
 
 /// The town, full screen. Debug builds add a small bug button (top-left) that
@@ -32,10 +35,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       widget.game ??
       TownGame(fps: ref.read(fpsProvider), clock: ref.read(clockProvider));
 
+  Timer? _tick;
+  bool _showingResult = false;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // Completion is decided from the stored clock; this only asks the
+    // controller to look once a second while a session runs.
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (ref.read(focusControllerProvider).value?.active != null) {
+        unawaited(ref.read(focusControllerProvider.notifier).tick());
+      }
+    });
     // Battery saver: fewer frames per second.
     ref.listenManual(lowPowerProvider, (prev, next) {
       _game.lowPower = next.value ?? false;
@@ -54,6 +67,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _syncPlacement();
     }, fireImmediately: true);
     ref.listenManual(placementProvider, (prev, next) => _syncPlacement());
+    // Tell the user how a session ended, once, then clear the result.
+    ref.listenManual(focusControllerProvider, (prev, next) {
+      final result = next.value?.lastResult;
+      if (result == null || _showingResult) return;
+      _showingResult = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await showResultDialog(context, result);
+        _showingResult = false;
+        if (mounted) ref.read(focusControllerProvider.notifier).clearResult();
+      });
+    }, fireImmediately: true);
   }
 
   // Outlines on the free plots while the user is choosing one.
@@ -78,6 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   @override
   void dispose() {
+    _tick?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -99,6 +125,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       body: Stack(
         children: [
           GameWidget(game: _game),
+          // Streak, level, workers and plots, clear of the debug button.
+          const SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(56, 4, 8, 0),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Hud(),
+                ),
+              ),
+            ),
+          ),
+          // While building: the countdown, progress and Abandon.
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 320),
+                  child: const SessionPanel(),
+                ),
+              ),
+            ),
+          ),
           // The way in: pick a duration and start (hidden while building).
           if (active == null && placement == null)
             SafeArea(
@@ -189,6 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     child: const IgnorePointer(
                       child: Text(
                         'Ready to place',
+                        key: ValueKey('ready-label'),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Colors.white,

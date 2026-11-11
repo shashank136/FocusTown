@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
-import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/ui/event_log_panel.dart';
@@ -20,10 +19,8 @@ class DebugScreen extends ConsumerStatefulWidget {
 }
 
 class _DebugScreenState extends ConsumerState<DebugScreen> {
-  static final List<int> _durations = BuildingTier.validDurations();
   late final TimeStamp _start;
   Timer? _timer;
-  int _minutes = 25;
   bool _notificationsGranted = false;
 
   @override
@@ -67,7 +64,6 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     final clock = ref.watch(clockProvider);
     final now = TimeStamp.now(clock);
     final tampered = wallClockTampered(_start, now);
-    final tier = BuildingTier.forMinutes(_minutes);
     return Scaffold(
       appBar: AppBar(title: const Text('Focus Town debug')),
       body: SingleChildScrollView(
@@ -79,17 +75,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Uptime: ${_hms(clock.uptime())}'),
             Text('Elapsed since start: ${_ms(elapsedBetween(_start, now))}'),
             Text('Clock tampered: ${tampered ? 'yes' : 'no'}'),
-            Slider(
-              value: _durations.indexOf(_minutes).toDouble(),
-              max: (_durations.length - 1).toDouble(),
-              divisions: _durations.length - 1,
-              onChanged: (v) =>
-                  setState(() => _minutes = _durations[v.round()]),
-            ),
-            Text('Minutes: $_minutes'),
-            Text('Tier: ${tier.name}'),
-            Text('Workers at risk: ${tier.workersAtRisk}'),
-            FocusDebugPanel(minutes: _minutes),
+            const FocusDebugPanel(),
             const WorldStatsCard(),
             ValueListenableBuilder<double>(
               valueListenable: ref.watch(fpsProvider),

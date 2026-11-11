@@ -22,56 +22,68 @@ class Hud extends ConsumerWidget {
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _Stat(
-              Icons.local_fire_department,
-              'Streak',
-              Text('$streak', key: const ValueKey('hud-streak')),
-            ),
-            const SizedBox(width: 12),
-            Column(
+        child: DefaultTextStyle.merge(
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+          child: IconTheme.merge(
+            data: const IconThemeData(color: Colors.white),
+            child: Row(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${level[0].toUpperCase()}${level.substring(1)}',
-                  key: const ValueKey('hud-level'),
+                _Stat(
+                  Icons.local_fire_department,
+                  'Streak',
+                  Text('$streak', key: const ValueKey('hud-streak')),
                 ),
-                SizedBox(
-                  width: 72,
-                  child: LinearProgressIndicator(
-                    key: const ValueKey('hud-bar'),
-                    value: Progression.progressToNext(town.xp),
+                const SizedBox(width: 12),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${level[0].toUpperCase()}${level.substring(1)}',
+                      key: const ValueKey('hud-level'),
+                    ),
+                    SizedBox(
+                      width: 72,
+                      child: LinearProgressIndicator(
+                        key: const ValueKey('hud-bar'),
+                        value: Progression.progressToNext(town.xp),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                _Stat(
+                  Icons.engineering,
+                  'Workers',
+                  Text('${town.workers}', key: const ValueKey('hud-workers')),
+                ),
+                const SizedBox(width: 12),
+                _Stat(
+                  Icons.grid_view,
+                  'Plots',
+                  Text(
+                    '$placed/${town.plotsUnlocked}',
+                    key: const ValueKey('hud-plots'),
                   ),
                 ),
+                if (town.queue.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  _Stat(
+                    Icons.hourglass_bottom,
+                    'Waiting for a plot',
+                    Text(
+                      '${town.queue.length}',
+                      key: const ValueKey('hud-queue'),
+                    ),
+                  ),
+                ],
               ],
             ),
-            const SizedBox(width: 12),
-            _Stat(
-              Icons.engineering,
-              'Workers',
-              Text('${town.workers}', key: const ValueKey('hud-workers')),
-            ),
-            const SizedBox(width: 12),
-            _Stat(
-              Icons.grid_view,
-              'Plots',
-              Text(
-                '$placed/${town.plotsUnlocked}',
-                key: const ValueKey('hud-plots'),
-              ),
-            ),
-            if (town.queue.isNotEmpty) ...[
-              const SizedBox(width: 12),
-              _Stat(
-                Icons.hourglass_bottom,
-                'Waiting for a plot',
-                Text('${town.queue.length}', key: const ValueKey('hud-queue')),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
