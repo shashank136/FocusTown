@@ -45,13 +45,23 @@ SessionResult _failed({
   recoveryStarted: recoveryStarted,
 );
 
-Future<void> _show(WidgetTester tester, SessionResult r) async {
+Future<void> _show(
+  WidgetTester tester,
+  SessionResult r, {
+  bool growthTip = false,
+  bool recoveryFull = true,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       home: Builder(
         builder: (context) => Scaffold(
           body: TextButton(
-            onPressed: () => showResultDialog(context, r),
+            onPressed: () => showResultDialog(
+              context,
+              r,
+              growthTip: growthTip,
+              recoveryFull: recoveryFull,
+            ),
             child: const Text('go'),
           ),
         ),
@@ -202,4 +212,37 @@ void main() {
       }
     });
   }
+
+  group('tips in the dialogs', () {
+    const growth = 'Huts and houses add builders to your town.';
+    const full = 'All your builders are gone. A wanderer arrives who cannot '
+        'be lost. Build huts (10 to 20 minutes) until you have 3 builders.';
+    const short = 'Recovery mode again. Build huts to get back to 3 builders.';
+
+    testWidgets('the growth line shows only when asked', (tester) async {
+      await _show(tester, _completed());
+      expect(_allText(tester), isNot(contains(growth)));
+    });
+
+    testWidgets('the growth line shows when asked', (tester) async {
+      await _show(tester, _completed(), growthTip: true);
+      expect(_allText(tester), contains(growth));
+    });
+
+    testWidgets('the full Last Builder text the first time', (tester) async {
+      await _show(tester, _failed(recoveryStarted: true));
+      expect(_allText(tester), contains(full));
+      expect(_allText(tester), isNot(contains(short)));
+    });
+
+    testWidgets('a short recovery line afterwards', (tester) async {
+      await _show(
+        tester,
+        _failed(recoveryStarted: true),
+        recoveryFull: false,
+      );
+      expect(_allText(tester), contains(short));
+      expect(_allText(tester), isNot(contains(full)));
+    });
+  });
 }

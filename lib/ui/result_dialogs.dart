@@ -10,14 +10,21 @@ String _awayText(int seconds) =>
     seconds >= 60 ? '${seconds ~/ 60}m ${seconds % 60}s' : '${seconds}s';
 
 /// Tells the user how the session ended; returns when they dismiss it.
-Future<void> showResultDialog(BuildContext context, SessionResult r) =>
+/// [growthTip] adds the one-time line about builders; [recoveryFull] chooses
+/// the long Last Builder text (the first time) over the short one.
+Future<void> showResultDialog(
+  BuildContext context,
+  SessionResult r, {
+  bool growthTip = false,
+  bool recoveryFull = true,
+}) =>
     showDialog<void>(
       context: context,
       builder: (context) {
         final (title, lines) = switch (r.outcome) {
-          SessionOutcome.completed => _completed(r),
+          SessionOutcome.completed => _completed(r, growthTip),
           SessionOutcome.queued => _queued(r),
-          SessionOutcome.failed => _failed(r),
+          SessionOutcome.failed => _failed(r, recoveryFull),
         };
         return AlertDialog(
           title: Text(title),
@@ -49,7 +56,7 @@ TextStyle? _heading(BuildContext context) =>
     Theme.of(context).textTheme.titleSmall;
 
 // A line is (text, isHeading).
-(String, List<(String, bool)>) _completed(SessionResult r) => (
+(String, List<(String, bool)>) _completed(SessionResult r, bool growthTip) => (
   '${_capital(r.tier.name)} built',
   [
     if (r.workersGained > 0)
@@ -64,6 +71,7 @@ TextStyle? _heading(BuildContext context) =>
     if (r.leveledUpTo != null)
       ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
     if (r.recoveryEnded) ('Your town is back on its feet.', true),
+    if (growthTip) ('Huts and houses add builders to your town.', false),
   ],
 );
 
@@ -78,7 +86,7 @@ TextStyle? _heading(BuildContext context) =>
   ],
 );
 
-(String, List<(String, bool)>) _failed(SessionResult r) => (
+(String, List<(String, bool)>) _failed(SessionResult r, bool full) => (
   r.reason == OutcomeReason.abandoned
       ? 'You abandoned the build'
       : 'Your builders stopped',
@@ -91,7 +99,7 @@ TextStyle? _heading(BuildContext context) =>
       ),
     if (r.reason == OutcomeReason.leftTooLong)
       ('You were away for ${_awayText(r.awaySeconds)}', false),
-    if (r.recoveryStarted) ...[
+    if (r.recoveryStarted && full) ...[
       ('The Last Builder', true),
       (
         'All your builders are gone. A wanderer arrives who cannot be lost. '
@@ -99,5 +107,10 @@ TextStyle? _heading(BuildContext context) =>
         false,
       ),
     ],
+    if (r.recoveryStarted && !full)
+      (
+        'Recovery mode again. Build huts to get back to 3 builders.',
+        false,
+      ),
   ],
 );

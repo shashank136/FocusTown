@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-21.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-21.4 done (iOS only; Android phone permission deferred with the other Android tasks): OnboardingController.finish() (notification permission once, setOnboardingDone, start 10 min hut; guarded against double calls), onboardingControllerProvider/onboardingDoneProvider, page 3 permission line. OnboardingScreen.onStart is wired to finish() in T-21.6. Next: T-21.5 tips.
+- Current task: T-21.6 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-21.5 done: tipsProvider (lib/app/tips.dart), pass tip dialog (title 'Free pass spent'), growth line and full/short Last Builder text in result dialogs, notification note banner (after onboarding, no permission, dismissable once). Next: T-21.6 route app start by onboarding state (wire OnboardingScreen.onStart to OnboardingController.finish).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-21.4 done)
+- Last updated: 2026-11-09 (T-21.5 done)
 
 ## Status of steps
 
@@ -1556,7 +1556,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Done when: flutter analyze clean; flutter test green; `flutter build apk --debug` compiles.
 - Commit: `T-21.4: onboarding permissions and start`
 
-### T-21.5 [ ] In-context tips and denied-notification note
+### T-21.5 [x] In-context tips and denied-notification note
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
 - Depends on: T-21.4
 - Goal: explain rules at the right moment, once each.

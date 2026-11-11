@@ -4,8 +4,11 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/app/tips.dart';
+import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
@@ -67,6 +70,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _syncPlacement();
     }, fireImmediately: true);
     ref.listenManual(placementProvider, (prev, next) => _syncPlacement());
+    // The free pass was just spent: explain it, once.
+    ref.listenManual(focusControllerProvider, (prev, next) {
+      final used = next.value?.active?.passUsed ?? false;
+      final was = prev?.value?.active?.passUsed ?? false;
+      if (used && !was) unawaited(_passTip());
+    });
     // Tell the user how a session ended, once, then clear the result.
     ref.listenManual(focusControllerProvider, (prev, next) {
       final result = next.value?.lastResult;
@@ -74,11 +83,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _showingResult = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
-        await showResultDialog(context, result);
+        final tips = await ref.read(tipsProvider.future);
+        if (!mounted) return;
+        final growth =
+            result.outcome == SessionOutcome.completed &&
+            result.workersGained > 0 &&
+            !tips.contains(Tip.growth);
+        final recovery = result.recoveryStarted;
+        await showResultDialog(
+          context,
+          result,
+          growthTip: growth,
+          recoveryFull: !tips.contains(Tip.recovery),
+        );
+        final marks = ref.read(tipsProvider.notifier);
+        if (growth) await marks.markShown(Tip.growth);
+        if (recovery) await marks.markShown(Tip.recovery);
         _showingResult = false;
         if (mounted) ref.read(focusControllerProvider.notifier).clearResult();
       });
     }, fireImmediately: true);
+  }
+
+  Future<void> _dismissNote() async {
+    await ref.read(tipsProvider.notifier).markShown(Tip.notificationNote);
+    ref.invalidate(notificationNoteProvider);
+  }
+
+  Future<void> _passTip() async {
+    final tips = ref.read(tipsProvider.notifier);
+    if (!await tips.shouldShow(Tip.pass) || !mounted) return;
+    await tips.markShown(Tip.pass);
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Free pass spent'),
+        content: const Text(
+          'Emergency pass used. You were away more than 10 seconds, so we '
+          'spent your free pass. You get one per session.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 
   // Outlines on the free plots while the user is choosing one.
@@ -139,6 +191,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
           ),
+          // Warnings are off: say so once.
+          if (ref.watch(notificationNoteProvider).value ?? false)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 64, 16, 0),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "Warnings are off. We can't tell you before "
+                            'your builders stop. Turn on notifications in '
+                            'Settings.',
+                          ),
+                          TextButton(
+                            onPressed: () => unawaited(_dismissNote()),
+                            child: const Text('Dismiss'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           // While building: the countdown, progress and Abandon.
           SafeArea(
             child: Align(

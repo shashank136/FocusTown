@@ -8,9 +8,11 @@ import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
+import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
+import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/frame_limiter.dart';
 import 'package:focus_town/game/town_game.dart';
@@ -72,6 +74,9 @@ Future<ProviderContainer> _pump(
   bool lowPower = false,
   bool reducedMotion = false,
   TownState? seed,
+  bool onboarded = false,
+  bool granted = false,
+  Set<Tip> shown = const {},
 }) async {
   _clock = FakeClock();
   _game = _SpyGame(clock: _clock);
@@ -93,12 +98,23 @@ Future<ProviderContainer> _pump(
       );
     });
   }
+  final notifier = FakeNotifier()..permissionGranted = granted;
+  if (onboarded || shown.isNotEmpty) {
+    final repo = TownRepository(db, _clock);
+    await tester.runAsync(() async {
+      await repo.loadOrCreate();
+      if (onboarded) await repo.setOnboardingDone();
+      for (final t in shown) {
+        await repo.markTipShown(t);
+      }
+    });
+  }
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(_clock),
         databaseProvider.overrideWithValue(db),
-        notifierProvider.overrideWithValue(FakeNotifier()),
+        notifierProvider.overrideWithValue(notifier),
         powerStateProvider.overrideWithValue(_FakePower(low: lowPower)),
       ],
       child: MaterialApp(
@@ -541,6 +557,107 @@ void main() {
       expect(find.text('Hut built'), findsOneWidget);
       await pumpFor(tester, const Duration(seconds: 2));
       expect(find.text('Hut built'), findsOneWidget);
+    });
+  });
+
+  group('tips', () {
+    Future<void> pumpFor(WidgetTester tester, Duration d) async {
+      await tester.pump(d);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 60)),
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    Future<void> finishHut(
+      WidgetTester tester,
+      ProviderContainer c,
+    ) async {
+      await tester.runAsync(
+        () => c.read(focusControllerProvider.notifier).start(10),
+      );
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      _clock.advance(const Duration(minutes: 10));
+      await pumpFor(tester, const Duration(seconds: 1));
+    }
+
+    const growth = 'Huts and houses add builders to your town.';
+
+    testWidgets('the growth line shows on the first hut only', (tester) async {
+      final c = await _pump(tester);
+      await finishHut(tester, c);
+      expect(find.text(growth), findsOneWidget);
+      await tester.tap(find.text('Continue'));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      await finishHut(tester, c);
+      expect(find.text('Hut built'), findsOneWidget);
+      expect(find.text(growth), findsNothing);
+    });
+
+    testWidgets('no growth line once it was shown before', (tester) async {
+      final c = await _pump(tester, shown: {Tip.growth});
+      await finishHut(tester, c);
+      expect(find.text('Hut built'), findsOneWidget);
+      expect(find.text(growth), findsNothing);
+    });
+
+    testWidgets('the pass tip appears once, when the pass is spent', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      final controller = c.read(focusControllerProvider.notifier);
+      await tester.runAsync(() => controller.start(25));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.textContaining('Emergency pass used'), findsNothing);
+      await tester.runAsync(controller.onBackgroundedUnlocked);
+      _clock.advance(const Duration(seconds: 30));
+      await tester.runAsync(controller.onForegrounded);
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.textContaining('Emergency pass used'), findsOneWidget);
+    });
+
+    testWidgets('the pass tip stays away once shown', (tester) async {
+      final c = await _pump(tester, shown: {Tip.pass});
+      final controller = c.read(focusControllerProvider.notifier);
+      await tester.runAsync(() => controller.start(25));
+      await tester.runAsync(controller.onBackgroundedUnlocked);
+      _clock.advance(const Duration(seconds: 30));
+      await tester.runAsync(controller.onForegrounded);
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.textContaining('Emergency pass used'), findsNothing);
+    });
+
+    const note = 'Warnings are off.';
+
+    testWidgets('the note shows after onboarding without permission', (
+      tester,
+    ) async {
+      await _pump(tester, onboarded: true);
+      expect(find.textContaining(note), findsOneWidget);
+    });
+
+    testWidgets('no note before onboarding or with permission', (tester) async {
+      await _pump(tester);
+      expect(find.textContaining(note), findsNothing);
+    });
+
+    testWidgets('no note when permission is granted', (tester) async {
+      await _pump(tester, onboarded: true, granted: true);
+      expect(find.textContaining(note), findsNothing);
+    });
+
+    testWidgets('dismissing the note hides it for good', (tester) async {
+      final c = await _pump(tester, onboarded: true);
+      await tester.tap(find.text('Dismiss'));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(find.textContaining(note), findsNothing);
+      expect(
+        await tester.runAsync(
+          () => c.read(townRepositoryProvider).shownTips(),
+        ),
+        contains(Tip.notificationNote),
+      );
     });
   });
 }
