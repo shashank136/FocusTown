@@ -62,104 +62,107 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     );
     final option = options.firstWhere((o) => o.minutes == minutes);
     final theme = Theme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (town.inRecoveryMode)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Text(_recoveryBanner, style: theme.textTheme.bodyMedium),
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (town.inRecoveryMode)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(_recoveryBanner, style: theme.textTheme.bodyMedium),
+              ),
             ),
-          ),
-        SizedBox(
-          height: 112,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Marks the selected row.
-              IgnorePointer(
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(8),
+          SizedBox(
+            height: 112,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Marks the selected row.
+                IgnorePointer(
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
-              ),
-              ListWheelScrollView(
-                controller: _wheel,
-                itemExtent: 40,
-                // A curved, magnified dial: rows tilt away from the middle.
-                diameterRatio: 1.8,
-                perspective: 0.004,
-                useMagnifier: true,
-                magnification: 1.15,
-                overAndUnderCenterOpacity: 0.35,
-                physics: const FixedExtentScrollPhysics(),
-                onSelectedItemChanged: (i) {
-                  // A detent: a small tap and a click for every step.
-                  unawaited(HapticFeedback.selectionClick());
-                  unawaited(SystemSound.play(SystemSoundType.click));
-                  setState(() => _selected = options[i].minutes);
-                },
-                children: [
-                  for (final o in options)
-                    Semantics(
-                      label:
-                          '${o.minutes} minutes, ${o.tier.name}'
-                          '${o.reason == null ? '' : ', ${o.reason}'}',
-                      excludeSemantics: true,
-                      child: Center(
-                        child: Text(
-                          '${o.minutes} min',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: o.enabled ? null : theme.disabledColor,
+                ListWheelScrollView(
+                  controller: _wheel,
+                  itemExtent: 40,
+                  // A curved, magnified dial: rows tilt away from the middle.
+                  diameterRatio: 1.8,
+                  perspective: 0.004,
+                  useMagnifier: true,
+                  magnification: 1.15,
+                  overAndUnderCenterOpacity: 0.35,
+                  physics: const FixedExtentScrollPhysics(),
+                  onSelectedItemChanged: (i) {
+                    // A detent: a small tap and a click for every step.
+                    unawaited(HapticFeedback.selectionClick());
+                    unawaited(SystemSound.play(SystemSoundType.click));
+                    setState(() => _selected = options[i].minutes);
+                  },
+                  children: [
+                    for (final o in options)
+                      Semantics(
+                        label:
+                            '${o.minutes} minutes, ${o.tier.name}'
+                            '${o.reason == null ? '' : ', ${o.reason}'}',
+                        excludeSemantics: true,
+                        child: Center(
+                          child: Text(
+                            '${o.minutes} min',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: o.enabled ? null : theme.disabledColor,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(option.tier.name, style: theme.textTheme.titleMedium),
+          _preview(option),
+          if (option.workersAtRisk > 0)
+            Text(
+              'Risks ${option.workersAtRisk} '
+              'worker${option.workersAtRisk == 1 ? '' : 's'}',
+            ),
+          if (option.workersGained > 0)
+            Text(
+              '+${option.workersGained} '
+              'worker${option.workersGained == 1 ? '' : 's'} if you finish',
+            ),
+          if (option.reason != null)
+            Text(
+              option.reason!,
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
+          const SizedBox(height: 12),
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            children: [
+              TextButton(
+                onPressed: option.enabled ? () => _choosePlot(minutes) : null,
+                child: const Text('Choose plot…'),
+              ),
+              FilledButton(
+                onPressed: option.enabled
+                    ? () => unawaited(_start(minutes))
+                    : null,
+                child: const Text('Start'),
               ),
             ],
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(option.tier.name, style: theme.textTheme.titleMedium),
-        _preview(option),
-        if (option.workersAtRisk > 0)
-          Text(
-            'Risks ${option.workersAtRisk} '
-            'worker${option.workersAtRisk == 1 ? '' : 's'}',
-          ),
-        if (option.workersGained > 0)
-          Text(
-            '+${option.workersGained} '
-            'worker${option.workersGained == 1 ? '' : 's'} if you finish',
-          ),
-        if (option.reason != null)
-          Text(
-            option.reason!,
-            style: TextStyle(color: theme.colorScheme.error),
-          ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextButton(
-              onPressed: option.enabled ? () => _choosePlot(minutes) : null,
-              child: const Text('Choose plot…'),
-            ),
-            const SizedBox(width: 12),
-            FilledButton(
-              onPressed: option.enabled
-                  ? () => unawaited(_start(minutes))
-                  : null,
-              child: const Text('Start'),
-            ),
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 

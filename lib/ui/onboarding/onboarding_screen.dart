@@ -35,6 +35,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _next() {
     if (_last) return widget.onStart();
+    if (MediaQuery.of(context).disableAnimations) {
+      _controller.jumpToPage(_page + 1);
+      return;
+    }
     _controller.nextPage(
       duration: const Duration(milliseconds: 250),
       curve: Curves.easeOut,

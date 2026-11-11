@@ -126,7 +126,7 @@ class TownGame extends FlameGame
   void _celebrate(Plot plot) {
     _show = SiteTransition.celebrate();
     _leaving = _lastSiteWorkers;
-    if (!_lowPower) {
+    if (!_lowPower && !reducedMotion) {
       _particles.burst(
         (plot.center.x, plot.center.y, 3),
         const [0xFFc69c5d, 0xFFbcbfc5, 0xFFa8875c],
@@ -171,7 +171,7 @@ class TownGame extends FlameGame
   // Smoke keeps coming for the whole failure phase: top up to about 25.
   void _topUpSmoke() {
     final plot = _smokeAt;
-    if (plot == null || _lowPower) return;
+    if (plot == null || _lowPower || reducedMotion) return;
     final missing = 25 - _particles.alive.length;
     if (missing <= 0) return;
     _particles.burst(
@@ -309,7 +309,12 @@ class TownGame extends FlameGame
     }
     final t = _transition;
     if (t == null) return;
-    final pose = t.step(Duration(microseconds: (dt * 1e6).round()));
+    // With reduced motion the glide is a jump.
+    final pose = t.step(
+      reducedMotion
+          ? CameraTransition.duration
+          : Duration(microseconds: (dt * 1e6).round()),
+    );
     cam.setPose(pose.center, pose.tile);
     _redraw = true;
     if (t.isDone) _transition = null;

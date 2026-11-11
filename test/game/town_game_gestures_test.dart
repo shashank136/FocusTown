@@ -154,4 +154,34 @@ void main() {
       },
     );
   });
+
+  group('reduced motion', () {
+    test('the camera jumps to its target in a single frame', () {
+      final game = _game()
+        ..reducedMotion = true
+        ..onPan(const Vec2(300, 300));
+      final cam = game.renderer.camera!;
+      final home = cam.origin;
+      game
+        ..recenter()
+        ..update(1 / 60);
+      expect(cam.origin.x, isNot(home.x + 300));
+      game.update(1 / 60);
+      final settled = cam.origin;
+      game.update(1 / 60);
+      expect(cam.origin, settled);
+      expect(settled.x, isNot(home.x));
+    });
+
+    test('a normal camera is still gliding after one frame', () {
+      final game = _game()..onPan(const Vec2(300, 300));
+      final cam = game.renderer.camera!;
+      game
+        ..recenter()
+        ..update(1 / 60);
+      final first = cam.origin;
+      game.update(1 / 60);
+      expect(cam.origin, isNot(first));
+    });
+  });
 }

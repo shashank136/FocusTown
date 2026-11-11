@@ -28,19 +28,21 @@ Future<void> showResultDialog(
         };
         return AlertDialog(
           title: Text(title),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (final line in lines)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text(
-                    line.$1,
-                    style: line.$2 ? _heading(context) : null,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final line in lines)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(
+                      line.$1,
+                      style: line.$2 ? _heading(context) : null,
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(

@@ -19,6 +19,7 @@ import 'package:focus_town/ui/hud.dart';
 import 'package:focus_town/ui/result_dialogs.dart';
 import 'package:focus_town/ui/session_panel.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
+import 'package:focus_town/ui/town_summary.dart';
 
 /// The town, full screen. Debug builds add a small bug button (top-left) that
 /// opens the debug screen.
@@ -182,6 +183,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     _game.reducedMotion = MediaQuery.of(context).disableAnimations;
+    final town = ref.watch(
+      focusControllerProvider.select((f) => f.value?.town),
+    );
     final placement = ref.watch(placementProvider);
     final active = ref.watch(
       focusControllerProvider.select((f) => f.value?.active),
@@ -189,7 +193,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     return Scaffold(
       body: Stack(
         children: [
-          GameWidget(game: _game),
+          Semantics(
+            label: town == null ? null : townSummary(town),
+            child: GameWidget(game: _game),
+          ),
           // Streak, level, workers and plots, clear of the debug button.
           const SafeArea(
             child: Align(
