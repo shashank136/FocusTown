@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/widgets.dart';
@@ -7,9 +8,11 @@ import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/render/tier_preview.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
@@ -148,3 +151,9 @@ final fpsProvider = Provider<ValueNotifier<double>>((ref) {
   ref.onDispose(fps.dispose);
   return fps;
 });
+
+/// The picture of each tier's finished building, drawn once per tier.
+// ignore: specify_nonobvious_property_types, the family type is not exported
+final tierPreviewProvider = FutureProvider.family<ui.Image, BuildingTier>(
+  (ref, tier) => renderTierPreview(tier),
+);
