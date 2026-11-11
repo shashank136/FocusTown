@@ -1810,3 +1810,45 @@ Open questions (assumed answers below; the user may change them before work star
 - Tests first: none (manual).
 - Done when: build visible in TestFlight and testers invited; results recorded; flutter analyze clean; flutter test green. The queue is complete.
 - Commit: `T-22.15: record testflight upload`
+
+## Phase V2: forgiveness and return (after the MVP ships)
+
+Decided with the user: the MVP comes first; these two items come right after it and are already v2 in `docs/spec.md` ("cleanup sessions" and "earned passes"). Payments (a small paid pass pack, building styles and landmarks as one-time purchases) are deferred: they need the `in_app_purchase` package, which needs the user's approval, and belong near step 22. When work starts, update `docs/spec.md` (FR-5 says ruins are permanent; the rules for passes) first.
+
+Note: the spec's existing pass is a 60-second grace, one per session. The "emergency pause" below is different: a longer, once-a-week allowance that the user chooses to use.
+
+Open questions (assumed answers):
+- Repair session length: 10 minutes for any building. (Assumed.)
+- A failed repair costs nothing more: the ruin stays, no workers die, no streak change. (Assumed.)
+- Emergency pause: 1 per week, extends the away window to 10 minutes once, chosen by pressing a button before leaving. (Assumed.)
+
+### T-V2.1 [ ] Repair rule (pure)
+- Depends on: MVP done (T-22.15), T-18A.4
+- Goal: a ruin can be cleared by a short session.
+- Files: `lib/domain/town_rules.dart`, `lib/domain/session.dart`, tests.
+- Do: session kind `repair` (10 minutes, no tier, no workers at risk); `TownRules.applyRepairCompleted(town, ruin)` removes the ruin and frees its footprint; a failed or abandoned repair changes nothing.
+- Tests first: completing clears exactly that ruin; failing leaves the town identical; XP and streak rules for a repair are explicit tests; only an existing ruin can be repaired.
+- Commit: `T-V2.1: repair rule`
+
+### T-V2.2 [ ] Start a repair from the ruin
+- Depends on: T-V2.1
+- Do: controller `startRepair(ruinId)`; the site shows scaffolding on the ruin and clears it at the end; home screen: tap a ruin to see "Repair (10 min)"; same celebration as a completed building.
+- Tests first: controller round trip; widget test: tapping a ruin offers repair and starts it; kill and relaunch resumes it.
+- Commit: `T-V2.2: repair sessions`
+
+### T-V2.3 [ ] Weekly emergency pause (rule and storage)
+- Depends on: T-V2.1
+- Do: `TownState.emergencyPauses` (1 per week, refilled on a new week from the injected clock; schema v3 and migration); session field `emergencyUsed`; away limit becomes 10 minutes once when set.
+- Tests first: refill on the first session of a new week (never more than 1 stored); using it moves the away limit to 10 minutes exactly once; none left means the old rules; clock changes never grant extra.
+- Commit: `T-V2.3: emergency pause rule`
+
+### T-V2.4 [ ] Emergency pause button and first-time explanation
+- Depends on: T-V2.3
+- Do: a button on the session screen that arms the pause (disabled when none are left, shows when the next one arrives); the first time the user leaves mid-session explain both the pass and the pause; notifications reflect the longer window.
+- Tests first: widget tests for armed, disabled and explanation-once; notification scheduling uses the 10-minute limit.
+- Commit: `T-V2.4: emergency pause screen`
+
+### T-V2.5 [ ] [device] Repair and emergency pause on the iPhone
+- Depends on: T-V2.4
+- Do: give the user steps: fail a session, repair the ruin in 10 minutes; arm the pause, leave for 5 minutes, return without penalty; record in `docs/device_tests.md`.
+- Commit: `T-V2.5: record v2 device check`

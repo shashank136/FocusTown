@@ -425,8 +425,9 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 ## After launch (v2 backlog, do not start before launch criteria are met)
 - [ ] Coins economy and coin packs
 - [ ] Famous buildings (multi-session) with damage on failure
-- [ ] Cleanup sessions for ruins
-- [ ] Earned passes
+- [ ] Cleanup sessions for ruins (planned: T-V2.1, T-V2.2, right after the MVP)
+- [ ] Earned passes (planned instead as a weekly emergency pause: T-V2.3, T-V2.4)
+- [ ] Payments: small pass pack, landmarks and styles (deferred; needs approval for `in_app_purchase`)
 - [ ] Tents / soft housing cap
 - [ ] Lock-screen progress (Live Activity / Android ongoing notification)
 - [ ] Daily reminders and inactivity nudges
