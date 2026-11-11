@@ -428,6 +428,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Earned passes (planned instead as a weekly emergency pause: T-V2.3, T-V2.4)
 - [ ] More building looks per tier (apartments, windmill, lighthouse...) and landmarks such as the pyramid (planned: Phase V3, T-V3.1 to T-V3.4)
 - [ ] Focus trends screen: minutes per day and week, streaks, completion rate, trend sentence (planned: Phase V4, T-V4.1 to T-V4.4)
+- [ ] Grow your world: several areas on a rotatable globe, gardens as buildable things, land sessions, a showcase mode (planned: Phase V6, T-V6.1 to T-V6.7)
 - [ ] Payments: small pass pack, landmarks and styles (deferred; needs approval for `in_app_purchase`)
 - [ ] Tents / soft housing cap
 - [ ] Lock-screen progress (Live Activity / Android ongoing notification)

@@ -1920,3 +1920,59 @@ Open questions (assumed answers):
 - Depends on: T-V4.3
 - Do: give the user steps (finish a few sessions, open the screen, check the numbers against what they did); record in `docs/device_tests.md`.
 - Commit: `T-V4.4: record trends device check`
+
+## Phase V6: grow your world (after V3)
+
+Idea from the user: the player builds their own world while regaining focus. The world is like a globe: rotate it, pick an area, focus, pick the plot and build there. Later the player can view the whole world or show it off. Gardens and open space count as things to build, so not every plot has to be a building.
+
+Design decision (assumed, to confirm before work starts): the app stays 2D, as `docs/spec.md` says. The "globe" is a painted, rotatable world view used for choosing an area and for showing off; each area is still the isometric block island the app draws today. Real 3D voxels on a sphere are out of scope.
+
+Open questions (assumed answers):
+- How land is earned: a dedicated "Land" session of 45 minutes or more adds a new area; plots keep unlocking one per focus day. (Assumed; a streak milestone may add one too.)
+- Size of an area: today's island (8 x 8 plots), several areas around the globe. (Assumed.)
+- Gardens, parks, ponds and orchards take a plot and a session, add no workers and leave no ruin. (Assumed.)
+- Showing off: spin the globe and save a picture. Sharing it needs a package (share sheet or photo library), so ask the user first. (Assumed.)
+- Frame rate: a bigger world must stay at 15 fps normal and 10 fps in Low Power Mode; measure on the iPhone (T-17.7) before adding areas.
+
+### T-V6.1 [ ] Spec and world model
+- Depends on: MVP done (T-22.15), T-V3.1
+- Goal: a town has several areas instead of one fixed island.
+- Files: `docs/spec.md` (first), `lib/domain/town.dart`, `lib/domain/world_layout.dart`, `lib/data/database.dart` (next schema version and a migration), tests.
+- Do: `Area` (id, position on the globe, plot count); the town stores its areas and every building stores its area; old towns get one area holding all their buildings; the 64 x 64 constants become per-area values.
+- Tests first: migration keeps every building on area 0; plot rules work per area; a town with two areas never mixes their plots.
+- Commit: `T-V6.1: world model with areas`
+
+### T-V6.2 [ ] Gardens and open space as buildable things
+- Depends on: T-V3.2
+- Do: park, pond, orchard and garden looks: they take a plot and a session, no workers at risk, no ruin on failure (the plot goes back to forest).
+- Tests first: rules for a garden session (no worker loss, no ruin); layouts fit the plot; goldens.
+- Commit: `T-V6.2: gardens`
+
+### T-V6.3 [ ] Land sessions add areas
+- Depends on: T-V6.1
+- Do: a session kind `land` (45 minutes or more) that adds an area when it completes; a failed one adds nothing; the world builder draws the new area as forest.
+- Tests first: completing adds exactly one area; failing adds none; the cap on areas is explicit; the renderer builds each area.
+- Commit: `T-V6.3: land sessions`
+
+### T-V6.4 [ ] World view: the rotatable globe
+- Depends on: T-V6.3
+- Do: a painted globe screen (a `CustomPainter`, no package): areas as patches that follow a drag-to-rotate gesture with inertia, the current area highlighted, buildings shown as small dots; tap an area to dive into its island.
+- Tests first: rotation maths (pure), picking the area under a tap, a widget test for rotating and tapping, a golden of the globe.
+- Commit: `T-V6.4: world globe`
+
+### T-V6.5 [ ] Choose area, then plot, then focus
+- Depends on: T-V6.4
+- Do: the Start flow becomes duration, then area (globe), then plot (today's choose-a-plot step); the island view gets a "World" button back to the globe.
+- Tests first: the flow end to end with a fake clock; cancelling at each step starts nothing.
+- Commit: `T-V6.5: area and plot choice`
+
+### T-V6.6 [ ] Show off the world
+- Depends on: T-V6.4
+- Do: a showcase mode (auto-spin, no buttons) and saving a picture of the globe. Saving or sharing needs a package: ask the user and name it before adding anything.
+- Tests first: the showcase hides the controls and spins; the picture has the globe's size (no sharing in tests).
+- Commit: `T-V6.6: showcase`
+
+### T-V6.7 [ ] [device] Globe and areas on the iPhone
+- Depends on: T-V6.6
+- Do: give the user steps (earn an area, rotate, pick, build, showcase), measure frame rate and battery, and record in `docs/device_tests.md`.
+- Commit: `T-V6.7: record v6 device check`
