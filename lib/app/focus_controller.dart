@@ -185,6 +185,15 @@ class FocusController extends AsyncNotifier<FocusState> {
         LocalDate.fromDateTime(now.wall),
       ),
       plotGranted: town.plotsUnlocked > base.town.plotsUnlocked,
+      xpGained: completed ? finished.plannedMinutes : 0,
+      awaySeconds: finished.awayTotal.inSeconds,
+      reason: finished.outcomeReason,
+      leveledUpTo:
+          Progression.levelFor(town.xp) != Progression.levelFor(base.town.xp)
+          ? Progression.levelFor(town.xp)
+          : null,
+      recoveryStarted: !base.town.inRecoveryMode && town.inRecoveryMode,
+      recoveryEnded: base.town.inRecoveryMode && !town.inRecoveryMode,
     );
     return FocusState(town: town, lastResult: result);
   }

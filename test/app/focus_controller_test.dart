@@ -262,6 +262,8 @@ void main() {
               workersGained: 1,
               newStreak: 1,
               plotGranted: true,
+              xpGained: 10,
+              reason: OutcomeReason.completed,
             ),
           );
           expect(await c.read(townRepositoryProvider).activeSession(), isNull);

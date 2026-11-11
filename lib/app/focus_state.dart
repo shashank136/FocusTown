@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
@@ -27,6 +28,12 @@ class SessionResult {
     required this.workersGained,
     required this.newStreak,
     required this.plotGranted,
+    this.xpGained = 0,
+    this.awaySeconds = 0,
+    this.reason,
+    this.leveledUpTo,
+    this.recoveryStarted = false,
+    this.recoveryEnded = false,
   });
 
   /// How it ended.
@@ -47,6 +54,24 @@ class SessionResult {
   /// Whether this session earned the day's new plot.
   final bool plotGranted;
 
+  /// XP earned (the planned minutes when completed, else 0).
+  final int xpGained;
+
+  /// Seconds spent away from the app.
+  final int awaySeconds;
+
+  /// Why the session ended.
+  final OutcomeReason? reason;
+
+  /// The new town level when this session crossed a level, else null.
+  final TownLevel? leveledUpTo;
+
+  /// Whether this failure left the town with no workers.
+  final bool recoveryStarted;
+
+  /// Whether this completion got the town out of recovery mode.
+  final bool recoveryEnded;
+
   @override
   bool operator ==(Object other) =>
       other is SessionResult &&
@@ -55,7 +80,13 @@ class SessionResult {
       other.workersLost == workersLost &&
       other.workersGained == workersGained &&
       other.newStreak == newStreak &&
-      other.plotGranted == plotGranted;
+      other.plotGranted == plotGranted &&
+      other.xpGained == xpGained &&
+      other.awaySeconds == awaySeconds &&
+      other.reason == reason &&
+      other.leveledUpTo == leveledUpTo &&
+      other.recoveryStarted == recoveryStarted &&
+      other.recoveryEnded == recoveryEnded;
 
   @override
   int get hashCode => Object.hash(
@@ -65,6 +96,12 @@ class SessionResult {
     workersGained,
     newStreak,
     plotGranted,
+    xpGained,
+    awaySeconds,
+    reason,
+    leveledUpTo,
+    recoveryStarted,
+    recoveryEnded,
   );
 }
 
