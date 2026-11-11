@@ -21,6 +21,10 @@ TownRow _townRowFrom(TownState s) {
     onboardingDone: false,
     createdAt: 0,
     lastDurationMinutes: 25,
+    tipPassShown: false,
+    tipGrowthShown: false,
+    tipRecoveryShown: false,
+    notificationNoteShown: false,
   );
 }
 

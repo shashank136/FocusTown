@@ -133,6 +133,66 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     requiredDuringInsert: false,
     defaultValue: const Constant(25),
   );
+  static const VerificationMeta _tipPassShownMeta = const VerificationMeta(
+    'tipPassShown',
+  );
+  @override
+  late final GeneratedColumn<bool> tipPassShown = GeneratedColumn<bool>(
+    'tip_pass_shown',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tip_pass_shown" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _tipGrowthShownMeta = const VerificationMeta(
+    'tipGrowthShown',
+  );
+  @override
+  late final GeneratedColumn<bool> tipGrowthShown = GeneratedColumn<bool>(
+    'tip_growth_shown',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tip_growth_shown" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _tipRecoveryShownMeta = const VerificationMeta(
+    'tipRecoveryShown',
+  );
+  @override
+  late final GeneratedColumn<bool> tipRecoveryShown = GeneratedColumn<bool>(
+    'tip_recovery_shown',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("tip_recovery_shown" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _notificationNoteShownMeta =
+      const VerificationMeta('notificationNoteShown');
+  @override
+  late final GeneratedColumn<bool> notificationNoteShown =
+      GeneratedColumn<bool>(
+        'notification_note_shown',
+        aliasedName,
+        false,
+        type: DriftSqlType.bool,
+        requiredDuringInsert: false,
+        defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("notification_note_shown" IN (0, 1))',
+        ),
+        defaultValue: const Constant(false),
+      );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -146,6 +206,10 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     onboardingDone,
     createdAt,
     lastDurationMinutes,
+    tipPassShown,
+    tipGrowthShown,
+    tipRecoveryShown,
+    notificationNoteShown,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -255,6 +319,42 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         ),
       );
     }
+    if (data.containsKey('tip_pass_shown')) {
+      context.handle(
+        _tipPassShownMeta,
+        tipPassShown.isAcceptableOrUnknown(
+          data['tip_pass_shown']!,
+          _tipPassShownMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tip_growth_shown')) {
+      context.handle(
+        _tipGrowthShownMeta,
+        tipGrowthShown.isAcceptableOrUnknown(
+          data['tip_growth_shown']!,
+          _tipGrowthShownMeta,
+        ),
+      );
+    }
+    if (data.containsKey('tip_recovery_shown')) {
+      context.handle(
+        _tipRecoveryShownMeta,
+        tipRecoveryShown.isAcceptableOrUnknown(
+          data['tip_recovery_shown']!,
+          _tipRecoveryShownMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notification_note_shown')) {
+      context.handle(
+        _notificationNoteShownMeta,
+        notificationNoteShown.isAcceptableOrUnknown(
+          data['notification_note_shown']!,
+          _notificationNoteShownMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -308,6 +408,22 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         DriftSqlType.int,
         data['${effectivePrefix}last_duration_minutes'],
       )!,
+      tipPassShown: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tip_pass_shown'],
+      )!,
+      tipGrowthShown: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tip_growth_shown'],
+      )!,
+      tipRecoveryShown: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}tip_recovery_shown'],
+      )!,
+      notificationNoteShown: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}notification_note_shown'],
+      )!,
     );
   }
 
@@ -329,6 +445,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
   final bool onboardingDone;
   final int createdAt;
   final int lastDurationMinutes;
+  final bool tipPassShown;
+  final bool tipGrowthShown;
+  final bool tipRecoveryShown;
+  final bool notificationNoteShown;
   const TownRow({
     required this.id,
     required this.workerCount,
@@ -341,6 +461,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     required this.onboardingDone,
     required this.createdAt,
     required this.lastDurationMinutes,
+    required this.tipPassShown,
+    required this.tipGrowthShown,
+    required this.tipRecoveryShown,
+    required this.notificationNoteShown,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -360,6 +484,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     map['onboarding_done'] = Variable<bool>(onboardingDone);
     map['created_at'] = Variable<int>(createdAt);
     map['last_duration_minutes'] = Variable<int>(lastDurationMinutes);
+    map['tip_pass_shown'] = Variable<bool>(tipPassShown);
+    map['tip_growth_shown'] = Variable<bool>(tipGrowthShown);
+    map['tip_recovery_shown'] = Variable<bool>(tipRecoveryShown);
+    map['notification_note_shown'] = Variable<bool>(notificationNoteShown);
     return map;
   }
 
@@ -380,6 +508,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       onboardingDone: Value(onboardingDone),
       createdAt: Value(createdAt),
       lastDurationMinutes: Value(lastDurationMinutes),
+      tipPassShown: Value(tipPassShown),
+      tipGrowthShown: Value(tipGrowthShown),
+      tipRecoveryShown: Value(tipRecoveryShown),
+      notificationNoteShown: Value(notificationNoteShown),
     );
   }
 
@@ -404,6 +536,12 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       lastDurationMinutes: serializer.fromJson<int>(
         json['lastDurationMinutes'],
       ),
+      tipPassShown: serializer.fromJson<bool>(json['tipPassShown']),
+      tipGrowthShown: serializer.fromJson<bool>(json['tipGrowthShown']),
+      tipRecoveryShown: serializer.fromJson<bool>(json['tipRecoveryShown']),
+      notificationNoteShown: serializer.fromJson<bool>(
+        json['notificationNoteShown'],
+      ),
     );
   }
   @override
@@ -421,6 +559,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       'onboardingDone': serializer.toJson<bool>(onboardingDone),
       'createdAt': serializer.toJson<int>(createdAt),
       'lastDurationMinutes': serializer.toJson<int>(lastDurationMinutes),
+      'tipPassShown': serializer.toJson<bool>(tipPassShown),
+      'tipGrowthShown': serializer.toJson<bool>(tipGrowthShown),
+      'tipRecoveryShown': serializer.toJson<bool>(tipRecoveryShown),
+      'notificationNoteShown': serializer.toJson<bool>(notificationNoteShown),
     };
   }
 
@@ -436,6 +578,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     bool? onboardingDone,
     int? createdAt,
     int? lastDurationMinutes,
+    bool? tipPassShown,
+    bool? tipGrowthShown,
+    bool? tipRecoveryShown,
+    bool? notificationNoteShown,
   }) => TownRow(
     id: id ?? this.id,
     workerCount: workerCount ?? this.workerCount,
@@ -452,6 +598,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     onboardingDone: onboardingDone ?? this.onboardingDone,
     createdAt: createdAt ?? this.createdAt,
     lastDurationMinutes: lastDurationMinutes ?? this.lastDurationMinutes,
+    tipPassShown: tipPassShown ?? this.tipPassShown,
+    tipGrowthShown: tipGrowthShown ?? this.tipGrowthShown,
+    tipRecoveryShown: tipRecoveryShown ?? this.tipRecoveryShown,
+    notificationNoteShown: notificationNoteShown ?? this.notificationNoteShown,
   );
   TownRow copyWithCompanion(TownsCompanion data) {
     return TownRow(
@@ -482,6 +632,18 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       lastDurationMinutes: data.lastDurationMinutes.present
           ? data.lastDurationMinutes.value
           : this.lastDurationMinutes,
+      tipPassShown: data.tipPassShown.present
+          ? data.tipPassShown.value
+          : this.tipPassShown,
+      tipGrowthShown: data.tipGrowthShown.present
+          ? data.tipGrowthShown.value
+          : this.tipGrowthShown,
+      tipRecoveryShown: data.tipRecoveryShown.present
+          ? data.tipRecoveryShown.value
+          : this.tipRecoveryShown,
+      notificationNoteShown: data.notificationNoteShown.present
+          ? data.notificationNoteShown.value
+          : this.notificationNoteShown,
     );
   }
 
@@ -498,7 +660,11 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ..write('inRecoveryMode: $inRecoveryMode, ')
           ..write('onboardingDone: $onboardingDone, ')
           ..write('createdAt: $createdAt, ')
-          ..write('lastDurationMinutes: $lastDurationMinutes')
+          ..write('lastDurationMinutes: $lastDurationMinutes, ')
+          ..write('tipPassShown: $tipPassShown, ')
+          ..write('tipGrowthShown: $tipGrowthShown, ')
+          ..write('tipRecoveryShown: $tipRecoveryShown, ')
+          ..write('notificationNoteShown: $notificationNoteShown')
           ..write(')'))
         .toString();
   }
@@ -516,6 +682,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     onboardingDone,
     createdAt,
     lastDurationMinutes,
+    tipPassShown,
+    tipGrowthShown,
+    tipRecoveryShown,
+    notificationNoteShown,
   );
   @override
   bool operator ==(Object other) =>
@@ -531,7 +701,11 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           other.inRecoveryMode == this.inRecoveryMode &&
           other.onboardingDone == this.onboardingDone &&
           other.createdAt == this.createdAt &&
-          other.lastDurationMinutes == this.lastDurationMinutes);
+          other.lastDurationMinutes == this.lastDurationMinutes &&
+          other.tipPassShown == this.tipPassShown &&
+          other.tipGrowthShown == this.tipGrowthShown &&
+          other.tipRecoveryShown == this.tipRecoveryShown &&
+          other.notificationNoteShown == this.notificationNoteShown);
 }
 
 class TownsCompanion extends UpdateCompanion<TownRow> {
@@ -546,6 +720,10 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
   final Value<bool> onboardingDone;
   final Value<int> createdAt;
   final Value<int> lastDurationMinutes;
+  final Value<bool> tipPassShown;
+  final Value<bool> tipGrowthShown;
+  final Value<bool> tipRecoveryShown;
+  final Value<bool> notificationNoteShown;
   const TownsCompanion({
     this.id = const Value.absent(),
     this.workerCount = const Value.absent(),
@@ -558,6 +736,10 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.onboardingDone = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.lastDurationMinutes = const Value.absent(),
+    this.tipPassShown = const Value.absent(),
+    this.tipGrowthShown = const Value.absent(),
+    this.tipRecoveryShown = const Value.absent(),
+    this.notificationNoteShown = const Value.absent(),
   });
   TownsCompanion.insert({
     this.id = const Value.absent(),
@@ -571,6 +753,10 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.onboardingDone = const Value.absent(),
     required int createdAt,
     this.lastDurationMinutes = const Value.absent(),
+    this.tipPassShown = const Value.absent(),
+    this.tipGrowthShown = const Value.absent(),
+    this.tipRecoveryShown = const Value.absent(),
+    this.notificationNoteShown = const Value.absent(),
   }) : workerCount = Value(workerCount),
        plotsUnlocked = Value(plotsUnlocked),
        xp = Value(xp),
@@ -589,6 +775,10 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Expression<bool>? onboardingDone,
     Expression<int>? createdAt,
     Expression<int>? lastDurationMinutes,
+    Expression<bool>? tipPassShown,
+    Expression<bool>? tipGrowthShown,
+    Expression<bool>? tipRecoveryShown,
+    Expression<bool>? notificationNoteShown,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -603,6 +793,11 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       if (createdAt != null) 'created_at': createdAt,
       if (lastDurationMinutes != null)
         'last_duration_minutes': lastDurationMinutes,
+      if (tipPassShown != null) 'tip_pass_shown': tipPassShown,
+      if (tipGrowthShown != null) 'tip_growth_shown': tipGrowthShown,
+      if (tipRecoveryShown != null) 'tip_recovery_shown': tipRecoveryShown,
+      if (notificationNoteShown != null)
+        'notification_note_shown': notificationNoteShown,
     });
   }
 
@@ -618,6 +813,10 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Value<bool>? onboardingDone,
     Value<int>? createdAt,
     Value<int>? lastDurationMinutes,
+    Value<bool>? tipPassShown,
+    Value<bool>? tipGrowthShown,
+    Value<bool>? tipRecoveryShown,
+    Value<bool>? notificationNoteShown,
   }) {
     return TownsCompanion(
       id: id ?? this.id,
@@ -631,6 +830,11 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       onboardingDone: onboardingDone ?? this.onboardingDone,
       createdAt: createdAt ?? this.createdAt,
       lastDurationMinutes: lastDurationMinutes ?? this.lastDurationMinutes,
+      tipPassShown: tipPassShown ?? this.tipPassShown,
+      tipGrowthShown: tipGrowthShown ?? this.tipGrowthShown,
+      tipRecoveryShown: tipRecoveryShown ?? this.tipRecoveryShown,
+      notificationNoteShown:
+          notificationNoteShown ?? this.notificationNoteShown,
     );
   }
 
@@ -670,6 +874,20 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     if (lastDurationMinutes.present) {
       map['last_duration_minutes'] = Variable<int>(lastDurationMinutes.value);
     }
+    if (tipPassShown.present) {
+      map['tip_pass_shown'] = Variable<bool>(tipPassShown.value);
+    }
+    if (tipGrowthShown.present) {
+      map['tip_growth_shown'] = Variable<bool>(tipGrowthShown.value);
+    }
+    if (tipRecoveryShown.present) {
+      map['tip_recovery_shown'] = Variable<bool>(tipRecoveryShown.value);
+    }
+    if (notificationNoteShown.present) {
+      map['notification_note_shown'] = Variable<bool>(
+        notificationNoteShown.value,
+      );
+    }
     return map;
   }
 
@@ -686,7 +904,11 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
           ..write('inRecoveryMode: $inRecoveryMode, ')
           ..write('onboardingDone: $onboardingDone, ')
           ..write('createdAt: $createdAt, ')
-          ..write('lastDurationMinutes: $lastDurationMinutes')
+          ..write('lastDurationMinutes: $lastDurationMinutes, ')
+          ..write('tipPassShown: $tipPassShown, ')
+          ..write('tipGrowthShown: $tipGrowthShown, ')
+          ..write('tipRecoveryShown: $tipRecoveryShown, ')
+          ..write('notificationNoteShown: $notificationNoteShown')
           ..write(')'))
         .toString();
   }
@@ -1984,6 +2206,10 @@ typedef $$TownsTableCreateCompanionBuilder = TownsCompanion Function({
   Value<bool> onboardingDone,
   required int createdAt,
   Value<int> lastDurationMinutes,
+  Value<bool> tipPassShown,
+  Value<bool> tipGrowthShown,
+  Value<bool> tipRecoveryShown,
+  Value<bool> notificationNoteShown,
 });
 typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<int> id,
@@ -1997,6 +2223,10 @@ typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<bool> onboardingDone,
   Value<int> createdAt,
   Value<int> lastDurationMinutes,
+  Value<bool> tipPassShown,
+  Value<bool> tipGrowthShown,
+  Value<bool> tipRecoveryShown,
+  Value<bool> notificationNoteShown,
 });
 
 class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
@@ -2059,6 +2289,26 @@ class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
 
   ColumnFilters<int> get lastDurationMinutes => $composableBuilder(
     column: $table.lastDurationMinutes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tipPassShown => $composableBuilder(
+    column: $table.tipPassShown,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tipGrowthShown => $composableBuilder(
+    column: $table.tipGrowthShown,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get tipRecoveryShown => $composableBuilder(
+    column: $table.tipRecoveryShown,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get notificationNoteShown => $composableBuilder(
+    column: $table.notificationNoteShown,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2126,6 +2376,26 @@ class $$TownsTableOrderingComposer
     column: $table.lastDurationMinutes,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get tipPassShown => $composableBuilder(
+    column: $table.tipPassShown,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get tipGrowthShown => $composableBuilder(
+    column: $table.tipGrowthShown,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get tipRecoveryShown => $composableBuilder(
+    column: $table.tipRecoveryShown,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get notificationNoteShown => $composableBuilder(
+    column: $table.notificationNoteShown,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TownsTableAnnotationComposer
@@ -2185,6 +2455,26 @@ class $$TownsTableAnnotationComposer
     column: $table.lastDurationMinutes,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get tipPassShown => $composableBuilder(
+    column: $table.tipPassShown,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get tipGrowthShown => $composableBuilder(
+    column: $table.tipGrowthShown,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get tipRecoveryShown => $composableBuilder(
+    column: $table.tipRecoveryShown,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get notificationNoteShown => $composableBuilder(
+    column: $table.notificationNoteShown,
+    builder: (column) => column,
+  );
 }
 
 class $$TownsTableTableManager
@@ -2226,6 +2516,10 @@ class $$TownsTableTableManager
                 Value<bool> onboardingDone = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
                 Value<int> lastDurationMinutes = const Value.absent(),
+                Value<bool> tipPassShown = const Value.absent(),
+                Value<bool> tipGrowthShown = const Value.absent(),
+                Value<bool> tipRecoveryShown = const Value.absent(),
+                Value<bool> notificationNoteShown = const Value.absent(),
               }) => TownsCompanion(
                 id: id,
                 workerCount: workerCount,
@@ -2238,6 +2532,10 @@ class $$TownsTableTableManager
                 onboardingDone: onboardingDone,
                 createdAt: createdAt,
                 lastDurationMinutes: lastDurationMinutes,
+                tipPassShown: tipPassShown,
+                tipGrowthShown: tipGrowthShown,
+                tipRecoveryShown: tipRecoveryShown,
+                notificationNoteShown: notificationNoteShown,
               ),
           createCompanionCallback:
               ({
@@ -2252,6 +2550,10 @@ class $$TownsTableTableManager
                 Value<bool> onboardingDone = const Value.absent(),
                 required int createdAt,
                 Value<int> lastDurationMinutes = const Value.absent(),
+                Value<bool> tipPassShown = const Value.absent(),
+                Value<bool> tipGrowthShown = const Value.absent(),
+                Value<bool> tipRecoveryShown = const Value.absent(),
+                Value<bool> notificationNoteShown = const Value.absent(),
               }) => TownsCompanion.insert(
                 id: id,
                 workerCount: workerCount,
@@ -2264,6 +2566,10 @@ class $$TownsTableTableManager
                 onboardingDone: onboardingDone,
                 createdAt: createdAt,
                 lastDurationMinutes: lastDurationMinutes,
+                tipPassShown: tipPassShown,
+                tipGrowthShown: tipGrowthShown,
+                tipRecoveryShown: tipRecoveryShown,
+                notificationNoteShown: notificationNoteShown,
               ),
           withReferenceMapper: (p0) => p0
               .map(

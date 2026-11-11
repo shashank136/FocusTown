@@ -24,6 +24,15 @@ class Towns extends Table {
   // the duration picker starts here
   IntColumn get lastDurationMinutes =>
       integer().withDefault(const Constant(25))();
+  // one-time tips already shown
+  BoolColumn get tipPassShown =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get tipGrowthShown =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get tipRecoveryShown =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get notificationNoteShown =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -72,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -82,6 +91,12 @@ class AppDatabase extends _$AppDatabase {
       if (from < 2) await m.addColumn(sessions, sessions.plotIndex);
       // v3: the duration the picker opens on.
       if (from < 3) await m.addColumn(towns, towns.lastDurationMinutes);
+      if (from < 4) {
+        await m.addColumn(towns, towns.tipPassShown);
+        await m.addColumn(towns, towns.tipGrowthShown);
+        await m.addColumn(towns, towns.tipRecoveryShown);
+        await m.addColumn(towns, towns.notificationNoteShown);
+      }
     },
   );
 }

@@ -3,6 +3,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session.dart';
+import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town.dart';
 
 /// Reads and writes the town and sessions in the local database.
@@ -49,6 +50,43 @@ class TownRepository {
   Future<void> saveLastDuration(int minutes) =>
       (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
         TownsCompanion(lastDurationMinutes: Value(minutes)),
+      );
+
+  /// Whether the first-run onboarding was finished.
+  Future<bool> isOnboardingDone() async {
+    final row = await _db.select(_db.towns).getSingleOrNull();
+    return row?.onboardingDone ?? false;
+  }
+
+  /// Remembers that onboarding is finished.
+  Future<void> setOnboardingDone() =>
+      (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+        const TownsCompanion(onboardingDone: Value(true)),
+      );
+
+  /// The tips already shown.
+  Future<Set<Tip>> shownTips() async {
+    final row = await _db.select(_db.towns).getSingleOrNull();
+    if (row == null) return {};
+    return {
+      if (row.tipPassShown) Tip.pass,
+      if (row.tipGrowthShown) Tip.growth,
+      if (row.tipRecoveryShown) Tip.recovery,
+      if (row.notificationNoteShown) Tip.notificationNote,
+    };
+  }
+
+  /// Remembers that [tip] was shown.
+  Future<void> markTipShown(Tip tip) =>
+      (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+        switch (tip) {
+          Tip.pass => const TownsCompanion(tipPassShown: Value(true)),
+          Tip.growth => const TownsCompanion(tipGrowthShown: Value(true)),
+          Tip.recovery => const TownsCompanion(tipRecoveryShown: Value(true)),
+          Tip.notificationNote => const TownsCompanion(
+            notificationNoteShown: Value(true),
+          ),
+        },
       );
 
   /// How many sessions were ever stored, the active one included.

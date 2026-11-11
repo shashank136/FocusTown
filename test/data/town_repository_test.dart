@@ -9,6 +9,7 @@ import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town.dart';
 
 void main() {
@@ -331,6 +332,45 @@ void main() {
       await insert(session('b', SessionState.failed));
       await insert(session('c', SessionState.running));
       expect(await repo.sessionCount(), 3);
+    });
+  });
+
+  group('onboarding and tips', () {
+    test('onboarding starts not done and setOnboardingDone persists', () async {
+      await repo.loadOrCreate();
+      expect(await repo.isOnboardingDone(), isFalse);
+      await repo.setOnboardingDone();
+      expect(await repo.isOnboardingDone(), isTrue);
+    });
+
+    test('no stored town means not done and nothing shown', () async {
+      expect(await repo.isOnboardingDone(), isFalse);
+      expect(await repo.shownTips(), isEmpty);
+    });
+
+    test('each tip is marked on its own', () async {
+      await repo.loadOrCreate();
+      expect(await repo.shownTips(), isEmpty);
+      await repo.markTipShown(Tip.growth);
+      expect(await repo.shownTips(), {Tip.growth});
+      await repo.markTipShown(Tip.pass);
+      await repo.markTipShown(Tip.recovery);
+      await repo.markTipShown(Tip.notificationNote);
+      expect(await repo.shownTips(), Tip.values.toSet());
+    });
+
+    test('a started and a resolved session keep flags', () async {
+      final town = await repo.loadOrCreate();
+      await repo.setOnboardingDone();
+      await repo.markTipShown(Tip.pass);
+      final s = session('s1', SessionState.running);
+      await repo.saveSessionStarted(town, s);
+      await repo.saveSessionResolved(
+        town.copyWith(xp: 10),
+        s.copyWith(state: SessionState.completed),
+      );
+      expect(await repo.isOnboardingDone(), isTrue);
+      expect(await repo.shownTips(), {Tip.pass});
     });
   });
 }
