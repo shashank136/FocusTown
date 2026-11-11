@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-18A.4 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-18A.3 done: FocusController.start(minutes, {plotIndex}) refuses a plot that is not free and otherwise stores the chosen or next free plot; ActiveSite.plotIndex; activeSitePlot(town, [chosen]); world, workers, celebration and camera glide use the session's plot; resume after relaunch keeps it. Next: T-18A.4 (choose-a-plot mode: provider with pending minutes, Place... button on the debug screen, plot outlines, tap to select, Confirm/Cancel).
+- Current task: T-18A.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-18A.4 done: choose-a-plot mode. lib/app/placement.dart (Placement, PlacementController: begin/select/cancel/confirm, ignores taken or locked plots and begin during a session), TownGame.setPlacement/plotAtScreen, renderer plot outlines (white on free plots, green fill on the selected one; drawn over the cached town, no re-record), HomeScreen bar with Cancel/Confirm plus a translucent tap layer, 'Place…' button next to Start on the debug screen. Verified in the simulator: bar and outlines show, Cancel hides them, no runtime errors. Tap-to-select could not be driven there (XcodeBuildMCP has no coordinate tap); it is covered by a widget test using the real projection. Known polish: outlines draw over the starter building's roof. Next: T-18A.5 [device] (parked). Also requested: rotate the island in 90 degree steps.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-18A.3 done)
+- Last updated: 2026-11-09 (T-18A.4 done)
 
 ## Status of steps
 
@@ -1370,7 +1370,7 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 - Tests first: start on plot 3 builds there, resumes there after a kill and relaunch, completes there; failed leaves the ruin there; invalid plot is refused; existing tests pass.
 - Commit: `T-18A.3: build on the chosen plot`
 
-### T-18A.4 [ ] Choose-a-plot mode on the home screen
+### T-18A.4 [x] Choose-a-plot mode on the home screen
 - Depends on: T-18A.3
 - Do: a provider holds a pending start (minutes); the debug screen gets a `Place…` button that sets it and returns to the town; the town shows green outlines on free unlocked plots, a tap selects one (thicker outline), `Confirm` starts the session there, `Cancel` clears; pan and zoom keep working; the plain `Start` still uses the automatic plot.
 - Tests first: tapping a free plot selects it; tapping a taken or locked one does nothing; Confirm calls `start` with the plot; Cancel starts nothing; an active session hides the mode.

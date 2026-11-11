@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
@@ -46,7 +50,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (focus.active != null && prev?.value?.active == null) {
         _game.focusOnSite(activeSitePlot(focus.town, focus.active?.plotIndex));
       }
+      _syncPlacement();
     }, fireImmediately: true);
+    ref.listenManual(placementProvider, (prev, next) => _syncPlacement());
+  }
+
+  // Outlines on the free plots while the user is choosing one.
+  void _syncPlacement() {
+    final placement = ref.read(placementProvider);
+    final town = ref.read(focusControllerProvider).value?.town;
+    _game.setPlacement(
+      placement == null || town == null
+          ? const {}
+          : {
+              for (var i = 0; i < town.plotsUnlocked; i++)
+                if (TownRules.isPlotFree(town, i)) i,
+            },
+      placement?.plot,
+    );
+  }
+
+  void _pick(Offset at) {
+    final plot = _game.plotAtScreen(Vec2(at.dx, at.dy));
+    if (plot != null) ref.read(placementProvider.notifier).select(plot);
   }
 
   @override
@@ -64,10 +90,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   @override
   Widget build(BuildContext context) {
     _game.reducedMotion = MediaQuery.of(context).disableAnimations;
+    final placement = ref.watch(placementProvider);
     return Scaffold(
       body: Stack(
         children: [
           GameWidget(game: _game),
+          // Choose-a-plot mode: taps pick a plot; pan and zoom still work.
+          if (placement != null)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTapUp: (d) => _pick(d.localPosition),
+              ),
+            ),
+          if (placement != null)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 56),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Choose a plot for your '
+                            '${placement.minutes}-minute build',
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextButton(
+                                onPressed: ref
+                                    .read(placementProvider.notifier)
+                                    .cancel,
+                                child: const Text('Cancel'),
+                              ),
+                              const SizedBox(width: 8),
+                              FilledButton(
+                                onPressed: placement.plot == null
+                                    ? null
+                                    : () => unawaited(
+                                        ref
+                                            .read(placementProvider.notifier)
+                                            .confirm(),
+                                      ),
+                                child: const Text('Confirm'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           // "Ready to place": follows the floating building while it shows.
           ValueListenableBuilder<Vec2?>(
             valueListenable: _game.readyLabel,

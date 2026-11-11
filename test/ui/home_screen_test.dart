@@ -4,6 +4,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
@@ -14,6 +15,7 @@ import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/frame_limiter.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/workers/worker_model.dart';
+import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/platform/power_state.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
@@ -302,5 +304,105 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 2));
     expect(find.text('Ready to place'), findsNothing);
+  });
+
+  group('choose a plot', () {
+    Offset plotCenterOnScreen(WidgetTester tester, int plot) {
+      final cam = _game.renderer.camera!;
+      final c = kPlots[plot].center;
+      final v = project(c.x, c.y, 1, cam.tile, cam.origin);
+      return tester.getTopLeft(find.byType(GameWidget<TownGame>)) +
+          Offset(v.x, v.y);
+    }
+
+    Future<ProviderContainer> placing(WidgetTester tester) async {
+      final c = await _pump(tester);
+      c.read(placementProvider.notifier).begin(10);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      return c;
+    }
+
+    testWidgets('no bar without a pending placement', (tester) async {
+      await _pump(tester);
+      expect(find.text('Confirm'), findsNothing);
+      expect(find.text('Cancel'), findsNothing);
+    });
+
+    testWidgets('a pending placement shows the bar with Confirm disabled', (
+      tester,
+    ) async {
+      await placing(tester);
+      expect(find.text('Choose a plot for your 10-minute build'), findsOne);
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed,
+        isNull,
+      );
+      expect(_game.renderer.plotOutlines, {1, 2, 3, 4, 5});
+    });
+
+    testWidgets('tapping a free plot selects it and enables Confirm', (
+      tester,
+    ) async {
+      final c = await placing(tester);
+      await tester.tapAt(plotCenterOnScreen(tester, 3));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(c.read(placementProvider)!.plot, 3);
+      expect(_game.renderer.selectedPlot, 3);
+      expect(
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Confirm'))
+            .onPressed,
+        isNotNull,
+      );
+    });
+
+    testWidgets('tapping the starter plot selects nothing', (tester) async {
+      final c = await placing(tester);
+      await tester.tapAt(plotCenterOnScreen(tester, 0));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(c.read(placementProvider)!.plot, isNull);
+    });
+
+    testWidgets('Confirm starts the session on that plot', (tester) async {
+      final c = await placing(tester);
+      await tester.tapAt(plotCenterOnScreen(tester, 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text('Confirm'));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+      final focus = c.read(focusControllerProvider).requireValue;
+      expect(focus.active!.plotIndex, 4);
+      expect(c.read(placementProvider), isNull);
+      expect(find.text('Confirm'), findsNothing);
+      expect(_game.renderer.plotOutlines, isEmpty);
+    });
+
+    testWidgets('Cancel starts nothing and hides the bar', (tester) async {
+      final c = await placing(tester);
+      await tester.tap(find.text('Cancel'));
+      await tester.pump();
+      expect(c.read(placementProvider), isNull);
+      expect(c.read(focusControllerProvider).requireValue.active, isNull);
+      expect(find.text('Confirm'), findsNothing);
+    });
+
+    testWidgets('Place... on the debug screen returns to the town', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      await tester.tap(find.byTooltip('Open debug screen'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.tap(find.text('Place…'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(c.read(placementProvider), isNotNull);
+      expect(find.text('Confirm'), findsOneWidget);
+    });
   });
 }

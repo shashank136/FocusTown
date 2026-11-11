@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
@@ -125,6 +126,17 @@ class _FocusDebugPanelState extends ConsumerState<FocusDebugPanel> {
                   ? () => unawaited(_controller.start(widget.minutes))
                   : null,
               child: const Text('Start'),
+            ),
+            FilledButton(
+              onPressed: blocked == null && s == null
+                  ? () {
+                      ref
+                          .read(placementProvider.notifier)
+                          .begin(widget.minutes);
+                      Navigator.of(context).maybePop();
+                    }
+                  : null,
+              child: const Text('Place…'),
             ),
             FilledButton(
               onPressed: () => unawaited(_controller.onBackgroundedUnlocked()),

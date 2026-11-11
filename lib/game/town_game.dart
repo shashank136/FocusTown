@@ -229,6 +229,22 @@ class TownGame extends FlameGame
     renderer.camera?.zoomAt(pos, 1.5);
   }
 
+  /// Outlines the [free] plots and fills [selected] (choose-a-plot mode); an
+  /// empty set turns the outlines off.
+  void setPlacement(Set<int> free, int? selected) {
+    renderer.setPlotOverlay(free, selected);
+    _redraw = true;
+  }
+
+  /// The plot under the screen point [p] (its ground is drawn one block up),
+  /// or null over roads and open land.
+  int? plotAtScreen(Vec2 p) {
+    final cam = renderer.camera;
+    if (cam == null) return null;
+    final g = unprojectGround(p.x, p.y + cam.tile, cam.tile, cam.origin);
+    return plotAt(g.x.floor(), g.y.floor())?.index;
+  }
+
   /// Glides the camera to [plot] (zooming in to at least tile 14). If the first
   /// frame has not been drawn yet the glide starts as soon as it has.
   // ignore: use_setters_to_change_properties, a command, not a property

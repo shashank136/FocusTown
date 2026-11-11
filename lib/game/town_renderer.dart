@@ -7,6 +7,7 @@ import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/effects/particles.dart';
 import 'package:focus_town/game/render/block_painter.dart';
 import 'package:focus_town/game/render/particle_painter.dart';
+import 'package:focus_town/game/render/plot_outline_painter.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/render/worker_painter.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
@@ -43,6 +44,8 @@ class TownRenderer {
   List<Particle> _particles = const [];
   double _particleAlpha = 1;
   ReadyPreview? _preview;
+  Set<int> _outlines = const {};
+  int? _selected;
   List<VisibleBlock> _previewBlocks = const [];
   (BuildingTier, int)? _previewKey;
   int _worldVersion = 0;
@@ -110,6 +113,19 @@ class TownRenderer {
     _particleAlpha = alpha;
   }
 
+  /// The plots drawn with an outline (the choose-a-plot mode).
+  Set<int> get plotOutlines => _outlines;
+
+  /// The plot drawn filled, if any.
+  int? get selectedPlot => _selected;
+
+  /// Outlines the [free] plots and fills [selected]; an empty set hides them.
+  /// Drawn over the cached town every frame, so it never re-records it.
+  void setPlotOverlay(Set<int> free, int? selected) {
+    _outlines = free;
+    _selected = selected;
+  }
+
   /// The floating "ready to place" building, if shown.
   ReadyPreview? get preview => _preview;
 
@@ -160,6 +176,15 @@ class TownRenderer {
         viewSize: size,
       )
       ..paint(canvas, cam.origin);
+    if (_outlines.isNotEmpty) {
+      paintPlotOutlines(
+        canvas,
+        _outlines,
+        _selected,
+        tile: cam.tile,
+        origin: cam.origin,
+      );
+    }
     if (_workers.isNotEmpty) {
       paintWorkers(
         canvas,
