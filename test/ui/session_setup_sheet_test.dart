@@ -220,14 +220,42 @@ void main() {
   testWidgets('a save failure shows its message and keeps the sheet', (
     tester,
   ) async {
-    await _open(
-      tester,
-      repo: _NeverSaves.new,
-    );
+    await _open(tester, repo: _NeverSaves.new);
     await tester.tap(find.text('Start'));
     await _settle(tester);
     expect(find.text("Couldn't save your session. Try again."), findsOneWidget);
     expect(find.byType(SessionSetupSheet), findsOneWidget);
+  });
+
+  group('semantics', () {
+    testWidgets('a dial row reads minutes, building and why not', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await _open(tester);
+      expect(find.bySemanticsLabel('25 minutes, house'), findsOneWidget);
+      _jumpTo(tester, 95);
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.bySemanticsLabel(
+          '95 minutes, castle, Needs 8 workers, you have 3',
+        ),
+        findsOneWidget,
+      );
+      handle.dispose();
+    });
+
+    testWidgets('every button on the sheet has a label', (tester) async {
+      final handle = tester.ensureSemantics();
+      await _open(tester);
+      for (final b in [
+        find.widgetWithText(FilledButton, 'Start'),
+        find.widgetWithText(TextButton, 'Choose plot…'),
+      ]) {
+        expect(tester.getSemantics(b).label, isNotEmpty);
+      }
+      handle.dispose();
+    });
   });
 
   group('the dial feel', () {
@@ -301,9 +329,7 @@ void main() {
       expect(wheel.perspective, greaterThan(0.002));
     });
 
-    testWidgets('only the previous and next rows show, faded', (
-      tester,
-    ) async {
+    testWidgets('only the previous and next rows show, faded', (tester) async {
       await _open(tester);
       final wheel = tester.widget<ListWheelScrollView>(
         find.byType(ListWheelScrollView),

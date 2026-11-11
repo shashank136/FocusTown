@@ -42,6 +42,8 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
     if (session == null) return const SizedBox.shrink();
     final now = TimeStamp.now(ref.watch(clockProvider));
     final left = session.planned - elapsedBetween(session.startedAt, now);
+    final shown = left.isNegative ? Duration.zero : left;
+    final progress = SessionEngine.progress(session, now);
     final count = ref.watch(sessionCountProvider).value ?? 99;
     return Card(
       child: Padding(
@@ -49,14 +51,24 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              _format(left.isNegative ? Duration.zero : left),
-              style: Theme.of(context).textTheme.displayMedium,
+            Semantics(
+              container: true,
+              label:
+                  'Time left, ${shown.inMinutes} minutes '
+                  '${shown.inSeconds.remainder(60)} seconds',
+              excludeSemantics: true,
+              child: Text(
+                _format(shown),
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
             ),
             Text(session.tier.name),
             const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: SessionEngine.progress(session, now),
+            Semantics(
+              container: true,
+              label: 'Build progress, ${(progress * 100).round()} percent',
+              excludeSemantics: true,
+              child: LinearProgressIndicator(value: progress),
             ),
             if (count <= 3) ...[
               const SizedBox(height: 8),
@@ -65,7 +77,7 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => unawaited(_confirmAbandon(session)),
-              child: const Text('Abandon'),
+              child: const Text('Abandon', semanticsLabel: 'Abandon build'),
             ),
           ],
         ),

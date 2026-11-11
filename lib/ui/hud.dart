@@ -35,7 +35,7 @@ class Hud extends ConsumerWidget {
               children: [
                 _Stat(
                   Icons.local_fire_department,
-                  'Streak',
+                  'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
                   Text('$streak', key: const ValueKey('hud-streak')),
                 ),
                 const SizedBox(width: 12),
@@ -46,13 +46,13 @@ class Hud extends ConsumerWidget {
                 const SizedBox(width: 12),
                 _Stat(
                   Icons.engineering,
-                  'Workers',
+                  'Workers, ${town.workers}',
                   Text('${town.workers}', key: const ValueKey('hud-workers')),
                 ),
                 const SizedBox(width: 12),
                 _Stat(
                   Icons.grid_view,
-                  'Plots',
+                  'Plots, $placed of ${town.plotsUnlocked} used',
                   Text(
                     '$placed/${town.plotsUnlocked}',
                     key: const ValueKey('hud-plots'),
@@ -62,7 +62,9 @@ class Hud extends ConsumerWidget {
                   const SizedBox(width: 12),
                   _Stat(
                     Icons.hourglass_bottom,
-                    'Waiting for a plot',
+                    '${town.queue.length} '
+                    '${town.queue.length == 1 ? 'building' : 'buildings'} '
+                    'waiting for a plot',
                     Text(
                       '${town.queue.length}',
                       key: const ValueKey('hud-queue'),
@@ -88,6 +90,7 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     label: label,
+    excludeSemantics: true,
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [Icon(icon, size: 18), const SizedBox(width: 4), value],
@@ -127,19 +130,25 @@ class _LevelBadgeState extends ConsumerState<_LevelBadge> {
   Widget build(BuildContext context) => GestureDetector(
     behavior: HitTestBehavior.opaque,
     onTap: _tap,
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(widget.level, key: const ValueKey('hud-level')),
-        SizedBox(
-          width: 72,
-          child: LinearProgressIndicator(
-            key: const ValueKey('hud-bar'),
-            value: widget.progress,
+    child: Semantics(
+      label:
+          'Town level, ${widget.level}, '
+          '${(widget.progress * 100).round()} percent to next level',
+      excludeSemantics: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(widget.level, key: const ValueKey('hud-level')),
+          SizedBox(
+            width: 72,
+            child: LinearProgressIndicator(
+              key: const ValueKey('hud-bar'),
+              value: widget.progress,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ),
   );
 }

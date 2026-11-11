@@ -105,11 +105,17 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
                 },
                 children: [
                   for (final o in options)
-                    Center(
-                      child: Text(
-                        '${o.minutes} min',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: o.enabled ? null : theme.disabledColor,
+                    Semantics(
+                      label:
+                          '${o.minutes} minutes, ${o.tier.name}'
+                          '${o.reason == null ? '' : ', ${o.reason}'}',
+                      excludeSemantics: true,
+                      child: Center(
+                        child: Text(
+                          '${o.minutes} min',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: o.enabled ? null : theme.disabledColor,
+                          ),
                         ),
                       ),
                     ),

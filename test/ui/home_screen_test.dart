@@ -711,6 +711,24 @@ void main() {
     });
   });
 
+  group('semantics', () {
+    testWidgets('Start focus and every icon button have a label', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await _pump(tester);
+      expect(find.bySemanticsLabel('Start focus'), findsOneWidget);
+      final buttons = find.byType(IconButton);
+      expect(buttons, findsWidgets);
+      for (final b in buttons.evaluate()) {
+        final node = tester.getSemantics(find.byWidget(b.widget));
+        // A tooltip is read out as the button's name.
+        expect(node.label + node.tooltip, isNotEmpty);
+      }
+      handle.dispose();
+    });
+  });
+
   group('startup message', () {
     const text = "We couldn't load your town and started a new one.";
 

@@ -14,21 +14,25 @@ class PageIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < count; i++)
-          Container(
-            key: ValueKey('page-dot-$i'),
-            width: 10,
-            height: 10,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: i == index ? scheme.primary : scheme.outlineVariant,
+    return Semantics(
+      label: 'Page ${index + 1} of $count',
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < count; i++)
+            Container(
+              key: ValueKey('page-dot-$i'),
+              width: 10,
+              height: 10,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: i == index ? scheme.primary : scheme.outlineVariant,
+              ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
