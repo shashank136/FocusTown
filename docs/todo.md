@@ -426,6 +426,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] Famous buildings (multi-session) with damage on failure
 - [ ] Cleanup sessions for ruins (planned: T-V2.1, T-V2.2, right after the MVP)
 - [ ] Earned passes (planned instead as a weekly emergency pause: T-V2.3, T-V2.4)
+- [ ] More building looks per tier (apartments, windmill, lighthouse...) and landmarks such as the pyramid (planned: Phase V3, T-V3.1 to T-V3.4)
 - [ ] Payments: small pass pack, landmarks and styles (deferred; needs approval for `in_app_purchase`)
 - [ ] Tents / soft housing cap
 - [ ] Lock-screen progress (Live Activity / Android ongoing notification)

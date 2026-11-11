@@ -1843,3 +1843,43 @@ Open questions (assumed answers):
 - Depends on: T-V2.4
 - Do: give the user steps: fail a session, repair the ruin in 10 minutes; arm the pause, leave for 5 minutes, return without penalty; record in `docs/device_tests.md`.
 - Commit: `T-V2.5: record v2 device check`
+
+## Phase V3: building looks and landmarks (after V2)
+
+Decided with the user: more kinds of building, such as apartments and pyramids. The five tiers and their rules stay as they are; each tier gets two or three looks, and big landmarks come last. Looks and landmarks may later be sold as one-time purchases (see the payments note in Phase V2). When work starts, update `docs/spec.md` first (the spec fixes one look per tier).
+
+Open questions (assumed answers):
+- Which look a session builds: the user picks it in the setup sheet, with a random default. (Assumed.)
+- Looks per tier: hut: cabin, tent, windmill; house: cottage, townhouse; workshop: bakery, smithy; tower: apartments, lighthouse; castle: castle, pyramid. (Assumed.)
+- Landmarks (Eiffel Tower, bridge, big pyramid) span 2 x 2 plots and take several sessions. (Assumed; needs multi-plot placement.)
+
+### T-V3.1 [ ] Look rule and storage
+- Depends on: MVP done (T-22.15)
+- Goal: a building has a look within its tier.
+- Files: `lib/domain/building_look.dart`, `lib/domain/session.dart`, `lib/domain/town.dart`, `lib/data/database.dart` (next schema version and a migration), tests.
+- Do: `BuildingLook` enum with its tier; session and building store the look; a look must belong to the session's tier; old rows get each tier's first look.
+- Tests first: every tier has at least one look; a mismatched look is refused; migration keeps old buildings; the look survives a restart.
+- Commit: `T-V3.1: building looks`
+
+### T-V3.2 [ ] Look layouts and previews
+- Depends on: T-V3.1
+- Do: block layouts and build stages per look in `lib/game/world/building_defs.dart`; the tier preview takes a look; a golden of all looks on one scale.
+- Tests first: each look builds inside its plot, finishes at its last stage and differs from the others in its tier; goldens.
+- Commit: `T-V3.2: building look layouts`
+
+### T-V3.3 [ ] Pick a look in the setup sheet
+- Depends on: T-V3.2
+- Do: a small look picker under the dial (random by default); the preview and the town show the chosen look.
+- Tests first: widget tests for picking, the default, and a start that stores the look.
+- Commit: `T-V3.3: look picker`
+
+### T-V3.4 [ ] Landmarks (multi-plot, multi-session)
+- Depends on: T-V3.3, multi-plot placement
+- Do: a landmark takes 2 x 2 plots and several sessions, with damage on failure; start with the pyramid; write the rules into `docs/spec.md` first.
+- Tests first: footprint and placement rules, progress across sessions, failure damage.
+- Commit: `T-V3.4: landmarks`
+
+### T-V3.5 [ ] [device] Looks and landmarks on the iPhone
+- Depends on: T-V3.4
+- Do: give the user steps to pick looks, finish a few and look at them from the town view; record in `docs/device_tests.md`.
+- Commit: `T-V3.5: record v3 device check`
