@@ -305,16 +305,16 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 ## Phase E: screens and release
 
 ### Step 19: session setup screen
-- [ ] Paste Prompt 0 + Prompt 19
-- [ ] "Start focus" button on `HomeScreen` when idle
-- [ ] Bottom sheet with 5-minute-step picker, default 25 min, remembers last value
-- [ ] Schema v2 migration (lastDurationMinutes) with test
-- [ ] Live preview: tier, block icon, workers at risk, workers gained
-- [ ] Unaffordable durations disabled with a reason
-- [ ] Recovery mode: hut-only with Last Builder banner
-- [ ] Widget tests passing
-- [ ] Device: session started from home screen without debug tools
-- [ ] Committed: `step 19`
+- [x] Paste Prompt 0 + Prompt 19
+- [x] "Start focus" button on `HomeScreen` when idle
+- [x] Bottom sheet with 5-minute-step picker, default 25 min, remembers last value
+- [x] Schema v3 migration (lastDurationMinutes) with test (v2 is the session plot column)
+- [x] Live preview: tier, block icon, workers at risk, workers gained
+- [x] Unaffordable durations disabled with a reason
+- [x] Recovery mode: hut-only with Last Builder banner
+- [x] Widget tests passing
+- [ ] Device: session started from home screen without debug tools (parked: needs the iPhone)
+- [x] Committed: T-19.1 to T-19.5
 
 ### Step 20: HUD and result screens
 - [ ] Paste Prompt 0 + Prompt 20
