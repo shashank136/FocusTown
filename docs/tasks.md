@@ -1344,54 +1344,42 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: results recorded; flutter analyze clean; flutter test green.
 - Commit: `T-18.6: record step 18 device check`
 
-## Phase D2: free placement (added after the first device test)
+## Phase D2: choose your plot (added after the first device test)
 
-Idea from the user: instead of the next free 7x7 plot, the user taps open ground to choose where a building goes, and the area needed depends on the building (hut 3x3, castle 7x7, later landmarks such as a pyramid or a bridge). Landmarks and their art are a later phase; this step only proves the mechanism with the five current tiers. Run it after T-18.6, before step 19.
+Idea from the user: instead of the next free plot, the user taps open ground to choose where a building goes. Staff-engineer cut for the MVP (user wants the MVP asap): the user chooses any FREE UNLOCKED PLOT (7x7), not arbitrary tiles. That keeps every rule and the whole renderer on plots and needs only one new nullable column. Arbitrary footprints (landmarks such as a pyramid or a bridge) come later and will replace the plot index with a position; nothing here blocks that. Run after T-18.6 was parked, before step 19.
 
-Open questions (assumed answers below; the user may change them before work starts):
-- Fallback when the user does not choose: the old automatic spot. (Assumed.)
-- Unlocked land: keep the daily unlock, but as a growing region instead of numbered plots. (Assumed.)
-- Roads (31..32) are never buildable. (Assumed.)
-- How landmarks are earned (session length or town progress): undecided, not needed here.
+Decisions (assumed): no choice means the old automatic plot; the chosen plot is stored with the session so a kill and relaunch resumes on it; a plot chosen but no longer free falls back to the automatic one.
 
-### T-18A.1 [ ] Footprints and the placement check (pure)
+### T-18A.1 [ ] Chosen plot in the rules (pure)
 - Depends on: T-18.5
-- Goal: say whether a footprint fits at a tile.
-- Files: `lib/domain/footprint.dart`, `lib/domain/town_rules.dart`, `test/domain/footprint_test.dart`.
-- Do: `footprintOf(BuildingTier)` (hut 3x3, house 5x5, workshop 5x5, tower 3x3, castle 7x7, plus a 1-tile margin); `canPlace(TownState, tier, x, y)` is true only inside unlocked land, off the roads, off every building, ruin and queued site. `firstFit(town, tier)` returns the old automatic spot.
-- Tests first: fits on empty land; refused on a road, on another building, on a ruin, and partly outside unlocked land; margin respected; `firstFit` equals the old plot choice for an unmodified town.
-- Commit: `T-18A.1: footprints and placement check`
+- Files: `lib/domain/session.dart`, `lib/domain/session_engine.dart`, `lib/domain/town_rules.dart`, tests.
+- Do: `Session.plotIndex` (nullable); `SessionEngine.start(..., plotIndex)`; `TownRules.isPlotFree(town, i)` (unlocked and unused); `TownRules.sitePlot(town, session)` returns the chosen plot when free, else `nextFreePlot`; `applyCompleted`, `applyFailed` and `placeQueued` use it.
+- Tests first: a chosen free plot gets the building and the ruin; a taken, locked or out-of-range plot falls back to the automatic plot; no choice equals the old behaviour (existing tests unchanged).
+- Commit: `T-18A.1: chosen plot in rules`
 
-### T-18A.2 [ ] Buildings store a position instead of a plot index
+### T-18A.2 [ ] Store the chosen plot (schema v2)
 - Depends on: T-18A.1
-- Goal: persist where each building and the active site stand.
-- Files: `lib/domain/town.dart`, `lib/domain/session.dart`, `lib/data/database.dart` (schema v2 and migration), mappers, repository, tests.
-- Do: add `x`, `y` to buildings and to sessions (nullable on sessions until placed); the migration gives every existing building the origin of its old plot. Keep `plotIndex` readable until T-18A.4 removes it.
-- Tests first: migration v1 to v2 keeps every building where it was; a session stores and reloads its position.
-- Commit: `T-18A.2: building positions, schema v2`
+- Files: `lib/data/database.dart` (+ generated), `lib/data/mappers.dart`, `drift_schemas/drift_schema_v2.json`, tests.
+- Do: nullable `plotIndex` column on sessions, schema 2, `onUpgrade` adds it; mappers read and write it.
+- Tests first: round trip with and without a plot; a v1 database upgrades with its data kept and `plotIndex` null.
+- Commit: `T-18A.2: session plot column`
 
-### T-18A.3 [ ] Controller starts at a chosen spot
+### T-18A.3 [ ] Controller starts on a chosen plot; the world follows it
 - Depends on: T-18A.2
-- Do: `FocusController.start(minutes, {at})`; null means `firstFit`; refuse an invalid spot; completed and failed results use the stored position (a ruin is drawn on the same footprint); queued still applies when nothing fits.
-- Tests first: start at a valid spot; refused at an invalid one; kill and relaunch resumes at the same spot; failed leaves a ruin there; no spot anywhere queues.
-- Commit: `T-18A.3: start at a chosen spot`
+- Do: `FocusController.start(minutes, {plotIndex})` (StateError when that plot is not free; null picks and stores `nextFreePlot`); `ActiveSite` gets `plotIndex`; `activeSitePlot(town, plotIndex)`; renderer, game, workers, celebration and home screen use the session's plot.
+- Tests first: start on plot 3 builds there, resumes there after a kill and relaunch, completes there; failed leaves the ruin there; invalid plot is refused; existing tests pass.
+- Commit: `T-18A.3: build on the chosen plot`
 
-### T-18A.4 [ ] World builder and workers use positions
+### T-18A.4 [ ] Choose-a-plot mode on the home screen
 - Depends on: T-18A.3
-- Do: `buildTownWorld`, `activeSitePlot`, `siteWorkers`, the celebration and the ready-to-place preview take a position and footprint, not a `Plot`; remove `plotIndex` and the plot-based layout where nothing needs it.
-- Tests first: existing world, worker and golden tests pass with positions; a building at a non-plot spot draws where it was placed.
-- Commit: `T-18A.4: render from positions`
+- Do: a provider holds a pending start (minutes); the debug screen gets a `Place…` button that sets it and returns to the town; the town shows green outlines on free unlocked plots, a tap selects one (thicker outline), `Confirm` starts the session there, `Cancel` clears; pan and zoom keep working; the plain `Start` still uses the automatic plot.
+- Tests first: tapping a free plot selects it; tapping a taken or locked one does nothing; Confirm calls `start` with the plot; Cancel starts nothing; an active session hides the mode.
+- Commit: `T-18A.4: choose a plot`
 
-### T-18A.5 [ ] Choose-a-spot mode on the home screen
+### T-18A.5 [ ] [device] Place a hut on a plot of your choice
 - Depends on: T-18A.4
-- Do: after pressing Start, the town enters a choose mode: tapping ground moves a footprint outline (green when `canPlace`, red when not), a Confirm button starts the session there and a Cancel button backs out; pan and zoom keep working; the debug screen Start uses `firstFit` unless a spot is passed.
-- Tests first: tap moves the outline; red outline blocks Confirm; Confirm calls start with the spot; Cancel starts nothing.
-- Commit: `T-18A.5: choose a spot`
-
-### T-18A.6 [ ] [device] Place a hut and a castle by hand
-- Depends on: T-18A.5
-- Do: give the user steps to place a hut and a castle on open ground, try an invalid spot, force-quit mid-session and relaunch; record under `## Step 18A: placement` in `docs/device_tests.md`.
-- Commit: `T-18A.6: record placement device check`
+- Do: give the user steps (place a hut on plot 3, force-quit, relaunch, confirm it resumes there); record under `## Step 18A: placement` in `docs/device_tests.md`.
+- Commit: `T-18A.5: record placement device check`
 
 ## Phase E: screens and release
 
