@@ -1344,6 +1344,55 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: results recorded; flutter analyze clean; flutter test green.
 - Commit: `T-18.6: record step 18 device check`
 
+## Phase D2: free placement (added after the first device test)
+
+Idea from the user: instead of the next free 7x7 plot, the user taps open ground to choose where a building goes, and the area needed depends on the building (hut 3x3, castle 7x7, later landmarks such as a pyramid or a bridge). Landmarks and their art are a later phase; this step only proves the mechanism with the five current tiers. Run it after T-18.6, before step 19.
+
+Open questions (assumed answers below; the user may change them before work starts):
+- Fallback when the user does not choose: the old automatic spot. (Assumed.)
+- Unlocked land: keep the daily unlock, but as a growing region instead of numbered plots. (Assumed.)
+- Roads (31..32) are never buildable. (Assumed.)
+- How landmarks are earned (session length or town progress): undecided, not needed here.
+
+### T-18A.1 [ ] Footprints and the placement check (pure)
+- Depends on: T-18.5
+- Goal: say whether a footprint fits at a tile.
+- Files: `lib/domain/footprint.dart`, `lib/domain/town_rules.dart`, `test/domain/footprint_test.dart`.
+- Do: `footprintOf(BuildingTier)` (hut 3x3, house 5x5, workshop 5x5, tower 3x3, castle 7x7, plus a 1-tile margin); `canPlace(TownState, tier, x, y)` is true only inside unlocked land, off the roads, off every building, ruin and queued site. `firstFit(town, tier)` returns the old automatic spot.
+- Tests first: fits on empty land; refused on a road, on another building, on a ruin, and partly outside unlocked land; margin respected; `firstFit` equals the old plot choice for an unmodified town.
+- Commit: `T-18A.1: footprints and placement check`
+
+### T-18A.2 [ ] Buildings store a position instead of a plot index
+- Depends on: T-18A.1
+- Goal: persist where each building and the active site stand.
+- Files: `lib/domain/town.dart`, `lib/domain/session.dart`, `lib/data/database.dart` (schema v2 and migration), mappers, repository, tests.
+- Do: add `x`, `y` to buildings and to sessions (nullable on sessions until placed); the migration gives every existing building the origin of its old plot. Keep `plotIndex` readable until T-18A.4 removes it.
+- Tests first: migration v1 to v2 keeps every building where it was; a session stores and reloads its position.
+- Commit: `T-18A.2: building positions, schema v2`
+
+### T-18A.3 [ ] Controller starts at a chosen spot
+- Depends on: T-18A.2
+- Do: `FocusController.start(minutes, {at})`; null means `firstFit`; refuse an invalid spot; completed and failed results use the stored position (a ruin is drawn on the same footprint); queued still applies when nothing fits.
+- Tests first: start at a valid spot; refused at an invalid one; kill and relaunch resumes at the same spot; failed leaves a ruin there; no spot anywhere queues.
+- Commit: `T-18A.3: start at a chosen spot`
+
+### T-18A.4 [ ] World builder and workers use positions
+- Depends on: T-18A.3
+- Do: `buildTownWorld`, `activeSitePlot`, `siteWorkers`, the celebration and the ready-to-place preview take a position and footprint, not a `Plot`; remove `plotIndex` and the plot-based layout where nothing needs it.
+- Tests first: existing world, worker and golden tests pass with positions; a building at a non-plot spot draws where it was placed.
+- Commit: `T-18A.4: render from positions`
+
+### T-18A.5 [ ] Choose-a-spot mode on the home screen
+- Depends on: T-18A.4
+- Do: after pressing Start, the town enters a choose mode: tapping ground moves a footprint outline (green when `canPlace`, red when not), a Confirm button starts the session there and a Cancel button backs out; pan and zoom keep working; the debug screen Start uses `firstFit` unless a spot is passed.
+- Tests first: tap moves the outline; red outline blocks Confirm; Confirm calls start with the spot; Cancel starts nothing.
+- Commit: `T-18A.5: choose a spot`
+
+### T-18A.6 [ ] [device] Place a hut and a castle by hand
+- Depends on: T-18A.5
+- Do: give the user steps to place a hut and a castle on open ground, try an invalid spot, force-quit mid-session and relaunch; record under `## Step 18A: placement` in `docs/device_tests.md`.
+- Commit: `T-18A.6: record placement device check`
+
 ## Phase E: screens and release
 
 ### T-19.1 [ ] Schema v2: lastDurationMinutes and migration

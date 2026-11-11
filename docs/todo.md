@@ -294,6 +294,15 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ---
 
+## Phase D2: free placement (see docs/tasks.md)
+- [ ] T-18A.1 footprints and placement check
+- [ ] T-18A.2 positions and schema v2
+- [ ] T-18A.3 controller starts at a chosen spot
+- [ ] T-18A.4 render from positions
+- [ ] T-18A.5 choose-a-spot mode
+- [ ] T-18A.6 device check
+- [ ] Later phase: landmarks (pyramid, bridge, tower of art), floating-island art with waterfall
+
 ## Phase E: screens and release
 
 ### Step 19: session setup screen
