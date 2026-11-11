@@ -171,7 +171,7 @@ void main() {
         final key = (px[i] << 16) | (px[i + 1] << 8) | px[i + 2];
         counts[key] = (counts[key] ?? 0) + 1;
       }
-      final sky = (0xcd << 16) | (0xea << 8) | 0xf7;
+      const sky = (0xcd << 16) | (0xea << 8) | 0xf7;
       return counts.entries.where((e) => e.key != sky && e.value > 80).length;
     }
 
