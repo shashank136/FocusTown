@@ -51,6 +51,14 @@ class TownRepository {
         TownsCompanion(lastDurationMinutes: Value(minutes)),
       );
 
+  /// How many sessions were ever stored, the active one included.
+  Future<int> sessionCount() {
+    final count = _db.sessions.id.count();
+    return (_db.selectOnly(
+      _db.sessions,
+    )..addColumns([count])).map((row) => row.read(count)!).getSingle();
+  }
+
   /// The session that is running or away, if any.
   Future<Session?> activeSession() async {
     final active = [SessionState.running.name, SessionState.away.name];

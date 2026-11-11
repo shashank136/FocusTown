@@ -157,3 +157,10 @@ final fpsProvider = Provider<ValueNotifier<double>>((ref) {
 final tierPreviewProvider = FutureProvider.family<ui.Image, BuildingTier>(
   (ref, tier) => renderTierPreview(tier),
 );
+
+/// How many sessions were stored; recounted whenever the session state
+/// changes, so a new session or a result shows up at once.
+final sessionCountProvider = FutureProvider<int>((ref) {
+  ref.watch(focusControllerProvider);
+  return ref.read(townRepositoryProvider).sessionCount();
+});

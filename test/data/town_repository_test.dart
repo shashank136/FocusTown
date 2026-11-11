@@ -320,4 +320,17 @@ void main() {
       expect(await db.select(db.towns).get(), isEmpty);
     });
   });
+
+  group('sessionCount', () {
+    test('no sessions is 0', () async {
+      expect(await repo.sessionCount(), 0);
+    });
+
+    test('counts every row, finished or active', () async {
+      await insert(session('a', SessionState.completed));
+      await insert(session('b', SessionState.failed));
+      await insert(session('c', SessionState.running));
+      expect(await repo.sessionCount(), 3);
+    });
+  });
 }
