@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
@@ -89,9 +90,19 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
               ListWheelScrollView(
                 controller: _wheel,
                 itemExtent: 40,
+                // A curved, magnified dial: rows tilt away from the middle.
+                diameterRatio: 1.8,
+                perspective: 0.004,
+                useMagnifier: true,
+                magnification: 1.15,
+                overAndUnderCenterOpacity: 0.45,
                 physics: const FixedExtentScrollPhysics(),
-                onSelectedItemChanged: (i) =>
-                    setState(() => _selected = options[i].minutes),
+                onSelectedItemChanged: (i) {
+                  // A detent: a small tap and a click for every step.
+                  unawaited(HapticFeedback.selectionClick());
+                  unawaited(SystemSound.play(SystemSoundType.click));
+                  setState(() => _selected = options[i].minutes);
+                },
                 children: [
                   for (final o in options)
                     Center(

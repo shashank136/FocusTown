@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/placement.dart';
@@ -198,5 +199,77 @@ void main() {
     await _settle(tester);
     expect(find.byType(SnackBar), findsOneWidget);
     expect(find.byType(SessionSetupSheet), findsOneWidget);
+  });
+
+  group('the dial feel', () {
+    final calls = <MethodCall>[];
+
+    setUp(() {
+      calls.clear();
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, (call) async {
+            calls.add(call);
+            return null;
+          });
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(SystemChannels.platform, null);
+    });
+
+    int ticks() => calls
+        .where(
+          (c) =>
+              c.method == 'HapticFeedback.vibrate' &&
+              c.arguments == 'HapticFeedbackType.selectionClick',
+        )
+        .length;
+
+    int clicks() => calls
+        .where(
+          (c) =>
+              c.method == 'SystemSound.play' &&
+              c.arguments == 'SystemSoundType.click',
+        )
+        .length;
+
+    testWidgets('opening the sheet makes no tick', (tester) async {
+      await _open(tester);
+      // (Tapping the "open" button itself clicks on Android; start counting
+      // from here.)
+      calls.clear();
+      await tester.pump(const Duration(seconds: 1));
+      expect(ticks(), 0);
+      expect(clicks(), 0);
+    });
+
+    testWidgets('turning the dial ticks and clicks once per step', (
+      tester,
+    ) async {
+      await _open(tester);
+      calls.clear();
+      // A slow drag that passes several rows (they are 40 px apart).
+      await tester.timedDrag(
+        find.byType(ListWheelScrollView),
+        const Offset(0, -130),
+        const Duration(milliseconds: 600),
+      );
+      await tester.pump(const Duration(milliseconds: 600));
+      expect(ticks(), greaterThanOrEqualTo(3));
+      expect(clicks(), ticks());
+    });
+
+    testWidgets('the dial looks like a dial: curved and magnified', (
+      tester,
+    ) async {
+      await _open(tester);
+      final wheel = tester.widget<ListWheelScrollView>(
+        find.byType(ListWheelScrollView),
+      );
+      expect(wheel.useMagnifier, isTrue);
+      expect(wheel.diameterRatio, lessThan(2.5));
+      expect(wheel.perspective, greaterThan(0.002));
+    });
   });
 }
