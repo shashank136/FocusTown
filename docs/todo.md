@@ -300,7 +300,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] T-18A.3 controller and world use the chosen plot
 - [ ] T-18A.4 choose-a-plot mode
 - [ ] T-18A.5 device check
-- [ ] Later: free footprints for landmarks, floating-island art with waterfall
+- [ ] Later: free footprints for landmarks, floating-island art with waterfall, rotate the island in 90 degree steps (user request: see buildings from every side but below; needs a rotated draw order, a cache per rotation, rotated picking and workers)
 
 ## Phase E: screens and release
 
