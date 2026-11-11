@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-19.2 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-19.1 done: schema v3 (towns.lastDurationMinutes default 25, onUpgrade if from<3), TownRepository.lastDurationMinutes/saveLastDuration (not overwritten by _writeTown), drift_schema_v3.json, regenerated migration helpers, migration tests v1->v3 and v2->v3. NOTE schema numbering moved: v2 is the session plot column (T-18A.2), so T-21.1 is now schema v4. Milestone target: end of step 19 (T-19.5: Start focus button on the home screen, setup sheet; combine with choose-a-plot). Next: T-19.2 (setup options logic).
+- Current task: T-19.3 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-19.2 done: lib/app/session_setup.dart (DurationOption, durationOptions(town), defaultMinutes) per spec reasons and defaults; wired in T-19.4. Next: T-19.3 (tier preview image via paintBlocks, tierPreviewProvider, golden).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-19.1 done)
+- Last updated: 2026-11-09 (T-19.2 done)
 
 ## Status of steps
 
@@ -1396,7 +1396,7 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-19.1: schema v3 last duration`
 
-### T-19.2 [ ] Setup options logic
+### T-19.2 [x] Setup options logic
 - Step: 19 (docs/prompt_plan.md, Prompt 19)
 - Depends on: T-19.1
 - Goal: pure logic for the duration picker: which durations are enabled and why not.
