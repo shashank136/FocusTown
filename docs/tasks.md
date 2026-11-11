@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-18A.2 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-18A.1 done: Session.plotIndex (nullable), SessionEngine.start(plotIndex:), TownRules.isPlotFree / sitePlot (chosen plot while free, else automatic), applyCompleted and applyFailed use it. Next: T-18A.2 (schema v2 column, migration, mappers). Also requested by user for later: rotate the island in 90 degree steps to see buildings from every side except below.
+- Current task: T-18A.3 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-18A.2 done: sessions.plotIndex nullable column, schema v2 with onUpgrade addColumn, mappers, drift_schemas/drift_schema_v2.json, generated migration helpers in test/generated_migrations (excluded from analyze; regenerate with 'dart run drift_dev schema generate drift_schemas test/generated_migrations' after each schema change), migration test v1->v2 keeps a stored session. Next: T-18A.3 (controller start with plotIndex, ActiveSite.plotIndex, activeSitePlot, game/home use session plot).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-18A.1 done)
+- Last updated: 2026-11-09 (T-18A.2 done)
 
 ## Status of steps
 
@@ -1357,7 +1357,7 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 - Tests first: a chosen free plot gets the building and the ruin; a taken, locked or out-of-range plot falls back to the automatic plot; no choice equals the old behaviour (existing tests unchanged).
 - Commit: `T-18A.1: chosen plot in rules`
 
-### T-18A.2 [ ] Store the chosen plot (schema v2)
+### T-18A.2 [x] Store the chosen plot (schema v2)
 - Depends on: T-18A.1
 - Files: `lib/data/database.dart` (+ generated), `lib/data/mappers.dart`, `drift_schemas/drift_schema_v2.json`, tests.
 - Do: nullable `plotIndex` column on sessions, schema 2, `onUpgrade` adds it; mappers read and write it.

@@ -106,6 +106,7 @@ Session sessionFromRow(SessionRow row) {
     awayTotal: Duration(milliseconds: row.awayTotalMs),
     passUsed: row.passUsed,
     outcomeReason: reason == null ? null : OutcomeReason.values.byName(reason),
+    plotIndex: row.plotIndex,
   );
 }
 
@@ -125,6 +126,7 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     awayTotalMs: session.awayTotal.inMilliseconds,
     passUsed: session.passUsed,
     outcomeReason: Value(session.outcomeReason?.name),
+    plotIndex: Value(session.plotIndex),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),
   );
 }

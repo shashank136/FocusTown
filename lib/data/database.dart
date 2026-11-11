@@ -58,6 +58,7 @@ class Sessions extends Table {
   BoolColumn get passUsed => boolean()();
   TextColumn get outcomeReason => text().nullable()();
   IntColumn get resolvedAt => integer().nullable()();
+  IntColumn get plotIndex => integer().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -68,5 +69,14 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      // v2: the plot the user chose for a session.
+      if (from < 2) await m.addColumn(sessions, sessions.plotIndex);
+    },
+  );
 }

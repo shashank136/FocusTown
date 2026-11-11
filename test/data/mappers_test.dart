@@ -49,6 +49,7 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   passUsed: c.passUsed.value,
   outcomeReason: c.outcomeReason.value,
   resolvedAt: c.resolvedAt.value,
+  plotIndex: c.plotIndex.value,
 );
 
 void main() {
@@ -179,6 +180,7 @@ void main() {
           awayTotal: const Duration(seconds: 42),
           passUsed: true,
           outcomeReason: OutcomeReason.leftTooLong,
+          plotIndex: 4,
         );
         expect(sessionFromRow(_sessionRowFrom(sessionToRow(s))), s);
       });

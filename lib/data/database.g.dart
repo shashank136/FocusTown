@@ -1198,6 +1198,17 @@ class $SessionsTable extends Sessions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _plotIndexMeta = const VerificationMeta(
+    'plotIndex',
+  );
+  @override
+  late final GeneratedColumn<int> plotIndex = GeneratedColumn<int>(
+    'plot_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1213,6 +1224,7 @@ class $SessionsTable extends Sessions
     passUsed,
     outcomeReason,
     resolvedAt,
+    plotIndex,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1343,6 +1355,12 @@ class $SessionsTable extends Sessions
         resolvedAt.isAcceptableOrUnknown(data['resolved_at']!, _resolvedAtMeta),
       );
     }
+    if (data.containsKey('plot_index')) {
+      context.handle(
+        _plotIndexMeta,
+        plotIndex.isAcceptableOrUnknown(data['plot_index']!, _plotIndexMeta),
+      );
+    }
     return context;
   }
 
@@ -1404,6 +1422,10 @@ class $SessionsTable extends Sessions
         DriftSqlType.int,
         data['${effectivePrefix}resolved_at'],
       ),
+      plotIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}plot_index'],
+      ),
     );
   }
 
@@ -1427,6 +1449,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final bool passUsed;
   final String? outcomeReason;
   final int? resolvedAt;
+  final int? plotIndex;
   const SessionRow({
     required this.id,
     required this.plannedMinutes,
@@ -1441,6 +1464,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     required this.passUsed,
     this.outcomeReason,
     this.resolvedAt,
+    this.plotIndex,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1465,6 +1489,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     }
     if (!nullToAbsent || resolvedAt != null) {
       map['resolved_at'] = Variable<int>(resolvedAt);
+    }
+    if (!nullToAbsent || plotIndex != null) {
+      map['plot_index'] = Variable<int>(plotIndex);
     }
     return map;
   }
@@ -1492,6 +1519,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       resolvedAt: resolvedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(resolvedAt),
+      plotIndex: plotIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(plotIndex),
     );
   }
 
@@ -1514,6 +1544,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       passUsed: serializer.fromJson<bool>(json['passUsed']),
       outcomeReason: serializer.fromJson<String?>(json['outcomeReason']),
       resolvedAt: serializer.fromJson<int?>(json['resolvedAt']),
+      plotIndex: serializer.fromJson<int?>(json['plotIndex']),
     );
   }
   @override
@@ -1533,6 +1564,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'passUsed': serializer.toJson<bool>(passUsed),
       'outcomeReason': serializer.toJson<String?>(outcomeReason),
       'resolvedAt': serializer.toJson<int?>(resolvedAt),
+      'plotIndex': serializer.toJson<int?>(plotIndex),
     };
   }
 
@@ -1550,6 +1582,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     bool? passUsed,
     Value<String?> outcomeReason = const Value.absent(),
     Value<int?> resolvedAt = const Value.absent(),
+    Value<int?> plotIndex = const Value.absent(),
   }) => SessionRow(
     id: id ?? this.id,
     plannedMinutes: plannedMinutes ?? this.plannedMinutes,
@@ -1568,6 +1601,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
         ? outcomeReason.value
         : this.outcomeReason,
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
+    plotIndex: plotIndex.present ? plotIndex.value : this.plotIndex,
   );
   SessionRow copyWithCompanion(SessionsCompanion data) {
     return SessionRow(
@@ -1602,6 +1636,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       resolvedAt: data.resolvedAt.present
           ? data.resolvedAt.value
           : this.resolvedAt,
+      plotIndex: data.plotIndex.present ? data.plotIndex.value : this.plotIndex,
     );
   }
 
@@ -1620,7 +1655,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('awayTotalMs: $awayTotalMs, ')
           ..write('passUsed: $passUsed, ')
           ..write('outcomeReason: $outcomeReason, ')
-          ..write('resolvedAt: $resolvedAt')
+          ..write('resolvedAt: $resolvedAt, ')
+          ..write('plotIndex: $plotIndex')
           ..write(')'))
         .toString();
   }
@@ -1640,6 +1676,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     passUsed,
     outcomeReason,
     resolvedAt,
+    plotIndex,
   );
   @override
   bool operator ==(Object other) =>
@@ -1657,7 +1694,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.awayTotalMs == this.awayTotalMs &&
           other.passUsed == this.passUsed &&
           other.outcomeReason == this.outcomeReason &&
-          other.resolvedAt == this.resolvedAt);
+          other.resolvedAt == this.resolvedAt &&
+          other.plotIndex == this.plotIndex);
 }
 
 class SessionsCompanion extends UpdateCompanion<SessionRow> {
@@ -1674,6 +1712,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<bool> passUsed;
   final Value<String?> outcomeReason;
   final Value<int?> resolvedAt;
+  final Value<int?> plotIndex;
   final Value<int> rowid;
   const SessionsCompanion({
     this.id = const Value.absent(),
@@ -1689,6 +1728,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.passUsed = const Value.absent(),
     this.outcomeReason = const Value.absent(),
     this.resolvedAt = const Value.absent(),
+    this.plotIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SessionsCompanion.insert({
@@ -1705,6 +1745,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     required bool passUsed,
     this.outcomeReason = const Value.absent(),
     this.resolvedAt = const Value.absent(),
+    this.plotIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        plannedMinutes = Value(plannedMinutes),
@@ -1729,6 +1770,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<bool>? passUsed,
     Expression<String>? outcomeReason,
     Expression<int>? resolvedAt,
+    Expression<int>? plotIndex,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1745,6 +1787,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (passUsed != null) 'pass_used': passUsed,
       if (outcomeReason != null) 'outcome_reason': outcomeReason,
       if (resolvedAt != null) 'resolved_at': resolvedAt,
+      if (plotIndex != null) 'plot_index': plotIndex,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1763,6 +1806,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<bool>? passUsed,
     Value<String?>? outcomeReason,
     Value<int?>? resolvedAt,
+    Value<int?>? plotIndex,
     Value<int>? rowid,
   }) {
     return SessionsCompanion(
@@ -1779,6 +1823,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       passUsed: passUsed ?? this.passUsed,
       outcomeReason: outcomeReason ?? this.outcomeReason,
       resolvedAt: resolvedAt ?? this.resolvedAt,
+      plotIndex: plotIndex ?? this.plotIndex,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1825,6 +1870,9 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (resolvedAt.present) {
       map['resolved_at'] = Variable<int>(resolvedAt.value);
     }
+    if (plotIndex.present) {
+      map['plot_index'] = Variable<int>(plotIndex.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1847,6 +1895,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('passUsed: $passUsed, ')
           ..write('outcomeReason: $outcomeReason, ')
           ..write('resolvedAt: $resolvedAt, ')
+          ..write('plotIndex: $plotIndex, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2415,6 +2464,7 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   required bool passUsed,
   Value<String?> outcomeReason,
   Value<int?> resolvedAt,
+  Value<int?> plotIndex,
   Value<int> rowid,
 });
 typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
@@ -2431,6 +2481,7 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<bool> passUsed,
   Value<String?> outcomeReason,
   Value<int?> resolvedAt,
+  Value<int?> plotIndex,
   Value<int> rowid,
 });
 
@@ -2505,6 +2556,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<int> get resolvedAt => $composableBuilder(
     column: $table.resolvedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get plotIndex => $composableBuilder(
+    column: $table.plotIndex,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2582,6 +2638,11 @@ class $$SessionsTableOrderingComposer
     column: $table.resolvedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get plotIndex => $composableBuilder(
+    column: $table.plotIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SessionsTableAnnotationComposer
@@ -2649,6 +2710,9 @@ class $$SessionsTableAnnotationComposer
     column: $table.resolvedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get plotIndex =>
+      $composableBuilder(column: $table.plotIndex, builder: (column) => column);
 }
 
 class $$SessionsTableTableManager
@@ -2695,6 +2759,7 @@ class $$SessionsTableTableManager
                 Value<bool> passUsed = const Value.absent(),
                 Value<String?> outcomeReason = const Value.absent(),
                 Value<int?> resolvedAt = const Value.absent(),
+                Value<int?> plotIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion(
                 id: id,
@@ -2710,6 +2775,7 @@ class $$SessionsTableTableManager
                 passUsed: passUsed,
                 outcomeReason: outcomeReason,
                 resolvedAt: resolvedAt,
+                plotIndex: plotIndex,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2727,6 +2793,7 @@ class $$SessionsTableTableManager
                 required bool passUsed,
                 Value<String?> outcomeReason = const Value.absent(),
                 Value<int?> resolvedAt = const Value.absent(),
+                Value<int?> plotIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion.insert(
                 id: id,
@@ -2742,6 +2809,7 @@ class $$SessionsTableTableManager
                 passUsed: passUsed,
                 outcomeReason: outcomeReason,
                 resolvedAt: resolvedAt,
+                plotIndex: plotIndex,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
