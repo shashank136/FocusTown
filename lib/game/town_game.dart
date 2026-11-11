@@ -15,6 +15,7 @@ import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/effects/particles.dart';
 import 'package:focus_town/game/effects/site_transition.dart';
 import 'package:focus_town/game/frame_limiter.dart';
+import 'package:focus_town/game/render_guard.dart';
 import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/world/active_site.dart';
@@ -38,10 +39,16 @@ class TownGame extends FlameGame
   /// Creates the game. [fps] (optional) receives the measured frames per
   /// second once a second; [clock] (default: the system clock) decides how far
   /// the construction has come.
-  new({ValueNotifier<double>? fps, Clock? clock})
-    // ignore: prefer_initializing_formals, a named parameter cannot be private
-    : _fps = fps,
-      _clock = clock ?? SystemClock();
+  new({
+    ValueNotifier<double>? fps,
+    Clock? clock,
+    TownRenderer? renderer,
+    RenderGuard? guard,
+  }) : renderer = renderer ?? TownRenderer(),
+       guard = guard ?? RenderGuard(null),
+       // ignore: prefer_initializing_formals, a named parameter cannot be private
+       _fps = fps,
+       _clock = clock ?? SystemClock();
 
   final ValueNotifier<double>? _fps;
   final Clock _clock;
@@ -50,7 +57,10 @@ class TownGame extends FlameGame
   final ValueNotifier<Vec2?> readyLabel = ValueNotifier(null);
 
   /// Draws the sky and the town.
-  final TownRenderer renderer = TownRenderer();
+  final TownRenderer renderer;
+
+  /// Falls back to a still picture when drawing fails or crawls.
+  final RenderGuard guard;
 
   /// Caps how often a fresh frame is drawn.
   final FrameLimiter limiter = FrameLimiter();
@@ -263,8 +273,10 @@ class TownGame extends FlameGame
   void update(double dt) {
     super.update(dt);
     _elapsed += Duration(microseconds: (dt * 1e6).round());
-    _updateCamera(dt);
     _publishFps();
+    // A degraded town is a still picture: no camera, workers or effects.
+    if (guard.degraded) return;
+    _updateCamera(dt);
     final step = Duration(microseconds: (dt * 1e6).round());
     _particles.step(step);
     _show?.step(step);
@@ -398,16 +410,22 @@ class TownGame extends FlameGame
     super.render(canvas);
     // A fresh frame only when the limiter allowed one (or the user moved the
     // view); otherwise the last frame is replayed without re-drawing blocks.
-    if (_redraw || _lastFrame == null) {
+    if ((_redraw || _lastFrame == null) && !guard.degraded) {
       _redraw = false;
       final recorder = PictureRecorder();
-      renderer.paint(Canvas(recorder), Size(size.x, size.y));
-      _lastFrame?.dispose();
-      _lastFrame = recorder.endRecording();
-      framesDrawn++;
-      _countFrame();
+      try {
+        renderer.paint(Canvas(recorder), Size(size.x, size.y));
+        _lastFrame?.dispose();
+        _lastFrame = recorder.endRecording();
+        framesDrawn++;
+        _countFrame();
+      } on Object catch (e) {
+        recorder.endRecording().dispose();
+        guard.recordError(e);
+      }
     }
-    canvas.drawPicture(_lastFrame!);
+    final frame = _lastFrame;
+    if (frame != null) canvas.drawPicture(frame);
   }
 
   // Frames are counted while painting but published from update: a listener
@@ -418,7 +436,9 @@ class TownGame extends FlameGame
   void _publishFps() {
     final window = _elapsed - _fpsWindowStart;
     if (window >= const Duration(seconds: 1)) {
-      _fps?.value = _fpsWindowFrames * 1e6 / window.inMicroseconds;
+      final fps = _fpsWindowFrames * 1e6 / window.inMicroseconds;
+      _fps?.value = fps;
+      guard.recordFps(fps, _elapsed);
       _fpsWindowStart = _elapsed;
       _fpsWindowFrames = 0;
     }

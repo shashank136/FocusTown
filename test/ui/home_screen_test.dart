@@ -516,6 +516,20 @@ void main() {
       );
     });
 
+    testWidgets('the timer keeps running while the town is a still picture', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      _game.guard.recordError('forced');
+      await tester.runAsync(
+        () => c.read(focusControllerProvider.notifier).start(25),
+      );
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      _clock.advance(const Duration(minutes: 25));
+      await pumpFor(tester, const Duration(seconds: 1));
+      expect(find.text('House built'), findsOneWidget);
+    });
+
     testWidgets('leaving for 90 seconds fails the build with a dialog', (
       tester,
     ) async {

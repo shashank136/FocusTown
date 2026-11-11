@@ -10,6 +10,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/tips.dart';
 import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town_rules.dart';
+import 'package:focus_town/game/render_guard.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
@@ -36,7 +37,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   late final TownGame _game =
       widget.game ??
-      TownGame(fps: ref.read(fpsProvider), clock: ref.read(clockProvider));
+      TownGame(
+        fps: ref.read(fpsProvider),
+        clock: ref.read(clockProvider),
+        guard: RenderGuard(ref.read(localLogProvider)),
+      );
 
   Timer? _tick;
   bool _showingResult = false;
