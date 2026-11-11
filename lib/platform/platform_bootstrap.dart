@@ -7,6 +7,7 @@ import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/local_log.dart';
 import 'package:focus_town/platform/native_lifecycle_source.dart';
 import 'package:focus_town/platform/native_uptime_clock.dart';
+import 'package:focus_town/platform/resilient_lifecycle_source.dart';
 
 /// The clock and lifecycle source the app should run with.
 typedef PlatformBootstrap = ({Clock clock, LifecycleSource source});
@@ -23,9 +24,15 @@ Future<PlatformBootstrap> bootstrapPlatform({
         .invokeMethod<Object?>('uptimeMs')
         .timeout(timeout);
     if (uptimeMs is int) {
+      final clock = NativeUptimeClock(Duration(milliseconds: uptimeMs));
       return (
-        clock: NativeUptimeClock(Duration(milliseconds: uptimeMs)),
-        source: NativeLifecycleSource(onMalformed: log?.write),
+        clock: clock,
+        source: ResilientLifecycleSource(
+          NativeLifecycleSource(onMalformed: log?.write),
+          FallbackLifecycleSource(clock),
+          clock,
+          log ?? LocalLog(null, clock),
+        ),
       );
     }
   } on MissingPluginException {

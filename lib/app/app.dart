@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/platform/resilient_lifecycle_source.dart';
 import 'package:focus_town/ui/home_screen.dart';
 import 'package:focus_town/ui/onboarding/onboarding_screen.dart';
 
@@ -26,7 +27,11 @@ class _FocusTownAppState extends ConsumerState<FocusTownApp> {
     // Forwards a held app switch once the 500 ms lock window has passed.
     _flushTimer = Timer.periodic(
       const Duration(milliseconds: 100),
-      (_) => unawaited(router.flushExpired()),
+      (_) {
+        final source = ref.read(lifecycleSourceProvider);
+        if (source is ResilientLifecycleSource) source.check();
+        unawaited(router.flushExpired());
+      },
     );
   }
 

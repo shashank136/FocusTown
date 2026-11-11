@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/platform/native_uptime_clock.dart';
 import 'package:focus_town/platform/platform_bootstrap.dart';
+import 'package:focus_town/platform/resilient_lifecycle_source.dart';
 
 const _methods = MethodChannel('focus/lifecycle');
 const _events = EventChannel('focus/lifecycle/events');
@@ -57,6 +58,7 @@ void main() {
         p.clock.uptime(),
         greaterThanOrEqualTo(const Duration(seconds: 90)),
       );
+      expect(p.source, isA<ResilientLifecycleSource>());
       expect(p.source.isNative, isTrue);
       await p.source.dispose();
     });
