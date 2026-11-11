@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/ui/home_screen.dart';
+import 'package:focus_town/ui/onboarding/onboarding_screen.dart';
 
 /// Root widget of the app; starts routing lifecycle events.
 class FocusTownApp extends ConsumerStatefulWidget {
@@ -35,5 +37,18 @@ class _FocusTownAppState extends ConsumerState<FocusTownApp> {
   }
 
   @override
-  Widget build(BuildContext context) => const MaterialApp(home: HomeScreen());
+  Widget build(BuildContext context) {
+    final done = ref.watch(onboardingDoneProvider).value;
+    return MaterialApp(
+      home: switch (done) {
+        // Still reading the database: a plain sky, no flash of either screen.
+        null => const ColoredBox(color: Color(kSkyTop)),
+        true => const HomeScreen(),
+        false => OnboardingScreen(
+          onStart: () =>
+              unawaited(ref.read(onboardingControllerProvider).finish()),
+        ),
+      },
+    );
+  }
 }
