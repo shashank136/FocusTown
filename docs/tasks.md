@@ -1350,6 +1350,8 @@ Idea from the user: instead of the next free plot, the user taps open ground to 
 
 Decisions (assumed): no choice means the old automatic plot; the chosen plot is stored with the session so a kill and relaunch resumes on it; a plot chosen but no longer free falls back to the automatic one.
 
+Revision after the first iPhone test (user): the whole island is forest, any of the 64 plots can be chosen, and the plot used (building, ruin or site) is cleared and bordered. The unlock rule now caps HOW MANY buildings the town may have (6 at the start, one more per focus day), not WHERE: `TownRules.hasRoom`, `isPlotFree` and `nextFreePlot` check room and an unused plot. `lib/game/world/forest.dart` draws 3 or 4 trees per uncleared plot (about 12.6k blocks in all, 7.2k visible, up from 8.8k and 4.6k): check frame time and the cost of each stage re-record on the iPhone.
+
 ### T-18A.1 [x] Chosen plot in the rules (pure)
 - Depends on: T-18.5
 - Files: `lib/domain/session.dart`, `lib/domain/session_engine.dart`, `lib/domain/town_rules.dart`, tests.

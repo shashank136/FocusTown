@@ -341,7 +341,7 @@ void main() {
             .onPressed,
         isNull,
       );
-      expect(_game.renderer.plotOutlines, {1, 2, 3, 4, 5});
+      expect(_game.renderer.plotOutlines, {for (var i = 1; i < 64; i++) i});
     });
 
     testWidgets('tapping a free plot selects it and enables Confirm', (

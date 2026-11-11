@@ -51,7 +51,7 @@ class TownRenderer {
   int _worldVersion = 0;
   TownState? _town;
   ActiveSite? _site;
-  int _plotsUnlocked = 6;
+  Set<int> _regionPlots = {for (var i = 0; i < 6; i++) i};
   TownCamera? _camera;
   bool _fitted = false;
 
@@ -70,7 +70,11 @@ class TownRenderer {
   /// Rebuilds the world for [town]; the next paint re-records the layer.
   void setTown(TownState town) {
     _town = town;
-    _plotsUnlocked = town.plotsUnlocked;
+    // The view starts on the first unlocked plots and wherever buildings are.
+    _regionPlots = {
+      for (var i = 0; i < town.plotsUnlocked && i < kPlots.length; i++) i,
+      for (final b in town.buildings) b.plotIndex,
+    };
     _rebuild();
   }
 
@@ -226,7 +230,7 @@ class TownRenderer {
 
   /// The unlocked plots plus a 4-tile margin (tile coordinates).
   Rect get unlockedRegion {
-    final plots = kPlots.take(_plotsUnlocked);
+    final plots = [for (final i in _regionPlots) kPlots[i]];
     return Rect.fromLTRB(
       plots.map((p) => p.originX).reduce(math.min) - 4.0,
       plots.map((p) => p.originY).reduce(math.min) - 4.0,

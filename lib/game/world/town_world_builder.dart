@@ -4,18 +4,22 @@ import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
+import 'package:focus_town/game/world/forest.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/scenery.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
-/// The plot a running session builds on: the next free unlocked plot, or when
-/// none is free the first locked plot as a temporary site.
+/// The plot a running session builds on: the plot the user [chosen] while it
+/// is free, else the next free plot, or when the town has no room the first
+/// plot nothing stands on (a temporary site).
 Plot activeSitePlot(TownState town, [int? chosen]) {
   if (chosen != null && TownRules.isPlotFree(town, chosen)) {
     return kPlots[chosen];
   }
   final free = TownRules.nextFreePlot(town);
-  return kPlots[free ?? town.plotsUnlocked.clamp(0, kPlots.length - 1)];
+  if (free != null) return kPlots[free];
+  final used = {for (final b in town.buildings) b.plotIndex};
+  return kPlots.firstWhere((p) => !used.contains(p.index));
 }
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
@@ -37,18 +41,6 @@ VoxelWorld buildTownWorld(
         ..set(x, y, 0, isRoad(x, y) ? Blocks.path : Blocks.grass);
     }
   }
-  for (final p in kPlots.take(town.plotsUnlocked)) {
-    w.ring(p.originX, p.originY, kPlotSize, kPlotSize, 0, Blocks.path);
-  }
-  buildScenery(w);
-  for (final b in town.buildings) {
-    final p = kPlots[b.plotIndex];
-    if (b.status == BuildingStatus.complete) {
-      buildTier(w, b.tier, p.originX, p.originY, stage: maxStage(b.tier));
-    } else {
-      buildRuin(w, p.originX, p.originY);
-    }
-  }
   final building =
       site ??
       (active == null
@@ -58,8 +50,28 @@ VoxelWorld buildTownWorld(
               stageForProgress(active.tier, progress),
               plotIndex: active.plotIndex,
             ));
-  if (building != null) {
-    final plot = activeSitePlot(town, building.plotIndex);
+  final sitePlot = building == null
+      ? null
+      : activeSitePlot(town, building.plotIndex);
+  // Plots in use (a building, a ruin or the site) are cleared and bordered;
+  // all others stay forest.
+  final inUse = {for (final b in town.buildings) b.plotIndex, ?sitePlot?.index};
+  for (final i in inUse) {
+    final p = kPlots[i];
+    w.ring(p.originX, p.originY, kPlotSize, kPlotSize, 0, Blocks.path);
+  }
+  buildScenery(w);
+  buildForest(w, cleared: inUse);
+  for (final b in town.buildings) {
+    final p = kPlots[b.plotIndex];
+    if (b.status == BuildingStatus.complete) {
+      buildTier(w, b.tier, p.originX, p.originY, stage: maxStage(b.tier));
+    } else {
+      buildRuin(w, p.originX, p.originY);
+    }
+  }
+  if (building != null && sitePlot != null) {
+    final plot = sitePlot;
     buildTier(
       w,
       building.tier,

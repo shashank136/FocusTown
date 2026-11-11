@@ -8,23 +8,36 @@ import 'package:focus_town/domain/town.dart';
 class TownRules {
   new _();
 
-  /// Lowest unlocked plot with no building or ruin on it, or null if full.
+  /// How many plots the island has.
+  static const plotCount = 64;
+
+  /// Whether the town may still take a building: the buildings and ruins on
+  /// the island are fewer than the plots unlocked. Which plots they stand on
+  /// is the player's choice.
+  static bool hasRoom(TownState town) =>
+      town.buildings.length < town.plotsUnlocked;
+
+  /// Lowest plot with no building or ruin on it, or null when the town has no
+  /// room left.
   static int? nextFreePlot(TownState town) {
+    if (!hasRoom(town)) return null;
     final used = {for (final b in town.buildings) b.plotIndex};
-    for (var i = 0; i < town.plotsUnlocked; i++) {
+    for (var i = 0; i < plotCount; i++) {
       if (!used.contains(i)) return i;
     }
     return null;
   }
 
-  /// Whether plot [i] is unlocked and has no building or ruin.
+  /// Whether a building may go on plot [i]: it is on the island, nothing
+  /// stands there, and the town has room.
   static bool isPlotFree(TownState town, int i) =>
       i >= 0 &&
-      i < town.plotsUnlocked &&
+      i < plotCount &&
+      hasRoom(town) &&
       !town.buildings.any((b) => b.plotIndex == i);
 
   /// Where [session] builds: the plot the user chose while it is still free,
-  /// else the next free plot, or null when the town is full.
+  /// else the next free plot, or null when the town has no room.
   static int? sitePlot(TownState town, Session session) {
     final chosen = session.plotIndex;
     return chosen != null && isPlotFree(town, chosen)

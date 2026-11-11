@@ -57,7 +57,7 @@ void main() {
     () async {
       final c = await _loaded();
       final controller = c.read(focusControllerProvider.notifier);
-      for (final bad in [0, 6, -1, 64]) {
+      for (final bad in [0, -1, 64]) {
         await expectLater(
           controller.start(10, plotIndex: bad),
           throwsStateError,
@@ -67,6 +67,12 @@ void main() {
       expect(_state(c).active, isNull);
     },
   );
+
+  test('a plot far from the middle can be chosen', () async {
+    final c = await _loaded();
+    await c.read(focusControllerProvider.notifier).start(10, plotIndex: 40);
+    expect(_state(c).active!.plotIndex, 40);
+  });
 
   test('a relaunch resumes on the chosen plot', () async {
     final first = await _loaded();

@@ -40,7 +40,7 @@ void main() {
     expect(c.read(placementProvider)!.plot, isNull);
   });
 
-  test('select takes a free unlocked plot and ignores the others', () async {
+  test('select takes any free plot and ignores the others', () async {
     final c = await _loaded();
     final p = c.read(placementProvider.notifier)
       ..begin(10)
@@ -48,10 +48,10 @@ void main() {
     expect(c.read(placementProvider)!.plot, 3);
     p.select(0); // the starter building
     expect(c.read(placementProvider)!.plot, 3);
-    p.select(6); // locked
+    p.select(64); // not on the island
     expect(c.read(placementProvider)!.plot, 3);
-    p.select(40); // locked
-    expect(c.read(placementProvider)!.plot, 3);
+    p.select(40); // far away, still free
+    expect(c.read(placementProvider)!.plot, 40);
   });
 
   test('select does nothing when no placement is pending', () async {

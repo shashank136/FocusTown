@@ -49,10 +49,27 @@ void main() {
       expect(TownRules.isPlotFree(t, 4), isFalse);
     });
 
-    test('a locked or out-of-range plot is not free', () {
-      expect(TownRules.isPlotFree(_town(), 6), isFalse);
+    test('any plot on the island is free while there is room', () {
+      expect(TownRules.isPlotFree(_town(), 6), isTrue);
+      expect(TownRules.isPlotFree(_town(), 40), isTrue);
+      expect(TownRules.isPlotFree(_town(), 63), isTrue);
+    });
+
+    test('an out-of-range plot is never free', () {
       expect(TownRules.isPlotFree(_town(), -1), isFalse);
       expect(TownRules.isPlotFree(_town(), 64), isFalse);
+    });
+
+    test('with no room left (buildings = unlocked) nothing is free', () {
+      final full = _town(buildings: [for (var i = 1; i < 6; i++) _b(i)]);
+      expect(TownRules.isPlotFree(full, 20), isFalse);
+      expect(
+        TownRules.isPlotFree(
+          _town(plots: 7, buildings: full.buildings.skip(1).toList()),
+          20,
+        ),
+        isTrue,
+      );
     });
   });
 
@@ -68,10 +85,20 @@ void main() {
       expect(TownRules.sitePlot(_town(), _session(SessionState.running)), 1);
     });
 
-    test('a taken or locked choice falls back to the automatic plot', () {
+    test('a far plot is as good as a near one', () {
+      expect(
+        TownRules.sitePlot(_town(), _session(SessionState.running, plot: 40)),
+        40,
+      );
+    });
+
+    test('a taken or unknown choice falls back to the automatic plot', () {
       final t = _town(buildings: [_b(4)]);
       expect(TownRules.sitePlot(t, _session(SessionState.running, plot: 4)), 1);
-      expect(TownRules.sitePlot(t, _session(SessionState.running, plot: 9)), 1);
+      expect(
+        TownRules.sitePlot(t, _session(SessionState.running, plot: 99)),
+        1,
+      );
     });
 
     test('a full town gives null', () {

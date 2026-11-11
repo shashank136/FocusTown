@@ -93,7 +93,7 @@ void main() {
       );
       final q = kPlots[1];
       expect(auto.get(q.originX + 2, q.originY + 2, 5), Blocks.roof);
-      expect(auto.get(p.originX + 2, p.originY + 2, 5), isNull);
+      expect(auto.get(p.originX + 2, p.originY + 2, 5), isNot(Blocks.roof));
     });
 
     test('equality and the site plot helper use the chosen plot', () {

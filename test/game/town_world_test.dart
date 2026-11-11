@@ -48,6 +48,18 @@ int _above(VoxelWorld w, Plot p) => w.blocks
     )
     .length;
 
+// Tree leaves inside a plot: a plot with a building or site has none.
+int _leaves(VoxelWorld w, Plot p) => w.blocks
+    .where(
+      (b) =>
+          b.material == Blocks.leaves &&
+          b.x >= p.originX &&
+          b.x < p.originX + 7 &&
+          b.y >= p.originY &&
+          b.y < p.originY + 7,
+    )
+    .length;
+
 Set<(int, int, int, BlockMaterial)> _all(VoxelWorld w) => {
   for (final b in w.blocks) (b.x, b.y, b.z, b.material),
 };
@@ -66,11 +78,12 @@ void main() {
     expect(w.get(10, 10, 0), Blocks.grass);
   });
 
-  test('initial town has buildings above ground on plot 0 only', () {
+  test('initial town has a building on plot 0 and forest on every other', () {
     final w = buildTownWorld(TownState.initial());
     expect(_above(w, kPlots[0]), greaterThan(0));
+    expect(_leaves(w, kPlots[0]), 0);
     for (final p in kPlots.skip(1)) {
-      expect(_above(w, p), 0, reason: 'plot ${p.index}');
+      expect(_leaves(w, p), greaterThan(0), reason: 'plot ${p.index}');
     }
   });
 
@@ -85,8 +98,9 @@ void main() {
       ),
     );
     for (final p in kPlots) {
-      final expected = {0, 2, 4}.contains(p.index);
-      expect(_above(w, p) > 0, expected, reason: 'plot ${p.index}');
+      final built = {0, 2, 4}.contains(p.index);
+      expect(_leaves(w, p) == 0, built, reason: 'plot ${p.index}');
+      if (built) expect(_above(w, p), greaterThan(0));
     }
   });
 
@@ -166,27 +180,25 @@ void main() {
       expect(_above(w, p), direct.blockCount);
     });
 
-    test(
-      'with every unlocked plot taken the site is the first locked plot',
-      () {
-        final town = _town(
-          buildings: [for (var i = 0; i < 6; i++) _b(i, BuildingTier.hut)],
-        );
-        final w = buildTownWorld(town, active: _hut());
-        expect(_above(w, kPlots[6]), greaterThan(0));
-        expect(_above(w, kPlots[7]), 0);
-      },
-    );
+    test('with no room left the site is the first unused plot', () {
+      final town = _town(
+        buildings: [for (var i = 0; i < 6; i++) _b(i, BuildingTier.hut)],
+      );
+      final w = buildTownWorld(town, active: _hut());
+      expect(_above(w, kPlots[6]), greaterThan(0));
+      expect(_leaves(w, kPlots[6]), 0); // cleared for the site
+      expect(_leaves(w, kPlots[7]), greaterThan(0)); // still forest
+    });
   });
 
-  test('unlocked plots have a path border and locked plots do not', () {
-    final w = buildTownWorld(_town());
-    final unlocked = kPlots[0];
-    final locked = kPlots[10];
-    expect(w.get(unlocked.originX, unlocked.originY + 3, 0), Blocks.path);
-    expect(w.get(unlocked.originX + 3, unlocked.originY, 0), Blocks.path);
-    expect(w.get(unlocked.originX + 3, unlocked.originY + 3, 0), Blocks.grass);
-    expect(w.get(locked.originX, locked.originY + 3, 0), Blocks.grass);
+  test('only plots in use get a path border', () {
+    final w = buildTownWorld(_town(buildings: [_b(0, BuildingTier.hut)]));
+    final used = kPlots[0];
+    final other = kPlots[1];
+    expect(w.get(used.originX, used.originY + 3, 0), Blocks.path);
+    expect(w.get(used.originX + 3, used.originY, 0), Blocks.path);
+    expect(w.get(used.originX + 3, used.originY + 3, 0), Blocks.grass);
+    expect(w.get(other.originX, other.originY + 3, 0), Blocks.grass);
   });
 
   test('two builds of the same town are identical', () {
