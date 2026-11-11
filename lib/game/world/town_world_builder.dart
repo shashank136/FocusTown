@@ -10,7 +10,10 @@ import 'package:focus_town/game/world/voxel_world.dart';
 
 /// The plot a running session builds on: the next free unlocked plot, or when
 /// none is free the first locked plot as a temporary site.
-Plot activeSitePlot(TownState town) {
+Plot activeSitePlot(TownState town, [int? chosen]) {
+  if (chosen != null && TownRules.isPlotFree(town, chosen)) {
+    return kPlots[chosen];
+  }
   final free = TownRules.nextFreePlot(town);
   return kPlots[free ?? town.plotsUnlocked.clamp(0, kPlots.length - 1)];
 }
@@ -50,9 +53,13 @@ VoxelWorld buildTownWorld(
       site ??
       (active == null
           ? null
-          : ActiveSite(active.tier, stageForProgress(active.tier, progress)));
+          : ActiveSite(
+              active.tier,
+              stageForProgress(active.tier, progress),
+              plotIndex: active.plotIndex,
+            ));
   if (building != null) {
-    final plot = activeSitePlot(town);
+    final plot = activeSitePlot(town, building.plotIndex);
     buildTier(
       w,
       building.tier,

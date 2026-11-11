@@ -103,7 +103,9 @@ class TownGame extends FlameGame
       if (result.outcome == SessionOutcome.queued) _queue(plot, result.tier);
     }
     final active = focus.active;
-    if (active != null) _lastPlot = activeSitePlot(focus.town);
+    if (active != null) {
+      _lastPlot = activeSitePlot(focus.town, active.plotIndex);
+    }
     if (focus.town != _town) {
       _town = focus.town;
       setTown(focus.town);
@@ -294,7 +296,11 @@ class TownGame extends FlameGame
     }
     final progress = SessionEngine.progress(active, TimeStamp.now(_clock));
     renderer.setSite(
-      ActiveSite(active.tier, stageForProgress(active.tier, progress)),
+      ActiveSite(
+        active.tier,
+        stageForProgress(active.tier, progress),
+        plotIndex: active.plotIndex,
+      ),
     );
   }
 
@@ -315,7 +321,7 @@ class TownGame extends FlameGame
       }
       site.addAll(
         siteWorkers(
-          activeSitePlot(focus.town),
+          activeSitePlot(focus.town, active.plotIndex),
           active.tier,
           onSite,
           seconds,

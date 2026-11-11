@@ -9,7 +9,9 @@ import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
+import 'package:focus_town/game/workers/worker_model.dart';
 import 'package:focus_town/game/world/building_defs.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 
 // The shortest session of each tier, in minutes.
 const Map<BuildingTier, int> _minutes = {
@@ -139,5 +141,32 @@ void main() {
     rig.game.setFocus(FocusState(town: rig.focus.town));
     rig.frame();
     expect(rig.game.renderer.site, isNull);
+  });
+
+  test('a session on a chosen plot builds and has workers there', () {
+    final clock = FakeClock();
+    final town = TownState.initial().copyWith(workers: 10);
+    final session = SessionEngine.start(
+      id: 's',
+      minutes: 10,
+      workersAvailable: 10,
+      now: TimeStamp.now(clock),
+      plotIndex: 4,
+    );
+    final game = TownGame(clock: clock)
+      ..onGameResize(Vector2(400, 700))
+      ..setFocus(FocusState(town: town, active: session))
+      ..update(0.1)
+      ..render(ui.Canvas(ui.PictureRecorder()));
+    expect(game.renderer.site?.plotIndex, 4);
+    final plot = kPlots[4];
+    final nearPlot = game.renderer.workers.where(
+      (w) =>
+          w.pose != Pose.walk1 &&
+          w.pose != Pose.walk2 &&
+          (w.worker.x - plot.center.x).abs() < 6 &&
+          (w.worker.y - plot.center.y).abs() < 6,
+    );
+    expect(nearPlot, isNotEmpty);
   });
 }

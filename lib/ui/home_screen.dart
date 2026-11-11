@@ -44,7 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       // A session just became active (or was found running at launch): glide
       // the camera to its site.
       if (focus.active != null && prev?.value?.active == null) {
-        _game.focusOnSite(activeSitePlot(focus.town));
+        _game.focusOnSite(activeSitePlot(focus.town, focus.active?.plotIndex));
       }
     }, fireImmediately: true);
   }

@@ -79,6 +79,33 @@ void main() {
     });
   });
 
+  group('a chosen plot', () {
+    test('the site is built on it and the sites differ by plot', () {
+      final on3 = buildTownWorld(
+        TownState.initial(),
+        site: const ActiveSite(BuildingTier.hut, 4, plotIndex: 3),
+      );
+      final p = kPlots[3];
+      expect(on3.get(p.originX + 2, p.originY + 2, 5), Blocks.roof);
+      final auto = buildTownWorld(
+        TownState.initial(),
+        site: const ActiveSite(BuildingTier.hut, 4),
+      );
+      final q = kPlots[1];
+      expect(auto.get(q.originX + 2, q.originY + 2, 5), Blocks.roof);
+      expect(auto.get(p.originX + 2, p.originY + 2, 5), isNull);
+    });
+
+    test('equality and the site plot helper use the chosen plot', () {
+      expect(
+        const ActiveSite(BuildingTier.hut, 2, plotIndex: 3),
+        isNot(const ActiveSite(BuildingTier.hut, 2, plotIndex: 4)),
+      );
+      expect(activeSitePlot(TownState.initial(), 3).index, 3);
+      expect(activeSitePlot(TownState.initial()).index, 1);
+    });
+  });
+
   group('TownRenderer.setSite', () {
     test('setting the same site twice does not re-record', () {
       final r = _renderer();

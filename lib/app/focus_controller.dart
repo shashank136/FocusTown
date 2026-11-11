@@ -34,14 +34,18 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(clearLastResult: true));
   }
 
-  /// Starts a session of [minutes]; it exists only once it is saved.
-  Future<void> start(int minutes) async {
+  /// Starts a session of [minutes] on [plotIndex] (a free unlocked plot), or
+  /// on the next free plot when null; it exists only once it is saved.
+  Future<void> start(int minutes, {int? plotIndex}) async {
     final current = await future;
     if (current.active != null) {
       throw StateError('A session is already active');
     }
     if (!TownRules.canStart(current.town, minutes)) {
       throw StateError('Cannot start $minutes minutes with this town');
+    }
+    if (plotIndex != null && !TownRules.isPlotFree(current.town, plotIndex)) {
+      throw StateError('Plot $plotIndex is not free');
     }
     final now = TimeStamp.now(ref.read(clockProvider));
     final session = SessionEngine.start(
@@ -50,6 +54,7 @@ class FocusController extends AsyncNotifier<FocusState> {
       workersAvailable: current.town.workers,
       recovery: current.town.inRecoveryMode,
       now: now,
+      plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town),
     );
     // Save first: a session that was not saved never starts.
     await ref

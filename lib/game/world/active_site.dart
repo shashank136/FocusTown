@@ -6,7 +6,7 @@ import 'package:focus_town/domain/building_tier.dart';
 /// The building under construction: what it is and which stage it is at.
 class ActiveSite {
   /// Creates a site at [stage] (1 up to the tier's last stage).
-  const new(this.tier, this.stage);
+  const new(this.tier, this.stage, {this.plotIndex});
 
   /// What is being built.
   final BuildingTier tier;
@@ -14,10 +14,16 @@ class ActiveSite {
   /// The construction stage shown.
   final int stage;
 
-  @override
-  bool operator ==(Object other) =>
-      other is ActiveSite && other.tier == tier && other.stage == stage;
+  /// The plot the user chose, or null for the automatic one.
+  final int? plotIndex;
 
   @override
-  int get hashCode => Object.hash(tier, stage);
+  bool operator ==(Object other) =>
+      other is ActiveSite &&
+      other.tier == tier &&
+      other.stage == stage &&
+      other.plotIndex == plotIndex;
+
+  @override
+  int get hashCode => Object.hash(tier, stage, plotIndex);
 }
