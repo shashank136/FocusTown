@@ -68,7 +68,8 @@ void _face(
 /// Draws [blocks] (already sorted back to front) as three-face blocks.
 ///
 /// Blocks whose screen position is outside [viewSize] (plus a margin) are
-/// skipped. Below a tile size of 9 the texture sub-quads are left out.
+/// skipped. Below a tile size of 9 and from 32 up the texture sub-quads are
+/// left out.
 void paintBlocks(
   Canvas canvas,
   Iterable<VisibleBlock> blocks, {
@@ -76,7 +77,9 @@ void paintBlocks(
   required Vec2 origin,
   required Size viewSize,
 }) {
-  final tex = tile >= 9;
+  // Textures only help in the middle: too small to see below 9, and past 32
+  // the 4 x 4 sub-quads show up as visible rectangles.
+  final tex = tile >= 9 && tile < 32;
   final t = tile;
   for (final b in blocks) {
     final sx = origin.x + (b.x - b.y) * t;

@@ -132,7 +132,7 @@ void main() {
         c,
         s,
         [_block(0, 0, 0, Blocks.grass)],
-        40,
+        24,
         const Vec2(100, 110),
       ),
     );
@@ -148,6 +148,35 @@ void main() {
       ),
     );
     expect(big, isNot(flat));
+  });
+
+  testWidgets('zoomed in far the texture is dropped: flat faces', (
+    tester,
+  ) async {
+    // Colors that fill a real area (anti-aliased edges excluded).
+    Future<int> faceColors(double tile) async {
+      final px = await _pixels(
+        tester,
+        size200,
+        (c, s) => drawBlocks(
+          c,
+          s,
+          [_block(0, 0, 0, Blocks.grass)],
+          tile,
+          const Vec2(100, 110),
+        ),
+      );
+      final counts = <int, int>{};
+      for (var i = 0; i < px.length; i += 4) {
+        final key = (px[i] << 16) | (px[i + 1] << 8) | px[i + 2];
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+      final sky = (0xcd << 16) | (0xea << 8) | 0xf7;
+      return counts.entries.where((e) => e.key != sky && e.value > 80).length;
+    }
+
+    expect(await faceColors(24), greaterThan(4)); // textured
+    expect(await faceColors(40), lessThanOrEqualTo(3)); // top, left, right
   });
 
   testWidgets('a hidden face is not drawn', (tester) async {
