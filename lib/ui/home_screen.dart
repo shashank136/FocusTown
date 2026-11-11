@@ -52,6 +52,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         unawaited(ref.read(focusControllerProvider.notifier).tick());
       }
     });
+    final startup = ref.read(startupMessageProvider);
+    if (startup != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(startup)));
+      });
+    }
     // Battery saver: fewer frames per second.
     ref.listenManual(lowPowerProvider, (prev, next) {
       _game.lowPower = next.value ?? false;

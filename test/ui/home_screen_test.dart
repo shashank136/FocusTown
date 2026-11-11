@@ -77,6 +77,7 @@ Future<ProviderContainer> _pump(
   bool onboarded = false,
   bool granted = false,
   Set<Tip> shown = const {},
+  String? startupMessage,
 }) async {
   _clock = FakeClock();
   _game = _SpyGame(clock: _clock);
@@ -115,6 +116,7 @@ Future<ProviderContainer> _pump(
         clockProvider.overrideWithValue(_clock),
         databaseProvider.overrideWithValue(db),
         notifierProvider.overrideWithValue(notifier),
+        startupMessageProvider.overrideWithValue(startupMessage),
         powerStateProvider.overrideWithValue(_FakePower(low: lowPower)),
       ],
       child: MaterialApp(
@@ -570,10 +572,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
     }
 
-    Future<void> finishHut(
-      WidgetTester tester,
-      ProviderContainer c,
-    ) async {
+    Future<void> finishHut(WidgetTester tester, ProviderContainer c) async {
       await tester.runAsync(
         () => c.read(focusControllerProvider.notifier).start(10),
       );
@@ -655,19 +654,13 @@ void main() {
       await tester.tap(find.text('Continue'));
       await pumpFor(tester, const Duration(milliseconds: 100));
       expect(
-        await tester.runAsync(
-          () => c.read(townRepositoryProvider).shownTips(),
-        ),
+        await tester.runAsync(() => c.read(townRepositoryProvider).shownTips()),
         contains(Tip.recovery),
       );
     });
 
     testWidgets('a later recovery gets the short line', (tester) async {
-      final c = await _pump(
-        tester,
-        seed: twoBuilders,
-        shown: {Tip.recovery},
-      );
+      final c = await _pump(tester, seed: twoBuilders, shown: {Tip.recovery});
       await loseEveryBuilder(tester, c);
       expect(find.text(shortText), findsOneWidget);
       expect(find.textContaining(fullText), findsNothing);
@@ -698,11 +691,27 @@ void main() {
       await pumpFor(tester, const Duration(milliseconds: 100));
       expect(find.textContaining(note), findsNothing);
       expect(
-        await tester.runAsync(
-          () => c.read(townRepositoryProvider).shownTips(),
-        ),
+        await tester.runAsync(() => c.read(townRepositoryProvider).shownTips()),
         contains(Tip.notificationNote),
       );
+    });
+  });
+
+  group('startup message', () {
+    const text = "We couldn't load your town and started a new one.";
+
+    testWidgets('shows once when the town was started fresh', (tester) async {
+      await _pump(tester, startupMessage: text);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text(text), findsOneWidget);
+    });
+
+    testWidgets('shows nothing on a normal start', (tester) async {
+      await _pump(tester);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text(text), findsNothing);
     });
   });
 }

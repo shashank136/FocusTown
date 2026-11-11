@@ -34,6 +34,10 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   return db;
 });
 
+/// A one-time message for the home screen, set when the saved town could not
+/// be opened and a new one was started. Null on a normal start.
+final startupMessageProvider = Provider<String?>((ref) => null);
+
 /// Reads and writes the stored town and sessions.
 final townRepositoryProvider = Provider<TownRepository>(
   (ref) =>

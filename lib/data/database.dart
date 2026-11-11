@@ -25,8 +25,7 @@ class Towns extends Table {
   IntColumn get lastDurationMinutes =>
       integer().withDefault(const Constant(25))();
   // one-time tips already shown
-  BoolColumn get tipPassShown =>
-      boolean().withDefault(const Constant(false))();
+  BoolColumn get tipPassShown => boolean().withDefault(const Constant(false))();
   BoolColumn get tipGrowthShown =>
       boolean().withDefault(const Constant(false))();
   BoolColumn get tipRecoveryShown =>
@@ -80,8 +79,11 @@ class Sessions extends Table {
 class AppDatabase extends _$AppDatabase {
   new(super.e);
 
+  /// The schema version this build of the app writes.
+  static const currentSchemaVersion = 4;
+
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => currentSchemaVersion;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
