@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/app/onboarding_controller.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
@@ -164,3 +165,13 @@ final sessionCountProvider = FutureProvider<int>((ref) {
   ref.watch(focusControllerProvider);
   return ref.read(townRepositoryProvider).sessionCount();
 });
+
+/// Whether first-run onboarding was finished; invalidated when it finishes.
+final onboardingDoneProvider = FutureProvider<bool>(
+  (ref) => ref.read(townRepositoryProvider).isOnboardingDone(),
+);
+
+/// Finishes onboarding.
+final onboardingControllerProvider = Provider<OnboardingController>(
+  OnboardingController.new,
+);

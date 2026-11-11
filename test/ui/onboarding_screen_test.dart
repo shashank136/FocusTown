@@ -88,6 +88,10 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.text('10-minute hut'), findsOneWidget);
+    expect(
+      find.text('So we can warn you before your builders stop.'),
+      findsOneWidget,
+    );
     expect(find.text('Next'), findsNothing);
     await tester.tap(find.text('Start'));
     expect(started, 1);

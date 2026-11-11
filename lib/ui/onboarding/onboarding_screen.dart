@@ -81,6 +81,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               '10-minute hut',
                               style: theme.textTheme.titleMedium,
                             ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'So we can warn you before your builders stop.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodyMedium,
+                            ),
                           ],
                         ],
                       ),
