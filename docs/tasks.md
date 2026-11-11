@@ -1544,6 +1544,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Commit: `T-21.3: onboarding town demos`
 
 ### T-21.4 [x] Permissions on page 3 and the Start action
+- **Deferred (Android, 2026-11-10):** only the iOS part was built. Still open for when Android work resumes (T-11.x): `lib/platform/phone_permission.dart`, the Kotlin `requestPhonePermission` channel method, the explanation line `Android only: allow phone state so phone calls never count against you.` shown before the prompt, a test that the Android path calls it and other platforms do not, and the `flutter build apk --debug` gate.
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
 - Depends on: T-21.3
 - Goal: ask for notification permission (and Android call permission) with an explanation, then start the first 10-minute hut.
@@ -1582,6 +1583,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Commit: `T-21.6: onboarding routing`
 
 ### T-21.7 [x] [device] Fresh install to first session under 30 seconds
+- **Deferred (Android, 2026-11-10):** checklist item 6 (phone-state explanation and system prompt; denying still continues) was not run. Run it with the Android tasks.
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
 - Depends on: T-21.6
 - Goal: verify the first-run flow on the iPhone (and Android).
@@ -1883,3 +1885,38 @@ Open questions (assumed answers):
 - Depends on: T-V3.4
 - Do: give the user steps to pick looks, finish a few and look at them from the town view; record in `docs/device_tests.md`.
 - Commit: `T-V3.5: record v3 device check`
+
+## Phase V4: focus trends (after V3, or earlier if the user asks)
+
+Requested by the user: a screen that shows how their focus time is going and whether it is improving. Everything it needs is already stored (the `sessions` table), so no new data is collected and no package is needed (charts are drawn with a `CustomPainter`).
+
+Open questions (assumed answers):
+- Where it lives: tap the HUD (streak and level) to open "Your focus". (Assumed.)
+- What counts as focus time: the planned minutes of completed sessions; failed and abandoned sessions count as 0 but show in the completion rate. (Assumed.)
+- Shown: minutes per day for the last 7 days and per week for the last 8 weeks, current and longest streak, completion rate, average and longest session, and one plain sentence on the trend ("12% more than last week"). (Assumed.)
+- Days and weeks use the local date from the injected clock (Monday starts a week). (Assumed.)
+
+### T-V4.1 [ ] Stats rule (pure)
+- Depends on: MVP done (T-22.15)
+- Goal: turn stored sessions into the numbers the screen shows.
+- Files: `lib/domain/focus_stats.dart`, `test/domain/focus_stats_test.dart`.
+- Do: `FocusStats.from(List<Session>, LocalDate today)` giving minutes per day (7), minutes per week (8), completion rate, average and longest completed session, current and longest streak, and the change against the previous week as a ratio or null when there is no earlier data.
+- Tests first: empty history; one day; a week boundary on a Monday; failed sessions add 0 minutes and lower the rate; the change is null with no previous week and signed otherwise; a clock set backwards never counts future days.
+- Commit: `T-V4.1: focus stats rule`
+
+### T-V4.2 [ ] Read sessions
+- Depends on: T-V4.1
+- Do: `TownRepository.resolvedSessions({DateTime? since})` and a `focusStatsProvider` that recomputes when a session ends.
+- Tests first: only resolved sessions are returned, in time order; the provider updates after a completed and a failed session.
+- Commit: `T-V4.2: stats provider`
+
+### T-V4.3 [ ] "Your focus" screen
+- Depends on: T-V4.2
+- Do: a screen with the two bar charts (painted, no package), the numbers, the trend sentence and an empty state before the first session; opened from the HUD; accessible labels for the bars.
+- Tests first: widget tests for the empty state, the numbers for a seeded history, the trend sentence, and opening from the HUD; one golden of the charts.
+- Commit: `T-V4.3: focus trends screen`
+
+### T-V4.4 [ ] [device] Trends on the iPhone
+- Depends on: T-V4.3
+- Do: give the user steps (finish a few sessions, open the screen, check the numbers against what they did); record in `docs/device_tests.md`.
+- Commit: `T-V4.4: record trends device check`

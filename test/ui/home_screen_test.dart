@@ -628,6 +628,51 @@ void main() {
       expect(find.textContaining('Emergency pass used'), findsNothing);
     });
 
+    Future<void> loseEveryBuilder(
+      WidgetTester tester,
+      ProviderContainer c,
+    ) async {
+      final controller = c.read(focusControllerProvider.notifier);
+      await tester.runAsync(() => controller.start(25));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      await tester.runAsync(controller.abandon);
+      await pumpFor(tester, const Duration(milliseconds: 100));
+    }
+
+    final twoBuilders = TownState.initial().copyWith(workers: 2);
+    const fullText = 'All your builders are gone.';
+    const shortText =
+        'Recovery mode again. Build huts to get back to 3 builders.';
+
+    testWidgets('the first recovery explains the Last Builder in full', (
+      tester,
+    ) async {
+      final c = await _pump(tester, seed: twoBuilders);
+      await loseEveryBuilder(tester, c);
+      expect(find.text('The Last Builder'), findsOneWidget);
+      expect(find.textContaining(fullText), findsOneWidget);
+      expect(find.text(shortText), findsNothing);
+      await tester.tap(find.text('Continue'));
+      await pumpFor(tester, const Duration(milliseconds: 100));
+      expect(
+        await tester.runAsync(
+          () => c.read(townRepositoryProvider).shownTips(),
+        ),
+        contains(Tip.recovery),
+      );
+    });
+
+    testWidgets('a later recovery gets the short line', (tester) async {
+      final c = await _pump(
+        tester,
+        seed: twoBuilders,
+        shown: {Tip.recovery},
+      );
+      await loseEveryBuilder(tester, c);
+      expect(find.text(shortText), findsOneWidget);
+      expect(find.textContaining(fullText), findsNothing);
+    });
+
     const note = 'Warnings are off.';
 
     testWidgets('the note shows after onboarding without permission', (
