@@ -59,8 +59,10 @@ class TownRepository {
   /// On-device beta numbers, computed from the stored sessions.
   Future<BetaStats> betaStats() async {
     final sessions = await _db.select(_db.sessions).get();
-    final town = await _db.select(_db.towns).getSingle();
-    final firstOpen = DateTime.fromMillisecondsSinceEpoch(town.createdAt);
+    final town = await _db.select(_db.towns).getSingleOrNull();
+    final firstOpen = town == null
+        ? _clock.nowWall()
+        : DateTime.fromMillisecondsSinceEpoch(town.createdAt);
     final first = LocalDate.fromDateTime(firstOpen);
     final days = {
       for (final s in sessions)

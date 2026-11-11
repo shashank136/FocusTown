@@ -1,13 +1,17 @@
+import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_controller.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/platform/testing/fake_notifier.dart';
+import 'package:focus_town/ui/debug_screen.dart';
 import 'package:focus_town/ui/hud.dart';
 
 class _Seeded extends FocusController {
@@ -20,10 +24,14 @@ class _Seeded extends FocusController {
 
 Future<FakeClock> _pump(WidgetTester tester, TownState town) async {
   final clock = FakeClock();
+  final db = AppDatabase(NativeDatabase.memory());
+  addTearDown(db.close);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(clock),
+        databaseProvider.overrideWithValue(db),
+        notifierProvider.overrideWithValue(FakeNotifier()),
         focusControllerProvider.overrideWith(
           () => _Seeded(FocusState(town: town)),
         ),
@@ -112,5 +120,41 @@ void main() {
       ),
     );
     expect(_text(tester, 'hud-plots'), '2/7');
+  });
+
+  group('the hidden way to the debug screen', () {
+    Future<void> tapLevel(
+      WidgetTester tester,
+      FakeClock clock,
+      int times,
+      Duration gap,
+    ) async {
+      for (var i = 0; i < times; i++) {
+        await tester.tap(find.byKey(const ValueKey('hud-level')));
+        await tester.pump();
+        clock.advance(gap);
+      }
+      await tester.pump(const Duration(milliseconds: 400));
+    }
+
+    testWidgets('7 quick taps on the level badge open it', (tester) async {
+      final clock = await _pump(tester, TownState.initial());
+      await tapLevel(tester, clock, 7, const Duration(milliseconds: 200));
+      expect(find.byType(DebugScreen), findsOneWidget);
+    });
+
+    testWidgets('6 taps do not', (tester) async {
+      final clock = await _pump(tester, TownState.initial());
+      await tapLevel(tester, clock, 6, const Duration(milliseconds: 200));
+      expect(find.byType(DebugScreen), findsNothing);
+    });
+
+    testWidgets('7 taps spread over more than 5 seconds do not', (
+      tester,
+    ) async {
+      final clock = await _pump(tester, TownState.initial());
+      await tapLevel(tester, clock, 7, const Duration(seconds: 1));
+      expect(find.byType(DebugScreen), findsNothing);
+    });
   });
 }

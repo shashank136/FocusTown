@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/progression.dart';
+import 'package:focus_town/ui/debug_screen.dart';
 
 /// Streak, town level with progress, workers, plots and the queue badge.
 class Hud extends ConsumerWidget {
@@ -38,22 +39,9 @@ class Hud extends ConsumerWidget {
                   Text('$streak', key: const ValueKey('hud-streak')),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${level[0].toUpperCase()}${level.substring(1)}',
-                      key: const ValueKey('hud-level'),
-                    ),
-                    SizedBox(
-                      width: 72,
-                      child: LinearProgressIndicator(
-                        key: const ValueKey('hud-bar'),
-                        value: Progression.progressToNext(town.xp),
-                      ),
-                    ),
-                  ],
+                _LevelBadge(
+                  level: '${level[0].toUpperCase()}${level.substring(1)}',
+                  progress: Progression.progressToNext(town.xp),
                 ),
                 const SizedBox(width: 12),
                 _Stat(
@@ -103,6 +91,55 @@ class _Stat extends StatelessWidget {
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [Icon(icon, size: 18), const SizedBox(width: 4), value],
+    ),
+  );
+}
+
+/// The town level and its bar. Seven quick taps open the debug screen: the
+/// way in for testers on a release build.
+class _LevelBadge extends ConsumerStatefulWidget {
+  const new({required this.level, required this.progress});
+
+  final String level;
+  final double progress;
+
+  @override
+  ConsumerState<_LevelBadge> createState() => _LevelBadgeState();
+}
+
+class _LevelBadgeState extends ConsumerState<_LevelBadge> {
+  static const _taps = 7;
+  static const _window = Duration(seconds: 5);
+  final List<DateTime> _tapped = [];
+
+  void _tap() {
+    final now = ref.read(clockProvider).nowWall();
+    _tapped
+      ..add(now)
+      ..removeWhere((t) => now.difference(t) > _window);
+    if (_tapped.length < _taps) return;
+    _tapped.clear();
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => const DebugScreen()));
+  }
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: _tap,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(widget.level, key: const ValueKey('hud-level')),
+        SizedBox(
+          width: 72,
+          child: LinearProgressIndicator(
+            key: const ValueKey('hud-bar'),
+            value: widget.progress,
+          ),
+        ),
+      ],
     ),
   );
 }

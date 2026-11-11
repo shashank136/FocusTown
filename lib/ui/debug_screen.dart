@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/ui/debug_log_view.dart';
 import 'package:focus_town/ui/event_log_panel.dart';
 import 'package:focus_town/ui/focus_debug_panel.dart';
 import 'package:focus_town/ui/world_stats_card.dart';
@@ -93,6 +94,10 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             ),
             const SizedBox(height: 16),
             const EventLogPanel(),
+            const SizedBox(height: 16),
+            const BetaStatsCard(),
+            const SizedBox(height: 16),
+            const DebugLogView(),
           ],
         ),
       ),
