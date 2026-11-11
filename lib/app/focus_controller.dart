@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
@@ -20,8 +21,18 @@ class FocusController extends AsyncNotifier<FocusState> {
     // The app may have been killed: decide the outcome from timestamps now.
     final now = TimeStamp.now(ref.read(clockProvider));
     final resolved = SessionEngine.resolve(stored, now);
-    if (resolved.isFinished) return await _finish(base, resolved, now);
-    if (resolved != stored) await repo.saveSessionUpdated(resolved);
+    if (resolved.isFinished) {
+      return await _finish(base.copyWith(active: resolved), resolved, now);
+    }
+    if (resolved != stored) {
+      try {
+        await repo.saveSessionUpdated(resolved);
+      } on SaveFailedException catch (e) {
+        // The stored session is still active; the next event retries.
+        debugPrint('$e');
+        return base.copyWith(active: stored);
+      }
+    }
     // Back in the app: warnings from before the kill no longer apply.
     if (resolved.state == SessionState.running) await _cancelWarnings();
     return base.copyWith(active: resolved);
@@ -130,7 +141,12 @@ class FocusController extends AsyncNotifier<FocusState> {
     // Locking or returning ends the away warnings.
     if (cancelWarnings) await _cancelWarnings();
     if (updated == active) return;
-    await ref.read(townRepositoryProvider).saveSessionUpdated(updated);
+    try {
+      await ref.read(townRepositoryProvider).saveSessionUpdated(updated);
+    } on SaveFailedException catch (e) {
+      debugPrint('$e'); // keep the last good state; the next event retries
+      return;
+    }
     state = AsyncData(current.copyWith(active: updated));
     if (updated.state == SessionState.away &&
         active.state != SessionState.away) {
@@ -168,7 +184,16 @@ class FocusController extends AsyncNotifier<FocusState> {
             now.wall,
           )
         : TownRules.applyFailed(base.town, finished);
-    await ref.read(townRepositoryProvider).saveSessionResolved(town, finished);
+    try {
+      await ref
+          .read(townRepositoryProvider)
+          .saveSessionResolved(town, finished);
+    } on SaveFailedException catch (e) {
+      // Nothing changed: the stored session is still active, so the next tick
+      // or event finishes it once the database recovers.
+      debugPrint('$e');
+      return base;
+    }
     await _cancelWarnings();
     final queued = town.queue.any((q) => q.id == finished.id);
     final result = SessionResult(

@@ -8,6 +8,10 @@ import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
+import 'package:focus_town/data/save_failed_exception.dart';
+import 'package:focus_town/data/town_repository.dart';
+import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
@@ -24,10 +28,20 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 300));
 }
 
+class _NeverSaves extends TownRepository {
+  // ignore: use_super_parameters, super params are private so names differ
+  new(AppDatabase db, Clock clock) : super(db, clock);
+
+  @override
+  Future<void> saveSessionStarted(TownState town, Session session) =>
+      Future.error(const SaveFailedException());
+}
+
 Future<ProviderContainer> _open(
   WidgetTester tester, {
   TownState? seed,
   int? lastDuration,
+  TownRepository Function(AppDatabase, Clock)? repo,
 }) async {
   _clock = FakeClock();
   _db = AppDatabase(NativeDatabase.memory());
@@ -56,6 +70,8 @@ Future<ProviderContainer> _open(
       overrides: [
         clockProvider.overrideWithValue(_clock),
         databaseProvider.overrideWithValue(_db),
+        if (repo != null)
+          townRepositoryProvider.overrideWithValue(repo(_db, _clock)),
         notifierProvider.overrideWithValue(FakeNotifier()),
       ],
       child: MaterialApp(
@@ -198,6 +214,19 @@ void main() {
     await tester.tap(find.text('Start'));
     await _settle(tester);
     expect(find.byType(SnackBar), findsOneWidget);
+    expect(find.byType(SessionSetupSheet), findsOneWidget);
+  });
+
+  testWidgets('a save failure shows its message and keeps the sheet', (
+    tester,
+  ) async {
+    await _open(
+      tester,
+      repo: _NeverSaves.new,
+    );
+    await tester.tap(find.text('Start'));
+    await _settle(tester);
+    expect(find.text("Couldn't save your session. Try again."), findsOneWidget);
     expect(find.byType(SessionSetupSheet), findsOneWidget);
   });
 

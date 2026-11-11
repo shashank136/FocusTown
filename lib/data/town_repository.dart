@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
+import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/tip.dart';
@@ -47,10 +48,25 @@ class TownRepository {
   }
 
   /// Remembers [minutes] for the next time the picker opens.
-  Future<void> saveLastDuration(int minutes) =>
-      (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
-        TownsCompanion(lastDurationMinutes: Value(minutes)),
-      );
+  Future<void> saveLastDuration(int minutes) => _write(
+    () => (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+      TownsCompanion(lastDurationMinutes: Value(minutes)),
+    ),
+  );
+
+  // Runs a write; on any failure tries once more, then gives up with a message
+  // the user can read.
+  Future<T> _write<T>(Future<T> Function() op) async {
+    try {
+      return await op();
+    } on Object {
+      try {
+        return await op();
+      } on Object {
+        throw const SaveFailedException();
+      }
+    }
+  }
 
   /// Whether the first-run onboarding was finished.
   Future<bool> isOnboardingDone() async {
@@ -59,10 +75,11 @@ class TownRepository {
   }
 
   /// Remembers that onboarding is finished.
-  Future<void> setOnboardingDone() =>
-      (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
-        const TownsCompanion(onboardingDone: Value(true)),
-      );
+  Future<void> setOnboardingDone() => _write(
+    () => (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+      const TownsCompanion(onboardingDone: Value(true)),
+    ),
+  );
 
   /// The tips already shown.
   Future<Set<Tip>> shownTips() async {
@@ -77,8 +94,8 @@ class TownRepository {
   }
 
   /// Remembers that [tip] was shown.
-  Future<void> markTipShown(Tip tip) =>
-      (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+  Future<void> markTipShown(Tip tip) => _write(
+    () => (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
         switch (tip) {
           Tip.pass => const TownsCompanion(tipPassShown: Value(true)),
           Tip.growth => const TownsCompanion(tipGrowthShown: Value(true)),
@@ -87,7 +104,8 @@ class TownRepository {
             notificationNoteShown: Value(true),
           ),
         },
-      );
+      ),
+  );
 
   /// How many sessions were ever stored, the active one included.
   Future<int> sessionCount() {
@@ -109,30 +127,34 @@ class TownRepository {
   }
 
   /// Stores a new running [session] and the [town] it was started from.
-  Future<void> saveSessionStarted(TownState town, Session session) =>
-      _db.transaction(() async {
-        await _db.into(_db.sessions).insert(sessionToRow(session));
-        await _writeTown(town);
-      });
+  Future<void> saveSessionStarted(TownState town, Session session) => _write(
+    () => _db.transaction(() async {
+      await _db.into(_db.sessions).insert(sessionToRow(session));
+      await _writeTown(town);
+    }),
+  );
 
   /// Updates the stored row of an existing [session].
   Future<void> saveSessionUpdated(Session session) async {
-    final changed = await (_db.update(
-      _db.sessions,
-    )..where((s) => s.id.equals(session.id))).write(sessionToRow(session));
+    final changed = await _write(
+      () => (_db.update(
+        _db.sessions,
+      )..where((s) => s.id.equals(session.id))).write(sessionToRow(session)),
+    );
     if (changed == 0) throw StateError('No stored session ${session.id}');
   }
 
   /// Stores the finished [session] and the whole new [town] atomically.
-  Future<void> saveSessionResolved(TownState town, Session session) =>
-      _db.transaction(() async {
-        await _db
-            .into(_db.sessions)
-            .insertOnConflictUpdate(
-              sessionToRow(session, resolvedAt: _clock.nowWall()),
-            );
-        await _writeTown(town);
-      });
+  Future<void> saveSessionResolved(TownState town, Session session) => _write(
+    () => _db.transaction(() async {
+      await _db
+          .into(_db.sessions)
+          .insertOnConflictUpdate(
+            sessionToRow(session, resolvedAt: _clock.nowWall()),
+          );
+      await _writeTown(town);
+    }),
+  );
 
   /// Overwrites the town row and replaces all building rows, keeping the
   /// `completedAt` of buildings that already exist.
