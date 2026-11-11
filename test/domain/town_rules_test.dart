@@ -249,15 +249,36 @@ void main() {
       expect(t.workers, 2);
     });
 
-    test('no free plot: workers reduced, nothing placed or queued', () {
+    test(
+      'no room: workers reduced, the ruin still appears, nothing queued',
+      () {
+        final full = _town(
+          workers: 5,
+          buildings: [for (var i = 0; i < 6; i++) _b(i)],
+        );
+        final t = TownRules.applyFailed(full, _failed(BuildingTier.house));
+        expect(t.workers, 3);
+        expect(t.buildings.take(6), full.buildings);
+        expect(t.buildings, hasLength(7));
+        expect(t.buildings.last.status, BuildingStatus.ruin);
+        expect(
+          t.buildings.last.plotIndex,
+          6,
+        ); // the first plot nothing stands on
+        expect(t.queue, isEmpty);
+      },
+    );
+
+    test('a failed build leaves its ruin on the plot it was building on', () {
       final full = _town(
         workers: 5,
         buildings: [for (var i = 0; i < 6; i++) _b(i)],
       );
-      final t = TownRules.applyFailed(full, _failed(BuildingTier.house));
-      expect(t.workers, 3);
-      expect(t.buildings, full.buildings);
-      expect(t.queue, isEmpty);
+      expect(TownRules.ruinPlot(full, _failed(BuildingTier.house)), 6);
+      expect(
+        TownRules.ruinPlot(_town(), _failed(BuildingTier.house)),
+        TownRules.nextFreePlot(_town()),
+      );
     });
 
     test('failure leaving 0 workers enters recovery', () {

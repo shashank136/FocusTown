@@ -20,12 +20,7 @@ class TownRules {
   /// Lowest plot with no building or ruin on it, or null when the town has no
   /// room left.
   static int? nextFreePlot(TownState town) {
-    if (!hasRoom(town)) return null;
-    final used = {for (final b in town.buildings) b.plotIndex};
-    for (var i = 0; i < plotCount; i++) {
-      if (!used.contains(i)) return i;
-    }
-    return null;
+    return hasRoom(town) ? firstUnusedPlot(town) : null;
   }
 
   /// Whether a building may go on plot [i]: it is on the island, nothing
@@ -43,6 +38,21 @@ class TownRules {
     return chosen != null && isPlotFree(town, chosen)
         ? chosen
         : nextFreePlot(town);
+  }
+
+  /// The plot a failed [session] leaves its ruin on: where it was building, or
+  /// when the town has no room the first plot nothing stands on. A failure
+  /// always leaves a ruin (null only when all 64 plots are used).
+  static int? ruinPlot(TownState town, Session session) =>
+      sitePlot(town, session) ?? firstUnusedPlot(town);
+
+  /// The lowest plot with no building or ruin, room or not.
+  static int? firstUnusedPlot(TownState town) {
+    final used = {for (final b in town.buildings) b.plotIndex};
+    for (var i = 0; i < plotCount; i++) {
+      if (!used.contains(i)) return i;
+    }
+    return null;
   }
 
   /// Whether a session of [minutes] may start. Invalid minutes give false.
@@ -113,7 +123,7 @@ class TownRules {
     final hurt = town.copyWith(
       workers: max(0, town.workers - session.workersAssigned),
     );
-    final plot = sitePlot(hurt, session);
+    final plot = ruinPlot(hurt, session);
     final ruined = plot == null
         ? hurt
         : hurt.copyWith(

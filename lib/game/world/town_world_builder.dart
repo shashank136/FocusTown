@@ -16,10 +16,8 @@ Plot activeSitePlot(TownState town, [int? chosen]) {
   if (chosen != null && TownRules.isPlotFree(town, chosen)) {
     return kPlots[chosen];
   }
-  final free = TownRules.nextFreePlot(town);
-  if (free != null) return kPlots[free];
-  final used = {for (final b in town.buildings) b.plotIndex};
-  return kPlots.firstWhere((p) => !used.contains(p.index));
+  final plot = TownRules.nextFreePlot(town) ?? TownRules.firstUnusedPlot(town);
+  return kPlots[plot ?? 0];
 }
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the

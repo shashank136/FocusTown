@@ -100,4 +100,26 @@ void main() {
     final ruin = _state(c).town.buildings.where((b) => b.plotIndex == 2);
     expect(ruin.single.status, BuildingStatus.ruin);
   });
+
+  test('abandoning with no room left still leaves a ruin', () async {
+    final c = await _loaded();
+    final controller = c.read(focusControllerProvider.notifier);
+    // The starter plus 5 abandoned builds fill the 6 buildings the town may
+    // have; the 6th abandon has nowhere free by the usual rule.
+    for (var i = 0; i < 6; i++) {
+      _clock.advance(
+        const Duration(seconds: 1),
+      ); // session ids follow the clock
+      await controller.start(10);
+      await controller.abandon();
+    }
+    final town = _state(c).town;
+    expect(town.buildings, hasLength(7));
+    expect(town.buildings.last.status, BuildingStatus.ruin);
+    expect(
+      town.buildings.map((b) => b.plotIndex).toSet(),
+      hasLength(7),
+      reason: 'every building and ruin has its own plot',
+    );
+  });
 }
