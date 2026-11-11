@@ -73,7 +73,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             ),
           ),
         SizedBox(
-          height: 150,
+          height: 120,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -95,7 +95,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
                 perspective: 0.004,
                 useMagnifier: true,
                 magnification: 1.15,
-                overAndUnderCenterOpacity: 0.45,
+                overAndUnderCenterOpacity: 0.35,
                 physics: const FixedExtentScrollPhysics(),
                 onSelectedItemChanged: (i) {
                   // A detent: a small tap and a click for every step.

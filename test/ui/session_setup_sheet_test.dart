@@ -271,5 +271,17 @@ void main() {
       expect(wheel.diameterRatio, lessThan(2.5));
       expect(wheel.perspective, greaterThan(0.002));
     });
+
+    testWidgets('only the previous and next rows show, faded', (
+      tester,
+    ) async {
+      await _open(tester);
+      final wheel = tester.widget<ListWheelScrollView>(
+        find.byType(ListWheelScrollView),
+      );
+      // Three rows tall: the centre row plus one faded row each side.
+      expect(tester.getSize(find.byType(ListWheelScrollView)).height, 120);
+      expect(wheel.overAndUnderCenterOpacity, lessThanOrEqualTo(0.4));
+    });
   });
 }
