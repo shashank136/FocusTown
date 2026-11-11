@@ -122,6 +122,17 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _lastDurationMinutesMeta =
+      const VerificationMeta('lastDurationMinutes');
+  @override
+  late final GeneratedColumn<int> lastDurationMinutes = GeneratedColumn<int>(
+    'last_duration_minutes',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(25),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -134,6 +145,7 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     inRecoveryMode,
     onboardingDone,
     createdAt,
+    lastDurationMinutes,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -234,6 +246,15 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     } else if (isInserting) {
       context.missing(_createdAtMeta);
     }
+    if (data.containsKey('last_duration_minutes')) {
+      context.handle(
+        _lastDurationMinutesMeta,
+        lastDurationMinutes.isAcceptableOrUnknown(
+          data['last_duration_minutes']!,
+          _lastDurationMinutesMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -283,6 +304,10 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         DriftSqlType.int,
         data['${effectivePrefix}created_at'],
       )!,
+      lastDurationMinutes: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}last_duration_minutes'],
+      )!,
     );
   }
 
@@ -303,6 +328,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
   final bool inRecoveryMode;
   final bool onboardingDone;
   final int createdAt;
+  final int lastDurationMinutes;
   const TownRow({
     required this.id,
     required this.workerCount,
@@ -314,6 +340,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     required this.inRecoveryMode,
     required this.onboardingDone,
     required this.createdAt,
+    required this.lastDurationMinutes,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -332,6 +359,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     map['in_recovery_mode'] = Variable<bool>(inRecoveryMode);
     map['onboarding_done'] = Variable<bool>(onboardingDone);
     map['created_at'] = Variable<int>(createdAt);
+    map['last_duration_minutes'] = Variable<int>(lastDurationMinutes);
     return map;
   }
 
@@ -351,6 +379,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       inRecoveryMode: Value(inRecoveryMode),
       onboardingDone: Value(onboardingDone),
       createdAt: Value(createdAt),
+      lastDurationMinutes: Value(lastDurationMinutes),
     );
   }
 
@@ -372,6 +401,9 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       inRecoveryMode: serializer.fromJson<bool>(json['inRecoveryMode']),
       onboardingDone: serializer.fromJson<bool>(json['onboardingDone']),
       createdAt: serializer.fromJson<int>(json['createdAt']),
+      lastDurationMinutes: serializer.fromJson<int>(
+        json['lastDurationMinutes'],
+      ),
     );
   }
   @override
@@ -388,6 +420,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       'inRecoveryMode': serializer.toJson<bool>(inRecoveryMode),
       'onboardingDone': serializer.toJson<bool>(onboardingDone),
       'createdAt': serializer.toJson<int>(createdAt),
+      'lastDurationMinutes': serializer.toJson<int>(lastDurationMinutes),
     };
   }
 
@@ -402,6 +435,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     bool? inRecoveryMode,
     bool? onboardingDone,
     int? createdAt,
+    int? lastDurationMinutes,
   }) => TownRow(
     id: id ?? this.id,
     workerCount: workerCount ?? this.workerCount,
@@ -417,6 +451,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     inRecoveryMode: inRecoveryMode ?? this.inRecoveryMode,
     onboardingDone: onboardingDone ?? this.onboardingDone,
     createdAt: createdAt ?? this.createdAt,
+    lastDurationMinutes: lastDurationMinutes ?? this.lastDurationMinutes,
   );
   TownRow copyWithCompanion(TownsCompanion data) {
     return TownRow(
@@ -444,6 +479,9 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ? data.onboardingDone.value
           : this.onboardingDone,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      lastDurationMinutes: data.lastDurationMinutes.present
+          ? data.lastDurationMinutes.value
+          : this.lastDurationMinutes,
     );
   }
 
@@ -459,7 +497,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ..write('lastPlotGrantDate: $lastPlotGrantDate, ')
           ..write('inRecoveryMode: $inRecoveryMode, ')
           ..write('onboardingDone: $onboardingDone, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastDurationMinutes: $lastDurationMinutes')
           ..write(')'))
         .toString();
   }
@@ -476,6 +515,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     inRecoveryMode,
     onboardingDone,
     createdAt,
+    lastDurationMinutes,
   );
   @override
   bool operator ==(Object other) =>
@@ -490,7 +530,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           other.lastPlotGrantDate == this.lastPlotGrantDate &&
           other.inRecoveryMode == this.inRecoveryMode &&
           other.onboardingDone == this.onboardingDone &&
-          other.createdAt == this.createdAt);
+          other.createdAt == this.createdAt &&
+          other.lastDurationMinutes == this.lastDurationMinutes);
 }
 
 class TownsCompanion extends UpdateCompanion<TownRow> {
@@ -504,6 +545,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
   final Value<bool> inRecoveryMode;
   final Value<bool> onboardingDone;
   final Value<int> createdAt;
+  final Value<int> lastDurationMinutes;
   const TownsCompanion({
     this.id = const Value.absent(),
     this.workerCount = const Value.absent(),
@@ -515,6 +557,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.inRecoveryMode = const Value.absent(),
     this.onboardingDone = const Value.absent(),
     this.createdAt = const Value.absent(),
+    this.lastDurationMinutes = const Value.absent(),
   });
   TownsCompanion.insert({
     this.id = const Value.absent(),
@@ -527,6 +570,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     required bool inRecoveryMode,
     this.onboardingDone = const Value.absent(),
     required int createdAt,
+    this.lastDurationMinutes = const Value.absent(),
   }) : workerCount = Value(workerCount),
        plotsUnlocked = Value(plotsUnlocked),
        xp = Value(xp),
@@ -544,6 +588,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Expression<bool>? inRecoveryMode,
     Expression<bool>? onboardingDone,
     Expression<int>? createdAt,
+    Expression<int>? lastDurationMinutes,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -556,6 +601,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       if (inRecoveryMode != null) 'in_recovery_mode': inRecoveryMode,
       if (onboardingDone != null) 'onboarding_done': onboardingDone,
       if (createdAt != null) 'created_at': createdAt,
+      if (lastDurationMinutes != null)
+        'last_duration_minutes': lastDurationMinutes,
     });
   }
 
@@ -570,6 +617,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Value<bool>? inRecoveryMode,
     Value<bool>? onboardingDone,
     Value<int>? createdAt,
+    Value<int>? lastDurationMinutes,
   }) {
     return TownsCompanion(
       id: id ?? this.id,
@@ -582,6 +630,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       inRecoveryMode: inRecoveryMode ?? this.inRecoveryMode,
       onboardingDone: onboardingDone ?? this.onboardingDone,
       createdAt: createdAt ?? this.createdAt,
+      lastDurationMinutes: lastDurationMinutes ?? this.lastDurationMinutes,
     );
   }
 
@@ -618,6 +667,9 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     if (createdAt.present) {
       map['created_at'] = Variable<int>(createdAt.value);
     }
+    if (lastDurationMinutes.present) {
+      map['last_duration_minutes'] = Variable<int>(lastDurationMinutes.value);
+    }
     return map;
   }
 
@@ -633,7 +685,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
           ..write('lastPlotGrantDate: $lastPlotGrantDate, ')
           ..write('inRecoveryMode: $inRecoveryMode, ')
           ..write('onboardingDone: $onboardingDone, ')
-          ..write('createdAt: $createdAt')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastDurationMinutes: $lastDurationMinutes')
           ..write(')'))
         .toString();
   }
@@ -1930,6 +1983,7 @@ typedef $$TownsTableCreateCompanionBuilder = TownsCompanion Function({
   required bool inRecoveryMode,
   Value<bool> onboardingDone,
   required int createdAt,
+  Value<int> lastDurationMinutes,
 });
 typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<int> id,
@@ -1942,6 +1996,7 @@ typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<bool> inRecoveryMode,
   Value<bool> onboardingDone,
   Value<int> createdAt,
+  Value<int> lastDurationMinutes,
 });
 
 class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
@@ -1999,6 +2054,11 @@ class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
 
   ColumnFilters<int> get createdAt => $composableBuilder(
     column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lastDurationMinutes => $composableBuilder(
+    column: $table.lastDurationMinutes,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2061,6 +2121,11 @@ class $$TownsTableOrderingComposer
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get lastDurationMinutes => $composableBuilder(
+    column: $table.lastDurationMinutes,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TownsTableAnnotationComposer
@@ -2115,6 +2180,11 @@ class $$TownsTableAnnotationComposer
 
   GeneratedColumn<int> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<int> get lastDurationMinutes => $composableBuilder(
+    column: $table.lastDurationMinutes,
+    builder: (column) => column,
+  );
 }
 
 class $$TownsTableTableManager
@@ -2155,6 +2225,7 @@ class $$TownsTableTableManager
                 Value<bool> inRecoveryMode = const Value.absent(),
                 Value<bool> onboardingDone = const Value.absent(),
                 Value<int> createdAt = const Value.absent(),
+                Value<int> lastDurationMinutes = const Value.absent(),
               }) => TownsCompanion(
                 id: id,
                 workerCount: workerCount,
@@ -2166,6 +2237,7 @@ class $$TownsTableTableManager
                 inRecoveryMode: inRecoveryMode,
                 onboardingDone: onboardingDone,
                 createdAt: createdAt,
+                lastDurationMinutes: lastDurationMinutes,
               ),
           createCompanionCallback:
               ({
@@ -2179,6 +2251,7 @@ class $$TownsTableTableManager
                 required bool inRecoveryMode,
                 Value<bool> onboardingDone = const Value.absent(),
                 required int createdAt,
+                Value<int> lastDurationMinutes = const Value.absent(),
               }) => TownsCompanion.insert(
                 id: id,
                 workerCount: workerCount,
@@ -2190,6 +2263,7 @@ class $$TownsTableTableManager
                 inRecoveryMode: inRecoveryMode,
                 onboardingDone: onboardingDone,
                 createdAt: createdAt,
+                lastDurationMinutes: lastDurationMinutes,
               ),
           withReferenceMapper: (p0) => p0
               .map(

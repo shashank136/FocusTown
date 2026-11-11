@@ -21,6 +21,9 @@ class Towns extends Table {
       boolean().withDefault(const Constant(false))();
   // epoch ms, UTC
   IntColumn get createdAt => integer()();
+  // the duration picker starts here
+  IntColumn get lastDurationMinutes =>
+      integer().withDefault(const Constant(25))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -69,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +80,8 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (m, from, to) async {
       // v2: the plot the user chose for a session.
       if (from < 2) await m.addColumn(sessions, sessions.plotIndex);
+      // v3: the duration the picker opens on.
+      if (from < 3) await m.addColumn(towns, towns.lastDurationMinutes);
     },
   );
 }

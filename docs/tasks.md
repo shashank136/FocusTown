@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-18A.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-18A.4 done: choose-a-plot mode. lib/app/placement.dart (Placement, PlacementController: begin/select/cancel/confirm, ignores taken or locked plots and begin during a session), TownGame.setPlacement/plotAtScreen, renderer plot outlines (white on free plots, green fill on the selected one; drawn over the cached town, no re-record), HomeScreen bar with Cancel/Confirm plus a translucent tap layer, 'Place…' button next to Start on the debug screen. Verified in the simulator: bar and outlines show, Cancel hides them, no runtime errors. Tap-to-select could not be driven there (XcodeBuildMCP has no coordinate tap); it is covered by a widget test using the real projection. Known polish: outlines draw over the starter building's roof. Next: T-18A.5 [device] (parked). Also requested: rotate the island in 90 degree steps.
+- Current task: T-19.2 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-19.1 done: schema v3 (towns.lastDurationMinutes default 25, onUpgrade if from<3), TownRepository.lastDurationMinutes/saveLastDuration (not overwritten by _writeTown), drift_schema_v3.json, regenerated migration helpers, migration tests v1->v3 and v2->v3. NOTE schema numbering moved: v2 is the session plot column (T-18A.2), so T-21.1 is now schema v4. Milestone target: end of step 19 (T-19.5: Start focus button on the home screen, setup sheet; combine with choose-a-plot). Next: T-19.2 (setup options logic).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-18A.4 done)
+- Last updated: 2026-11-09 (T-19.1 done)
 
 ## Status of steps
 
@@ -1383,18 +1383,18 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 
 ## Phase E: screens and release
 
-### T-19.1 [ ] Schema v2: lastDurationMinutes and migration
+### T-19.1 [x] Schema v3: lastDurationMinutes and migration
 - Step: 19 (docs/prompt_plan.md, Prompt 19)
 - Depends on: T-18.6
-- Goal: remember the last chosen duration in the database, with a tested v1 → v2 migration.
-- Files: `lib/data/database.dart` (+ generated), `lib/data/town_repository.dart`, `drift_schemas/drift_schema_v2.json`, `test/generated_migrations/` (generated), `test/data/migration_test.dart`, `test/data/town_repository_test.dart`.
+- Goal: remember the last chosen duration in the database, with a tested v2 → v3 migration (v2 already holds the session plot column from T-18A.2).
+- Files: `lib/data/database.dart` (+ generated), `lib/data/town_repository.dart`, `drift_schemas/drift_schema_v3.json`, `test/generated_migrations/` (generated), `test/data/migration_test.dart`, `test/data/town_repository_test.dart`.
 - Do:
-  1. Add column `lastDurationMinutes` int, default 25, to `Towns`. `schemaVersion = 2`. `MigrationStrategy.onUpgrade`: `if (from < 2) await m.addColumn(towns, towns.lastDurationMinutes);`.
+  1. Add column `lastDurationMinutes` int, default 25, to `Towns`. `schemaVersion = 3`. `MigrationStrategy.onUpgrade`: `if (from < 3) await m.addColumn(towns, towns.lastDurationMinutes);`.
   2. Dump the new schema: `dart run drift_dev schema dump lib/data/database.dart drift_schemas/`. Generate test helpers: `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/` and use drift's `SchemaVerifier` in the migration test.
   3. Repository: `Future<int> lastDurationMinutes()` and `Future<void> saveLastDuration(int minutes)`; `saveSessionResolved` must not overwrite it.
-- Tests first: migration test v1 → v2 keeps data (insert a v1 town, building, and session, migrate, read them back unchanged and `lastDurationMinutes == 25`); fresh v2 database has the default 25; `saveLastDuration(40)` then `lastDurationMinutes()` returns 40 and survives `saveSessionResolved`.
+- Tests first: migration tests v1 → v3 and v2 → v3 keep data (insert an old town, building, and session, migrate, read them back unchanged and `lastDurationMinutes == 25`); fresh v3 database has the default 25; `saveLastDuration(40)` then `lastDurationMinutes()` returns 40 and survives `saveSessionResolved`.
 - Done when: flutter analyze clean; flutter test green.
-- Commit: `T-19.1: schema v2 last duration`
+- Commit: `T-19.1: schema v3 last duration`
 
 ### T-19.2 [ ] Setup options logic
 - Step: 19 (docs/prompt_plan.md, Prompt 19)
@@ -1505,18 +1505,18 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 - Done when: flutter analyze clean; flutter test green; the full session loop works on the simulator with no debug screen.
 - Commit: `T-20.5: home screen session loop`
 
-### T-21.1 [ ] Schema v3: tip flags and onboarding access
+### T-21.1 [ ] Schema v4: tip flags and onboarding access
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
 - Depends on: T-20.5
-- Goal: store onboarding and one-time tip flags, with a tested v2 → v3 migration.
+- Goal: store onboarding and one-time tip flags, with a tested v3 → v4 migration.
 - Files: `lib/data/database.dart` (+ generated), `lib/data/town_repository.dart`, `drift_schemas/drift_schema_v3.json`, `test/generated_migrations/`, `test/data/migration_test.dart`, `test/data/town_repository_test.dart`.
 - Do:
-  1. Add bool columns to `Towns`, default false: `tipPassShown`, `tipGrowthShown`, `tipRecoveryShown`, `notificationNoteShown`. `schemaVersion = 3`; `onUpgrade`: `if (from < 3)` add the four columns (keep the v2 step).
+  1. Add bool columns to `Towns`, default false: `tipPassShown`, `tipGrowthShown`, `tipRecoveryShown`, `notificationNoteShown`. `schemaVersion = 4`; `onUpgrade`: `if (from < 4)` add the four columns (keep the earlier steps).
   2. `enum Tip { pass, growth, recovery, notificationNote }`. Repository: `Future<bool> isOnboardingDone()`, `Future<void> setOnboardingDone()`, `Future<Set<Tip>> shownTips()`, `Future<void> markTipShown(Tip)`. `saveSessionResolved` must not reset any of them.
-  3. Dump schema v3 and regenerate migration helpers.
-- Tests first: migration v2 → v3 and v1 → v3 keep data and default all flags false; `setOnboardingDone` persists; `markTipShown` per tip persists and is independent; resolved saves keep flags.
+  3. Dump schema v4 and regenerate migration helpers.
+- Tests first: migration v3 → v4 and v1 → v4 keep data and default all flags false; `setOnboardingDone` persists; `markTipShown` per tip persists and is independent; resolved saves keep flags.
 - Done when: flutter analyze clean; flutter test green.
-- Commit: `T-21.1: schema v3 tips and onboarding`
+- Commit: `T-21.1: schema v4 tips and onboarding`
 
 ### T-21.2 [ ] Onboarding screen: pages and indicator
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
@@ -1827,7 +1827,7 @@ Open questions (assumed answers):
 
 ### T-V2.3 [ ] Weekly emergency pause (rule and storage)
 - Depends on: T-V2.1
-- Do: `TownState.emergencyPauses` (1 per week, refilled on a new week from the injected clock; schema v3 and migration); session field `emergencyUsed`; away limit becomes 10 minutes once when set.
+- Do: `TownState.emergencyPauses` (1 per week, refilled on a new week from the injected clock; the next schema version and a migration); session field `emergencyUsed`; away limit becomes 10 minutes once when set.
 - Tests first: refill on the first session of a new week (never more than 1 stored); using it moves the away limit to 10 minutes exactly once; none left means the old rules; clock changes never grant extra.
 - Commit: `T-V2.3: emergency pause rule`
 

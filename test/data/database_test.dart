@@ -8,8 +8,8 @@ void main() {
   setUp(() => db = AppDatabase(NativeDatabase.memory()));
   tearDown(() => db.close());
 
-  test('schemaVersion is 2', () {
-    expect(db.schemaVersion, 2);
+  test('schemaVersion is 3', () {
+    expect(db.schemaVersion, 3);
   });
 
   test('towns row round trips and onboardingDone defaults to false', () async {

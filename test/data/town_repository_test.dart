@@ -290,4 +290,34 @@ void main() {
       expect(await db.select(db.sessions).get(), sessions);
     });
   });
+
+  group('last duration', () {
+    test('a new town remembers 25 minutes', () async {
+      await repo.loadOrCreate();
+      expect(await repo.lastDurationMinutes(), 25);
+    });
+
+    test('saveLastDuration is read back', () async {
+      await repo.loadOrCreate();
+      await repo.saveLastDuration(40);
+      expect(await repo.lastDurationMinutes(), 40);
+    });
+
+    test('it survives a started and a resolved session', () async {
+      final town = await repo.loadOrCreate();
+      await repo.saveLastDuration(40);
+      final s = session('s1', SessionState.running);
+      await repo.saveSessionStarted(town, s);
+      await repo.saveSessionResolved(
+        town.copyWith(xp: 10),
+        s.copyWith(state: SessionState.completed),
+      );
+      expect(await repo.lastDurationMinutes(), 40);
+    });
+
+    test('without a stored town it is 25 and nothing is created', () async {
+      expect(await repo.lastDurationMinutes(), 25);
+      expect(await db.select(db.towns).get(), isEmpty);
+    });
+  });
 }

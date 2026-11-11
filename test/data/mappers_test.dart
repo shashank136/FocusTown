@@ -20,6 +20,7 @@ TownRow _townRowFrom(TownState s) {
     inRecoveryMode: c.inRecoveryMode.value,
     onboardingDone: false,
     createdAt: 0,
+    lastDurationMinutes: 25,
   );
 }
 

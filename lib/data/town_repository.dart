@@ -38,6 +38,19 @@ class TownRepository {
     return townFromRows(town, buildings);
   });
 
+  /// The duration the picker opens on (25 until the user chose another, or
+  /// before any town exists).
+  Future<int> lastDurationMinutes() async {
+    final row = await _db.select(_db.towns).getSingleOrNull();
+    return row?.lastDurationMinutes ?? 25;
+  }
+
+  /// Remembers [minutes] for the next time the picker opens.
+  Future<void> saveLastDuration(int minutes) =>
+      (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+        TownsCompanion(lastDurationMinutes: Value(minutes)),
+      );
+
   /// The session that is running or away, if any.
   Future<Session?> activeSession() async {
     final active = [SessionState.running.name, SessionState.away.name];

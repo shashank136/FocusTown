@@ -8,19 +8,46 @@ void main() {
   late SchemaVerifier verifier;
   setUpAll(() => verifier = SchemaVerifier(GeneratedHelper()));
 
-  test('v1 to v2 keeps a stored session and adds a null plot', () async {
-    final schema = await verifier.schemaAt(1);
-    schema.rawDatabase.execute('''
-      INSERT INTO sessions (id, planned_minutes, tier, workers_assigned, state,
-        started_at_wall, started_at_uptime_ms, away_total_ms, pass_used)
-      VALUES ('s1', 10, 'hut', 1, 'running', 1000, 2000, 0, 0)
-    ''');
+  Future<AppDatabase> migrate(int from) async {
+    final schema = await verifier.schemaAt(from);
+    schema.rawDatabase
+      ..execute('''
+        INSERT INTO towns (id, worker_count, plots_unlocked, xp, streak_count,
+          in_recovery_mode, onboarding_done, created_at)
+        VALUES (1, 4, 7, 30, 2, 0, 1, 5000)
+      ''')
+      ..execute('''
+        INSERT INTO buildings (id, tier, status, plot_index, completed_at)
+        VALUES ('b1', 'hut', 'complete', 0, 6000)
+      ''')
+      ..execute('''
+        INSERT INTO sessions (id, planned_minutes, tier, workers_assigned,
+          state, started_at_wall, started_at_uptime_ms, away_total_ms,
+          pass_used)
+        VALUES ('s1', 10, 'hut', 1, 'running', 1000, 2000, 0, 0)
+      ''');
     final db = AppDatabase(schema.newConnection());
     addTearDown(db.close);
-    await verifier.migrateAndValidate(db, 2);
-    final row = await db.select(db.sessions).getSingle();
-    expect(row.id, 's1');
-    expect(row.plannedMinutes, 10);
-    expect(row.plotIndex, isNull);
-  });
+    await verifier.migrateAndValidate(db, 3);
+    return db;
+  }
+
+  for (final from in [1, 2]) {
+    test('v$from to v3 keeps the town, building and session', () async {
+      final db = await migrate(from);
+      final town = await db.select(db.towns).getSingle();
+      expect(town.workerCount, 4);
+      expect(town.plotsUnlocked, 7);
+      expect(town.xp, 30);
+      expect(town.onboardingDone, isTrue);
+      expect(town.lastDurationMinutes, 25);
+      final building = await db.select(db.buildings).getSingle();
+      expect(building.id, 'b1');
+      expect(building.completedAt, 6000);
+      final session = await db.select(db.sessions).getSingle();
+      expect(session.id, 's1');
+      expect(session.plannedMinutes, 10);
+      expect(session.plotIndex, isNull);
+    });
+  }
 }
