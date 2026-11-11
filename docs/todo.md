@@ -338,7 +338,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Schema v4 migration (tip flags) with test
 - [x] Denied-notifications note shown once
 - [x] Tests passing
-- [ ] Device: fresh install → running session in under 30 seconds
+- [x] Device: fresh install → running session in under 30 seconds (iPhone, 2026-11-10)
 - [x] Committed: T-21.1 to T-21.6
 
 ### Step 22: error handling, debug tools, and release

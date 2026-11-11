@@ -1581,7 +1581,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-21.6: onboarding routing`
 
-### T-21.7 [ ] [device] Fresh install to first session under 30 seconds
+### T-21.7 [x] [device] Fresh install to first session under 30 seconds
 - Step: 21 (docs/prompt_plan.md, Prompt 21)
 - Depends on: T-21.6
 - Goal: verify the first-run flow on the iPhone (and Android).

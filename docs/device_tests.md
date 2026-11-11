@@ -51,4 +51,13 @@ Debug build over `flutter run` on a fresh install (user-reported). Build with th
 - [x] Test 4, leave the app for 90 s and come back: passes (failed dialog, ruin).
 - [ ] Still unverified on the phone: notification banners, real lock and call events, pinch and double-tap feel (T-16.4), frame rate and battery (T-17.7).
 
+## iPhone 15 Pro Max results (step 21 and the island polish, 2026-11-10)
+
+Debug build over `flutter run` (user-reported: "everything works as expected").
+
+- [x] T-21.7 Step 21 onboarding: fresh install to a running 10-minute hut, three pages with live demos, notification prompt on the last page, the free-pass tip once, and the denied-notifications note.
+- [x] Dial with exactly three rows (clear centre, faded neighbours), tap and click per step.
+- [x] Forest island: roads and paths visible through the forest; the ruin fix and the plot choice anywhere on the island.
+- [ ] Still unverified: Android phone-state prompt (Android deferred), notification banners with a real lock or call, pinch and double-tap feel (T-16.4), frame rate and battery (T-17.7).
+
 ## Android
