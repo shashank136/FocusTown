@@ -61,6 +61,23 @@ void main() {
     expect(maxY, lessThan(96));
   });
 
+  testWidgets('tiers share one scale: hut < house, castle biggest', (
+    tester,
+  ) async {
+    final n = <BuildingTier, int>{};
+    for (final tier in BuildingTier.values) {
+      final image = (await tester.runAsync(() => renderTierPreview(tier)))!;
+      n[tier] = _opaque(await _rgba(tester, image));
+    }
+    expect(n[BuildingTier.hut], lessThan(n[BuildingTier.house]!));
+    expect(
+      n[BuildingTier.castle],
+      greaterThan(n.values.where((v) => v != n[BuildingTier.castle]).reduce(
+        (a, b) => a > b ? a : b,
+      )),
+    );
+  });
+
   testWidgets('a castle does not look like a hut', (tester) async {
     final hut = (await tester.runAsync(
       () => renderTierPreview(BuildingTier.hut),

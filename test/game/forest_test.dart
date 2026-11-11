@@ -34,6 +34,19 @@ void main() {
     }
   });
 
+  test('forest trees stay low so they do not hide roads', () {
+    final w = _forest();
+    expect(w.blocks.map((b) => b.z).reduce((a, b) => a > b ? a : b), 4);
+  });
+
+  test('plots beside a road keep trees off the road edge', () {
+    final w = _forest();
+    for (final b in w.blocks.where((b) => b.z >= 1)) {
+      if (plotAt(b.x, b.y)?.originX == 33) expect(b.x, greaterThan(35));
+      if (plotAt(b.x, b.y)?.originY == 33) expect(b.y, greaterThan(35));
+    }
+  });
+
   test('3 or 4 trees per plot', () {
     final w = _forest();
     for (final p in kPlots) {

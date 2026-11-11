@@ -73,7 +73,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             ),
           ),
         SizedBox(
-          height: 120,
+          height: 112,
           child: Stack(
             alignment: Alignment.center,
             children: [

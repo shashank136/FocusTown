@@ -280,7 +280,7 @@ void main() {
         find.byType(ListWheelScrollView),
       );
       // Three rows tall: the centre row plus one faded row each side.
-      expect(tester.getSize(find.byType(ListWheelScrollView)).height, 120);
+      expect(tester.getSize(find.byType(ListWheelScrollView)).height, 112);
       expect(wheel.overAndUnderCenterOpacity, lessThanOrEqualTo(0.4));
     });
   });
