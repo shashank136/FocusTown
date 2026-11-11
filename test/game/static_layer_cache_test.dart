@@ -125,6 +125,56 @@ void main() {
     },
   );
 
+  testWidgets('a pan right shows the strip that came into view on the left', (
+    tester,
+  ) async {
+    final c = StaticLayerCache();
+    _update(c);
+    _update(c, origin: const Vec2(145, 100)); // 22% right, still cached
+    expect(c.recordCount, 1);
+    final cached = await _pixels(tester, (canvas) {
+      c.paint(canvas, const Vec2(145, 100));
+    });
+    final direct = await _pixels(tester, (canvas) {
+      paintBlocks(
+        canvas,
+        _blocks(),
+        tile: 16,
+        origin: const Vec2(145, 100),
+        viewSize: _view,
+      );
+    });
+    expect(cached, direct);
+  });
+
+  testWidgets('a pan left, up and down also match a direct paint', (
+    tester,
+  ) async {
+    for (final to in const [
+      Vec2(55, 100),
+      Vec2(100, 55),
+      Vec2(100, 145),
+      Vec2(145, 145),
+      Vec2(55, 55),
+    ]) {
+      final c = StaticLayerCache();
+      _update(c);
+      _update(c, origin: to);
+      expect(c.recordCount, 1);
+      final cached = await _pixels(tester, (canvas) => c.paint(canvas, to));
+      final direct = await _pixels(tester, (canvas) {
+        paintBlocks(
+          canvas,
+          _blocks(),
+          tile: 16,
+          origin: to,
+          viewSize: _view,
+        );
+      });
+      expect(cached, direct, reason: '$to');
+    }
+  });
+
   testWidgets('paint without a pan equals a direct paint', (tester) async {
     final c = StaticLayerCache();
     _update(c);

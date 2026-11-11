@@ -41,17 +41,16 @@ class StaticLayerCache {
     final padX = _repanFraction * viewSize.width;
     final padY = _repanFraction * viewSize.height;
     final recorder = PictureRecorder();
-    final canvas = Canvas(recorder)..translate(padX, padY);
+    // paintBlocks culls against 0..size from the picture's own corner, so the
+    // origin is moved by the padding: the picture then covers the view plus
+    // the padding on every side (not just to the right and below).
     paintBlocks(
-      canvas,
+      Canvas(recorder),
       blocks,
       tile: tile,
-      origin: origin,
-      // Culling uses the enlarged rectangle.
+      origin: Vec2(origin.x + padX, origin.y + padY),
       viewSize: Size(viewSize.width * 1.5, viewSize.height * 1.5),
     );
-    // paintBlocks culls against 0..size from the picture's own corner, so the
-    // enlarged view is drawn shifted by the padding.
     _picture?.dispose();
     _picture = recorder.endRecording();
     _origin = origin;
