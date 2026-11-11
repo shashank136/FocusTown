@@ -11,6 +11,7 @@ import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/ui/debug_screen.dart';
+import 'package:focus_town/ui/session_setup_sheet.dart';
 
 /// The town, full screen. Debug builds add a small bug button (top-left) that
 /// opens the debug screen.
@@ -91,10 +92,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     _game.reducedMotion = MediaQuery.of(context).disableAnimations;
     final placement = ref.watch(placementProvider);
+    final active = ref.watch(
+      focusControllerProvider.select((f) => f.value?.active),
+    );
     return Scaffold(
       body: Stack(
         children: [
           GameWidget(game: _game),
+          // The way in: pick a duration and start (hidden while building).
+          if (active == null && placement == null)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(220, 56),
+                    ),
+                    onPressed: () => unawaited(
+                      showModalBottomSheet<void>(
+                        context: context,
+                        isScrollControlled: true,
+                        useSafeArea: true,
+                        builder: (_) => const SessionSetupSheet(),
+                      ),
+                    ),
+                    child: const Text('Start focus'),
+                  ),
+                ),
+              ),
+            ),
           // Choose-a-plot mode: taps pick a plot; pan and zoom still work.
           if (placement != null)
             Positioned.fill(

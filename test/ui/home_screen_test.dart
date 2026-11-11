@@ -20,6 +20,7 @@ import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/platform/power_state.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/home_screen.dart';
+import 'package:focus_town/ui/session_setup_sheet.dart';
 
 /// A game that remembers every town it was given.
 class _SpyGame extends TownGame {
@@ -403,6 +404,63 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(c.read(placementProvider), isNotNull);
       expect(find.text('Confirm'), findsOneWidget);
+    });
+  });
+
+  group('Start focus', () {
+    testWidgets('the button shows without a session and opens the sheet', (
+      tester,
+    ) async {
+      await _pump(tester);
+      expect(find.text('Start focus'), findsOneWidget);
+      await tester.tap(find.text('Start focus'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byType(SessionSetupSheet), findsOneWidget);
+    });
+
+    testWidgets('starting from the sheet hides the button', (tester) async {
+      final c = await _pump(tester);
+      await tester.tap(find.text('Start focus'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 60)),
+      );
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Start'));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 60)),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(c.read(focusControllerProvider).requireValue.active, isNotNull);
+      expect(find.text('Start focus'), findsNothing);
+      expect(find.byType(SessionSetupSheet), findsNothing);
+    });
+
+    testWidgets('the button is back after the session ends', (tester) async {
+      final c = await _pump(tester);
+      final controller = c.read(focusControllerProvider.notifier);
+      await tester.runAsync(() => controller.start(10));
+      await tester.pump();
+      expect(find.text('Start focus'), findsNothing);
+      _clock.advance(const Duration(minutes: 10));
+      await tester.runAsync(controller.tick);
+      await _settle(tester);
+      expect(find.text('Start focus'), findsOneWidget);
+    });
+
+    testWidgets('the button hides while a plot is being chosen', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      c.read(placementProvider.notifier).begin(10);
+      await tester.pump();
+      expect(find.text('Start focus'), findsNothing);
+      c.read(placementProvider.notifier).cancel();
+      await tester.pump();
+      expect(find.text('Start focus'), findsOneWidget);
     });
   });
 }
