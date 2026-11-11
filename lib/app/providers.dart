@@ -9,6 +9,7 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/onboarding_controller.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
+import 'package:focus_town/domain/beta_stats.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session.dart';
@@ -39,6 +40,11 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 /// saves to a file.
 final localLogProvider = Provider<LocalLog>(
   (ref) => LocalLog(null, ref.watch(clockProvider)),
+);
+
+/// The beta numbers, read from the database when asked for.
+final FutureProvider<BetaStats> betaStatsProvider = FutureProvider.autoDispose(
+  (ref) => ref.watch(townRepositoryProvider).betaStats(),
 );
 
 /// A one-time message for the home screen, set when the saved town could not

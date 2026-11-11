@@ -2,7 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
+import 'package:focus_town/domain/beta_stats.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town.dart';
@@ -53,6 +55,39 @@ class TownRepository {
       TownsCompanion(lastDurationMinutes: Value(minutes)),
     ),
   );
+
+  /// On-device beta numbers, computed from the stored sessions.
+  Future<BetaStats> betaStats() async {
+    final sessions = await _db.select(_db.sessions).get();
+    final town = await _db.select(_db.towns).getSingle();
+    final firstOpen = DateTime.fromMillisecondsSinceEpoch(town.createdAt);
+    final first = LocalDate.fromDateTime(firstOpen);
+    final days = {
+      for (final s in sessions)
+        LocalDate.fromDateTime(
+          DateTime.fromMillisecondsSinceEpoch(s.startedAtWall),
+        ).toIso(),
+    };
+    final completed = sessions
+        .where((s) => s.state == SessionState.completed.name)
+        .length;
+    final failed = sessions
+        .where((s) => s.state == SessionState.failed.name)
+        .length;
+    return BetaStats(
+      sessionsStarted: sessions.length,
+      completed: completed,
+      failed: failed,
+      completionRate: completed + failed == 0
+          ? 0
+          : completed / (completed + failed),
+      daysActive: days.length,
+      firstOpen: firstOpen,
+      returnedAfterDay7: days.any(
+        (d) => first.daysBetween(LocalDate.parse(d)) >= 7,
+      ),
+    );
+  }
 
   // Runs a write; on any failure tries once more, then gives up with a message
   // the user can read.
