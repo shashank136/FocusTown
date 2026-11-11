@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/platform/local_log.dart';
 
 /// An opened database, and whether the old town had to be given up.
 class OpenResult {
@@ -29,6 +29,7 @@ Future<OpenResult> openDatabaseSafely({
   required int schemaVersion,
   required AppDatabase Function(File) open,
   Clock? clock,
+  LocalLog? log,
 }) async {
   String p(String name) => '${dir.path}/$name';
   final dbFile = File(p('focus_town.sqlite'));
@@ -39,7 +40,7 @@ Future<OpenResult> openDatabaseSafely({
   // Nothing has the file open yet, so a plain copy is a consistent snapshot.
   if (dbFile.existsSync() && seen != '$schemaVersion') {
     _copy(dbFile.path, backup);
-    debugPrint('db: backed up before schema $schemaVersion');
+    log?.write('db: backed up before schema $schemaVersion');
   }
 
   Future<AppDatabase?> attempt() async {
@@ -51,7 +52,7 @@ Future<OpenResult> openDatabaseSafely({
       marker.writeAsStringSync('$schemaVersion');
       return db;
     } on Object catch (e) {
-      debugPrint('db: open failed: $e');
+      log?.write('db: open failed: $e');
       await db?.close().catchError((_) {});
       return null;
     }
@@ -65,13 +66,13 @@ Future<OpenResult> openDatabaseSafely({
     _copy(backup, dbFile.path);
     final restored = await attempt();
     if (restored != null) {
-      debugPrint('db: restored the backup');
+      log?.write('db: restored the backup');
       return OpenResult(restored, startedFresh: false);
     }
   }
 
   _keepBroken(dbFile.path, p('focus_town.corrupt.sqlite'));
-  debugPrint('db: started a fresh town');
+  log?.write('db: started a fresh town');
   final fresh = open(dbFile);
   await TownRepository(fresh, clock ?? SystemClock()).loadOrCreate();
   marker.writeAsStringSync('$schemaVersion');

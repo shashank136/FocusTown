@@ -20,6 +20,7 @@ import 'package:focus_town/game/world/voxel_world.dart';
 import 'package:focus_town/platform/fallback_lifecycle_source.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/lifecycle_router.dart';
+import 'package:focus_town/platform/local_log.dart';
 import 'package:focus_town/platform/local_notifier.dart';
 import 'package:focus_town/platform/notifier.dart' as warnings;
 import 'package:focus_town/platform/power_state.dart';
@@ -33,6 +34,12 @@ final databaseProvider = Provider<AppDatabase>((ref) {
   ref.onDispose(db.close);
   return db;
 });
+
+/// The on-device log of caught errors; `main()` replaces it with one that
+/// saves to a file.
+final localLogProvider = Provider<LocalLog>(
+  (ref) => LocalLog(null, ref.watch(clockProvider)),
+);
 
 /// A one-time message for the home screen, set when the saved town could not
 /// be opened and a new one was started. Null on a normal start.

@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
+import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
@@ -29,7 +29,7 @@ class FocusController extends AsyncNotifier<FocusState> {
         await repo.saveSessionUpdated(resolved);
       } on SaveFailedException catch (e) {
         // The stored session is still active; the next event retries.
-        debugPrint('$e');
+        _log('$e');
         return base.copyWith(active: stored);
       }
     }
@@ -144,7 +144,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     try {
       await ref.read(townRepositoryProvider).saveSessionUpdated(updated);
     } on SaveFailedException catch (e) {
-      debugPrint('$e'); // keep the last good state; the next event retries
+      _log('$e'); // keep the last good state; the next event retries
       return;
     }
     state = AsyncData(current.copyWith(active: updated));
@@ -161,12 +161,14 @@ class FocusController extends AsyncNotifier<FocusState> {
   Future<void> _cancelWarnings() =>
       _safeNotify(() => ref.read(notifierProvider).cancelAwayWarnings());
 
+  void _log(String message) => ref.read(localLogProvider).write(message);
+
   // Notification trouble must never change a session or the town.
   Future<void> _safeNotify(Future<void> Function() call) async {
     try {
       await call();
     } on Object catch (error) {
-      debugPrint('Notification failed: $error');
+      _log('Notification failed: $error');
     }
   }
 
@@ -177,6 +179,9 @@ class FocusController extends AsyncNotifier<FocusState> {
     TimeStamp now,
   ) async {
     final completed = finished.state == SessionState.completed;
+    if (wallClockTampered(finished.startedAt, now)) {
+      _log('clock tamper detected');
+    }
     final town = completed
         ? Progression.onSessionCompleted(
             TownRules.applyCompleted(base.town, finished),
@@ -191,7 +196,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     } on SaveFailedException catch (e) {
       // Nothing changed: the stored session is still active, so the next tick
       // or event finishes it once the database recovers.
-      debugPrint('$e');
+      _log('$e');
       return base;
     }
     await _cancelWarnings();

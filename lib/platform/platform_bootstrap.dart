@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/platform/fallback_lifecycle_source.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
+import 'package:focus_town/platform/local_log.dart';
 import 'package:focus_town/platform/native_lifecycle_source.dart';
 import 'package:focus_town/platform/native_uptime_clock.dart';
 
@@ -14,6 +15,7 @@ typedef PlatformBootstrap = ({Clock clock, LifecycleSource source});
 Future<PlatformBootstrap> bootstrapPlatform({
   MethodChannel? channel,
   Duration timeout = const Duration(seconds: 1),
+  LocalLog? log,
 }) async {
   final method = channel ?? const MethodChannel('focus/lifecycle');
   try {
@@ -23,7 +25,7 @@ Future<PlatformBootstrap> bootstrapPlatform({
     if (uptimeMs is int) {
       return (
         clock: NativeUptimeClock(Duration(milliseconds: uptimeMs)),
-        source: NativeLifecycleSource(),
+        source: NativeLifecycleSource(onMalformed: log?.write),
       );
     }
   } on MissingPluginException {
