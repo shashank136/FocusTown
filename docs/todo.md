@@ -330,16 +330,16 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 21: onboarding
 - [ ] Paste Prompt 0 + Prompt 21
-- [ ] Three onboarding pages with live town renders
-- [ ] Notification permission requested on page 3 with explanation
-- [ ] Android phone-state permission requested if needed (continue if denied)
-- [ ] Start begins a 10-minute hut session and marks onboarding done
-- [ ] One-time tips: first leave, first worker growth, first recovery
-- [ ] Schema v3 migration (tip flags) with test
-- [ ] Denied-notifications note shown once
-- [ ] Tests passing
+- [x] Three onboarding pages with live town renders
+- [x] Notification permission requested on page 3 with explanation
+- [ ] Android phone-state permission requested if needed (continue if denied) (deferred with Android)
+- [x] Start begins a 10-minute hut session and marks onboarding done
+- [x] One-time tips: first leave, first worker growth, first recovery
+- [x] Schema v4 migration (tip flags) with test
+- [x] Denied-notifications note shown once
+- [x] Tests passing
 - [ ] Device: fresh install → running session in under 30 seconds
-- [ ] Committed: `step 21`
+- [x] Committed: T-21.1 to T-21.6
 
 ### Step 22: error handling, debug tools, and release
 - [ ] Paste Prompt 0 + Prompt 22
