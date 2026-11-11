@@ -1329,7 +1329,7 @@ Reference for steps 13–18: the prototype `docs/reference/focus-town-voxel.html
 - Done when: flutter analyze clean; flutter test green.
 - Commit: `T-18.5: queued transition and wiring`
 
-### T-18.6 [ ] [device] A 10-minute hut visibly builds
+### T-18.6 [x] [device] A 10-minute hut visibly builds
 - Step: 18 (docs/prompt_plan.md, Prompt 18)
 - Depends on: T-18.5
 - Goal: end-to-end visual check on the iPhone. Phase D complete.
@@ -1376,7 +1376,7 @@ Decisions (assumed): no choice means the old automatic plot; the chosen plot is 
 - Tests first: tapping a free plot selects it; tapping a taken or locked one does nothing; Confirm calls `start` with the plot; Cancel starts nothing; an active session hides the mode.
 - Commit: `T-18A.4: choose a plot`
 
-### T-18A.5 [ ] [device] Place a hut on a plot of your choice
+### T-18A.5 [x] [device] Place a hut on a plot of your choice
 - Depends on: T-18A.4
 - Do: give the user steps (place a hut on plot 3, force-quit, relaunch, confirm it resumes there); record under `## Step 18A: placement` in `docs/device_tests.md`.
 - Commit: `T-18A.5: record placement device check`

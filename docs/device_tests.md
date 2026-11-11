@@ -41,4 +41,14 @@ Run on the iPhone 18 Pro **simulator** (Device Hub), 2026-11-09, debug build. No
 - [x] Start, Leave, force-quit, wait 100 s, reopen: "Session failed" popup at launch, `Workers lost: 2`, session resolved at 20:47:53 (reopen time), not earlier (Claude ran this).
 - [ ] Same checks on a physical iPhone.
 
+## iPhone 15 Pro Max results (steps 18 to 20, 2026-11-10)
+
+Debug build over `flutter run` on a fresh install (user-reported). Build with the session-setup sheet, choose-a-plot mode, HUD, session panel and result dialogs.
+
+- [x] Test 1, Start focus from the home screen: the sheet, a 10-minute hut, camera glide to the site, scaffolding and hammering builder, countdown and top bar all fine. Zoomed in the blocks are still not perfectly smooth; the user accepts it for now (textures are already off past tile 32).
+- [x] Test 2, Choose plot: outlined plots can be selected, Confirm starts the build there and it resumes on the same plot after a relaunch. Only the 6 unlocked plots can be chosen; the rest of the green island is locked on purpose (one new plot per focus day). The user finds the empty green area a waste; see the plan note about opening more land.
+- [x] Test 3, a session runs to its end and zoomed-in watching: no glitch when a worker walks past a building (fixed by clipping the occlusion repaint). The user will keep watching for it.
+- [x] Test 4, leave the app for 90 s and come back: passes (failed dialog, ruin).
+- [ ] Still unverified on the phone: notification banners, real lock and call events, pinch and double-tap feel (T-16.4), frame rate and battery (T-17.7).
+
 ## Android

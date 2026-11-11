@@ -284,7 +284,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Queued: floating outline with "ready to place" label
 - [x] Progress computed live from `SessionEngine.progress`
 - [x] Tests and goldens (house stage 4, failure state) passing
-- [ ] Device: a 10-minute session visibly builds a hut
+- [x] Device: a 10-minute session visibly builds a hut (iPhone, 2026-11-10)
 - [x] Committed: T-18.1 to T-18.5
 
 ### Phase D review
@@ -299,7 +299,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [ ] T-18A.2 session plot column (schema v2)
 - [ ] T-18A.3 controller and world use the chosen plot
 - [ ] T-18A.4 choose-a-plot mode
-- [ ] T-18A.5 device check
+- [x] T-18A.5 device check
 - [ ] Later: free footprints for landmarks, floating-island art with waterfall, rotate the island in 90 degree steps (user request: see buildings from every side but below; needs a rotated draw order, a cache per rotation, rotated picking and workers)
 
 ## Phase E: screens and release
@@ -313,7 +313,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Unaffordable durations disabled with a reason
 - [x] Recovery mode: hut-only with Last Builder banner
 - [x] Widget tests passing
-- [ ] Device: session started from home screen without debug tools (parked: needs the iPhone)
+- [x] Device: session started from home screen without debug tools (iPhone, 2026-11-10)
 - [x] Committed: T-19.1 to T-19.5
 
 ### Step 20: HUD and result screens
@@ -325,7 +325,7 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Copy in plain language, active voice, no emoji
 - [x] Redundant debug buttons removed (simulators kept)
 - [x] Widget tests for every HUD state and dialog
-- [ ] Device: full loop works with no debug screen (parked: needs the iPhone)
+- [x] Device: full loop works with no debug screen (iPhone, 2026-11-10)
 - [x] Committed: T-20.1 to T-20.5
 
 ### Step 21: onboarding
