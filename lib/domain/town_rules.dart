@@ -17,6 +17,21 @@ class TownRules {
     return null;
   }
 
+  /// Whether plot [i] is unlocked and has no building or ruin.
+  static bool isPlotFree(TownState town, int i) =>
+      i >= 0 &&
+      i < town.plotsUnlocked &&
+      !town.buildings.any((b) => b.plotIndex == i);
+
+  /// Where [session] builds: the plot the user chose while it is still free,
+  /// else the next free plot, or null when the town is full.
+  static int? sitePlot(TownState town, Session session) {
+    final chosen = session.plotIndex;
+    return chosen != null && isPlotFree(town, chosen)
+        ? chosen
+        : nextFreePlot(town);
+  }
+
   /// Whether a session of [minutes] may start. Invalid minutes give false.
   static bool canStart(TownState town, int minutes) {
     if (!BuildingTier.validDurations().contains(minutes)) return false;
@@ -32,7 +47,7 @@ class TownRules {
     final grown = town.copyWith(
       workers: town.workers + session.tier.workersAddedOnSuccess,
     );
-    final plot = nextFreePlot(grown);
+    final plot = sitePlot(grown, session);
     final placed = plot == null
         ? grown.copyWith(
             queue: [
@@ -85,7 +100,7 @@ class TownRules {
     final hurt = town.copyWith(
       workers: max(0, town.workers - session.workersAssigned),
     );
-    final plot = nextFreePlot(hurt);
+    final plot = sitePlot(hurt, session);
     final ruined = plot == null
         ? hurt
         : hurt.copyWith(

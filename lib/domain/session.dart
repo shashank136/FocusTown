@@ -45,6 +45,7 @@ class Session {
     this.awayTotal = Duration.zero,
     this.passUsed = false,
     this.outcomeReason,
+    this.plotIndex,
   });
 
   /// Unique id.
@@ -77,6 +78,9 @@ class Session {
   /// Why the session ended, once finished.
   final OutcomeReason? outcomeReason;
 
+  /// The plot the user chose to build on, or null for the automatic one.
+  final int? plotIndex;
+
   /// Planned length as a [Duration].
   Duration get planned => Duration(minutes: plannedMinutes);
 
@@ -107,6 +111,7 @@ class Session {
     awayTotal: awayTotal ?? this.awayTotal,
     passUsed: passUsed ?? this.passUsed,
     outcomeReason: outcomeReason ?? this.outcomeReason,
+    plotIndex: plotIndex,
   );
 
   @override
@@ -121,7 +126,8 @@ class Session {
       other.leftAt == leftAt &&
       other.awayTotal == awayTotal &&
       other.passUsed == passUsed &&
-      other.outcomeReason == outcomeReason;
+      other.outcomeReason == outcomeReason &&
+      other.plotIndex == plotIndex;
 
   @override
   int get hashCode => Object.hash(
@@ -135,5 +141,6 @@ class Session {
     awayTotal,
     passUsed,
     outcomeReason,
+    plotIndex,
   );
 }
