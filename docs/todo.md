@@ -317,16 +317,16 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] Committed: T-19.1 to T-19.5
 
 ### Step 20: HUD and result screens
-- [ ] Paste Prompt 0 + Prompt 20
-- [ ] HUD: streak, level + progress bar, workers, plots, queue badge
-- [ ] Session overlay: countdown, tier, progress, lock-your-phone hint (first 3 sessions)
-- [ ] Abandon with confirmation dialog
-- [ ] Result dialogs: completed, queued, failed, recovery started, recovery ended, level up, plot unlocked
-- [ ] Copy in plain language, active voice, no emoji
-- [ ] Redundant debug buttons removed (simulators kept)
-- [ ] Widget tests for every HUD state and dialog
-- [ ] Device: full loop works with no debug screen
-- [ ] Committed: `step 20`
+- [x] Paste Prompt 0 + Prompt 20
+- [x] HUD: streak, level + progress bar, workers, plots, queue badge
+- [x] Session overlay: countdown, tier, progress, lock-your-phone hint (first 3 sessions)
+- [x] Abandon with confirmation dialog
+- [x] Result dialogs: completed, queued, failed, recovery started, recovery ended, level up, plot unlocked
+- [x] Copy in plain language, active voice, no emoji
+- [x] Redundant debug buttons removed (simulators kept)
+- [x] Widget tests for every HUD state and dialog
+- [ ] Device: full loop works with no debug screen (parked: needs the iPhone)
+- [x] Committed: T-20.1 to T-20.5
 
 ### Step 21: onboarding
 - [ ] Paste Prompt 0 + Prompt 21
