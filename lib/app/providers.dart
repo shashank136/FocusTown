@@ -21,8 +21,10 @@ import 'package:focus_town/game/world/voxel_world.dart';
 import 'package:focus_town/platform/fallback_lifecycle_source.dart';
 import 'package:focus_town/platform/lifecycle_events.dart';
 import 'package:focus_town/platform/lifecycle_router.dart';
+import 'package:focus_town/platform/live_status.dart';
 import 'package:focus_town/platform/local_log.dart';
 import 'package:focus_town/platform/local_notifier.dart';
+import 'package:focus_town/platform/native_live_status_sink.dart';
 import 'package:focus_town/platform/notifier.dart' as warnings;
 import 'package:focus_town/platform/power_state.dart';
 
@@ -99,6 +101,11 @@ final lifecycleRouterProvider = Provider<LifecycleRouter>((ref) {
 
 /// Shows away warnings. `main()` overrides it with an initialized notifier.
 final notifierProvider = Provider<warnings.Notifier>((ref) => LocalNotifier());
+
+/// Shows the running session on the lock screen.
+final liveStatusSinkProvider = Provider<LiveStatusSink>(
+  (ref) => NativeLiveStatusSink(),
+);
 
 /// What the town world depends on. `stage` is 0 when nothing is building.
 typedef TownWorldKey = ({TownState town, Session? active, int stage});

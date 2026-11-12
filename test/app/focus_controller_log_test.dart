@@ -6,6 +6,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/platform/local_log.dart';
 import 'package:focus_town/platform/notifier.dart' as warnings;
+import 'package:focus_town/platform/testing/fake_live_status_sink.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 
 class _ThrowingNotifier extends FakeNotifier {
@@ -31,6 +32,7 @@ void main() {
         databaseProvider.overrideWithValue(db),
         notifierProvider.overrideWithValue(notifier),
         localLogProvider.overrideWithValue(log),
+        liveStatusSinkProvider.overrideWithValue(FakeLiveStatusSink()),
       ],
     );
     addTearDown(c.dispose);

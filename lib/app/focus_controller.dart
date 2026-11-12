@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
@@ -10,11 +12,16 @@ import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
+import 'package:focus_town/platform/live_status.dart';
 
 /// Owns the town and the live session; the UI only reads and calls this.
 class FocusController extends AsyncNotifier<FocusState> {
+  // What the lock screen shows now, so it is only told about changes.
+  LiveStatus? _live;
+
   @override
   Future<FocusState> build() async {
+    listenSelf((_, next) => unawaited(_syncLiveStatus(next.value?.active)));
     final repo = ref.watch(townRepositoryProvider);
     final base = FocusState(town: await repo.loadOrCreate());
     final stored = await repo.activeSession();
@@ -220,6 +227,34 @@ class FocusController extends AsyncNotifier<FocusState> {
               emergency: updated.emergencyArmed,
             ),
       );
+    }
+  }
+
+  // Keeps the lock screen status in step with the active session.
+  Future<void> _syncLiveStatus(Session? active) async {
+    final sink = ref.read(liveStatusSinkProvider);
+    if (active == null) {
+      if (_live == null) return;
+      _live = null;
+      await _safeLive(sink.end);
+      return;
+    }
+    final status = LiveStatus(
+      endsAt: active.startedAt.wall.add(active.planned),
+      title: active.isRepair ? 'repair' : active.tier.name,
+      away: active.state == SessionState.away,
+    );
+    if (status == _live) return;
+    _live = status;
+    await _safeLive(() => sink.show(status));
+  }
+
+  // The lock screen status is a convenience: its trouble is only logged.
+  Future<void> _safeLive(Future<void> Function() call) async {
+    try {
+      await call();
+    } on Object catch (error) {
+      _log('Live status failed: $error');
     }
   }
 

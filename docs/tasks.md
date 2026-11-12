@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: TestFlight (T-22.15), then Phase L (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-V2.5 done: repair and the emergency pause pass on the iPhone (docs/device_tests.md). Phase V2 is complete. Next: T-22.15 TestFlight (user's Apple account), then Phase L (privacy policy, store listing, review notes, submit).
+- Current task: T-LA.2 (Live Activity widget extension in Swift, [device]), then T-LA.3. TestFlight (T-22.15) and Phase L wait for the paid Apple Developer account. Earlier: TestFlight (T-22.15), then Phase L (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-LA.1 done: `LiveStatus` + `LiveStatusSink` (`lib/platform/live_status.dart`), `NativeLiveStatusSink` (channel `focus/liveStatus`, methods `show` {endsAtMs, title, away} and `end`; silent without a native side), `liveStatusSinkProvider`, and `FocusController` syncs on every state change via `listenSelf`. The Swift side does not exist yet (T-LA.2). Also done 2026-11-12: review fixes from `issues.md`, pause refund, onboarding home-screen text, store name in `docs/release.md`. T-V2.5 done: repair and the emergency pause pass on the iPhone (docs/device_tests.md). Phase V2 is complete. Next: T-22.15 TestFlight (user's Apple account), then Phase L (privacy policy, store listing, review notes, submit).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.shashank.focusTown` (decided 2026-11-11).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -1818,7 +1818,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 
 A Live Activity shows the running countdown and the building status on the lock screen and Dynamic Island, so the user can check the clock without unlocking. It counts itself down with `Text(timerInterval:)`, so the app does not need to run. iOS 16.2+, local only (no push, no server). No new Dart package: native Swift through the existing platform channel. If the user turns Live Activities off, the app works as before.
 
-### T-LA.1 [ ] Live Activity data and bridge (Dart + Swift channel)
+### T-LA.1 [x] Live Activity data and bridge (Dart + Swift channel)
 - Do: a `LiveStatus` value (end time, tier name, state running/away, workers) built from the active `Session` in `lib/platform`; a `LiveStatusSink` interface with a fake for tests; the controller calls it on start, state change (away/back) and finish. Failures are logged, never change a session.
 - Tests first: fake sink sees start/update/end for a run, an away and a finish.
 - Commit: `T-LA.1: live status bridge`
