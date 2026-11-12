@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
@@ -146,6 +147,7 @@ class TownRules {
         session.state != SessionState.running ||
         session.isRepair ||
         session.isLand ||
+        session.isLandmark ||
         session.emergencyArmed ||
         session.emergencyUsed) {
       return null;
@@ -214,6 +216,91 @@ class TownRules {
     final parcel = session.land;
     if (parcel == null || !canClaim(town, parcel)) return town;
     return town.copyWith(parcels: [...town.parcels, parcel]);
+  }
+
+  /// The [landmark] being built, if it is in progress.
+  static TownBuilding? landmarkProject(TownState town, Landmark landmark) {
+    for (final b in town.buildings) {
+      if (b.landmark == landmark && b.status == BuildingStatus.building) {
+        return b;
+      }
+    }
+    return null;
+  }
+
+  /// Whether the user may work on [landmark]: it is in progress, or it has
+  /// not been built and a free 2 x 2 block is there to start it on.
+  static bool canStartLandmark(TownState town, Landmark landmark) {
+    if (landmarkProject(town, landmark) != null) return true;
+    if (town.buildings.any((b) => b.landmark == landmark)) return false;
+    return nextFreePlot(town, BuildingTier.castle) != null;
+  }
+
+  /// Starts [landmark] on the block anchored at plot [anchor]. Null when that
+  /// block is not free.
+  static TownState? beginLandmark(
+    TownState town,
+    Landmark landmark,
+    int anchor,
+  ) {
+    if (!isPlotFree(town, anchor, BuildingTier.castle)) return null;
+    return town.copyWith(
+      buildings: [
+        ...town.buildings,
+        TownBuilding(
+          id: 'landmark-${landmark.name}',
+          tier: BuildingTier.castle,
+          status: BuildingStatus.building,
+          plotIndex: anchor,
+          landmark: landmark,
+        ),
+      ],
+    );
+  }
+
+  static TownState _withProgress(
+    TownState town,
+    Landmark l,
+    int Function(int) f,
+  ) {
+    return town.copyWith(
+      buildings: [
+        for (final b in town.buildings)
+          if (b.landmark == l && b.status == BuildingStatus.building)
+            _progressed(b, l, f(b.progress))
+          else
+            b,
+      ],
+    );
+  }
+
+  static TownBuilding _progressed(TownBuilding b, Landmark l, int progress) {
+    final done = progress >= l.totalMinutes;
+    return TownBuilding(
+      id: b.id,
+      tier: b.tier,
+      status: done ? BuildingStatus.complete : BuildingStatus.building,
+      plotIndex: b.plotIndex,
+      look: b.look,
+      landmark: l,
+      progress: done ? l.totalMinutes : progress,
+    );
+  }
+
+  /// Applies a completed landmark [session]: its minutes join the landmark's
+  /// progress, which is done at the landmark's total.
+  static TownState applyLandmarkCompleted(TownState town, Session session) {
+    final l = session.landmark;
+    if (l == null) return town;
+    return _withProgress(town, l, (p) => p + session.plannedMinutes);
+  }
+
+  /// Applies a failed landmark [session]: the landmark loses one stage of
+  /// progress, never going below nothing.
+  static TownState applyLandmarkFailed(TownState town, Session session) {
+    final l = session.landmark;
+    if (l == null) return town;
+    return _withProgress(town, l, (p) => max(0, p - l.minutesPerStage));
   }
 
   /// Moves queued buildings onto free plots, oldest first.

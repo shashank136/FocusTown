@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 
@@ -50,6 +51,7 @@ class Session {
     this.repairPlot,
     this.land,
     this.look,
+    this.landmark,
     this.emergencyArmed = false,
     this.emergencyUsed = false,
   });
@@ -98,6 +100,9 @@ class Session {
   /// (null: its id decides).
   final int? look;
 
+  /// The landmark this session works on, for a landmark session.
+  final Landmark? landmark;
+
   /// The weekly emergency pause is switched on: the next absence may last up
   /// to 10 minutes.
   final bool emergencyArmed;
@@ -107,6 +112,9 @@ class Session {
 
   /// Whether this session clears a ruin instead of building something.
   bool get isRepair => repairPlot != null;
+
+  /// Whether this session builds on a [landmark].
+  bool get isLandmark => landmark != null;
 
   /// Whether this session claims [land] instead of building.
   bool get isLand => land != null;
@@ -148,6 +156,7 @@ class Session {
     repairPlot: repairPlot,
     land: land,
     look: look,
+    landmark: landmark,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -169,6 +178,7 @@ class Session {
       other.repairPlot == repairPlot &&
       other.land == land &&
       other.look == look &&
+      other.landmark == landmark &&
       other.emergencyArmed == emergencyArmed &&
       other.emergencyUsed == emergencyUsed;
 
@@ -188,6 +198,7 @@ class Session {
     repairPlot,
     land,
     look,
+    landmark,
     emergencyArmed,
     emergencyUsed,
   );

@@ -3,6 +3,7 @@
 
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 
@@ -13,6 +14,9 @@ enum BuildingStatus {
 
   /// Destroyed by a failed session.
   ruin,
+
+  /// A landmark under construction, built over several sessions.
+  building,
 }
 
 /// A building (or ruin) occupying one plot.
@@ -24,6 +28,8 @@ class TownBuilding {
     required this.status,
     required this.plotIndex,
     this.look,
+    this.landmark,
+    this.progress = 0,
   });
 
   /// Unique id.
@@ -42,6 +48,18 @@ class TownBuilding {
   /// chosen (its id decides).
   final int? look;
 
+  /// The landmark this is, or null for an ordinary building.
+  final Landmark? landmark;
+
+  /// Minutes of finished sessions built into a landmark so far.
+  final int progress;
+
+  /// The landmark's stage: how many stages its progress has reached.
+  int get stage {
+    final l = landmark;
+    return l == null ? 0 : (progress ~/ l.minutesPerStage).clamp(0, l.stages);
+  }
+
   /// The look it is drawn with.
   int get effectiveLook => look ?? lookIndex(id);
 
@@ -52,10 +70,13 @@ class TownBuilding {
       other.tier == tier &&
       other.status == status &&
       other.plotIndex == plotIndex &&
-      other.look == look;
+      other.look == look &&
+      other.landmark == landmark &&
+      other.progress == progress;
 
   @override
-  int get hashCode => Object.hash(id, tier, status, plotIndex, look);
+  int get hashCode =>
+      Object.hash(id, tier, status, plotIndex, look, landmark, progress);
 }
 
 /// A finished building waiting for a free plot. [id] is the session id.

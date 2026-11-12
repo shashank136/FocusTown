@@ -1,5 +1,6 @@
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -72,6 +73,26 @@ class SessionEngine {
     state: SessionState.running,
     startedAt: now,
     repairPlot: plot,
+  );
+
+  /// A session of [minutes] that works on [landmark]. Nothing is at risk: no
+  /// workers are assigned. [plotIndex] is the block the landmark starts on,
+  /// when this session begins it.
+  static Session startLandmark({
+    required String id,
+    required Landmark landmark,
+    required int minutes,
+    required TimeStamp now,
+    int? plotIndex,
+  }) => Session(
+    id: id,
+    plannedMinutes: minutes,
+    tier: BuildingTier.hut,
+    workersAssigned: 0,
+    state: SessionState.running,
+    startedAt: now,
+    plotIndex: plotIndex,
+    landmark: landmark,
   );
 
   /// A session of [minutes] that claims [parcel] when it completes. Nothing is

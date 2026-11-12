@@ -1876,7 +1876,7 @@ Rules are in `docs/spec.md` ("Road network"). Built in this order, each with its
 
 Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Tower. Built in this order, each with its tests first:
 
-### T-V8.1 [ ] Landmark and building progress (pure)
+### T-V8.1 [x] Landmark and building progress (pure)
 - `Landmark`, `TownBuilding.landmark/progress`, `BuildingStatus.building`, rules for starting, adding progress and damage.
 - Commit: `T-V8.1: landmark rules`
 
