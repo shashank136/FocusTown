@@ -174,6 +174,10 @@ class TownRepository {
     return row == null ? null : sessionFromRow(row);
   }
 
+  /// Stores [town] alone (a queued building was placed).
+  Future<void> saveTown(TownState town) =>
+      _write(() => _db.transaction(() => _writeTown(town)));
+
   /// Stores a new running [session] and the [town] it was started from.
   Future<void> saveSessionStarted(TownState town, Session session) => _write(
     () => _db.transaction(() async {

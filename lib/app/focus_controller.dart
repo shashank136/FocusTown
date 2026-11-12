@@ -26,7 +26,19 @@ class FocusController extends AsyncNotifier<FocusState> {
   Future<FocusState> build() async {
     listenSelf((_, next) => unawaited(_syncLiveStatus(next.value?.active)));
     final repo = ref.watch(townRepositoryProvider);
-    final base = FocusState(town: await repo.loadOrCreate());
+    var town = await repo.loadOrCreate();
+    // Buildings that waited for room (the island grew, or the plots became
+    // free) are placed now.
+    final placed = TownRules.placeQueued(town);
+    if (placed != town) {
+      try {
+        await repo.saveTown(placed);
+        town = placed;
+      } on SaveFailedException catch (e) {
+        _log('$e'); // they stay in the queue; the next launch retries
+      }
+    }
+    final base = FocusState(town: town);
     final stored = await repo.activeSession();
     if (stored == null) return base;
     // The app may have been killed: decide the outcome from timestamps now.
