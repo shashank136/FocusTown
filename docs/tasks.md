@@ -1780,7 +1780,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Done when: results recorded; every failure filed as a new task or fixed; flutter analyze clean; flutter test green.
 - Commit: `T-22.13: record iphone final checklist`
 
-### T-22.14 [ ] [device] Full manual checklist on an Android phone
+### T-22.14 [ ] [device] (deferred: Android skipped by the user) Full manual checklist on an Android phone
 - Step: 22 (docs/prompt_plan.md, Prompt 22)
 - Depends on: T-22.13
 - Goal: the same checklist on a physical Android phone (Samsung or Xiaomi ideally).
