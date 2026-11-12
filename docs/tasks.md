@@ -14,9 +14,9 @@ Single source of truth for coding work. Each task is one focused change (about 3
 Each session updates this section before stopping.
 
 - Current task: T-22.15 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-22.13 done: iPhone checklist recorded as all pass in docs/device_tests.md. T-22.14 (Android) deferred by the user. Next: T-22.15 TestFlight: needs the final bundle id, team and Apple Developer account; signing cleanup open (docs/release.md Identity).
+- What's left on it: T-22.13 done: iPhone checklist recorded as all pass in docs/device_tests.md. T-22.14 (Android) deferred by the user. Next: T-22.15 TestFlight: needs the final bundle id, team and Apple Developer account; 
 - Gotchas:
-  - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.example.focus_town` until the user decides (ask before step 22).
+  - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.shashank.focusTown` (decided 2026-11-11).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
   - iOS deployment target 17.0 is set in `ios/Runner.xcodeproj`; there is no `ios/Podfile` yet (no plugins). When the first plugin is added and `pod install` creates it, set `platform :ios, '17.0'`.
   - Lints: `factory ClassName.named` triggers `unnecessary_type_name_in_constructor`, but `factory .named` does not parse; use an `// ignore:` for named factories. `@immutable` needs `package:meta` (not approved), so value classes with `==` use `ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes`. Ask the user if they want `meta` added.

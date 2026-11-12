@@ -37,7 +37,7 @@ Xcode 27.2 on the dev machine has no `Simulator.app`, so `open -a Simulator` fai
 1. List devices with `xcrun simctl list devices available` and pick an id (device ids are machine-specific).
 2. Boot it with `xcrun simctl boot <id>`, then run `flutter run -d <id>`.
 3. Open the window with `open "/Applications/Xcode.app/Contents/Applications/DeviceHub.app"`, then select the device.
-4. To reset the app's state without `flutter run`, run `xcrun simctl terminate <id> com.example.focusTown`, then `xcrun simctl launch <id> com.example.focusTown`. The bundle id is a placeholder until the user decides.
+4. To reset the app's state without `flutter run`, run `xcrun simctl terminate <id> com.shashank.focusTown`, then `xcrun simctl launch <id> com.shashank.focusTown`.
 
 Driving the UI from the shell (XcodeBuildMCP 2.7.0, registered as the MCP server `xcodebuild`; its tap and swipe tools are not exposed to the model, so use its CLI):
 

@@ -6,16 +6,10 @@ Everything needed to ship Focus Town, except the secrets (which are never commit
 
 - Display name: `Focus Town`.
 - Version: `1.0.0+1` (`pubspec.yaml`).
-- Bundle id / application id: **still a placeholder.** The iOS project holds the
-  id used for the test iPhone, and Android uses `com.example.focus_town`.
-  Before the first store upload, pick the final id and the team, then:
-  - iOS: `ios/Runner.xcodeproj/project.pbxproj` (`PRODUCT_BUNDLE_IDENTIFIER`,
-    `DEVELOPMENT_TEAM`).
-  - Android: `android/app/build.gradle.kts` (`namespace`, `applicationId`) and
-    the Kotlin package if it moves.
-  - Update the id in `CLAUDE.md` (simulator commands) and `docs/device_tests.md`.
-  - Then `grep -rn "com.shashank\|com.example\|5RLKRL9U6T" .` and confirm nothing
-    personal is left. (The team id is not a secret: every signed app carries it.)
+- Bundle id / application id: `com.shashank.focusTown` (iOS, iOS tests as
+  `.RunnerTests`, Android `applicationId` and package). Chosen by the user on
+  2026-11-11. The signing team is `5RLKRL9U6T` (the user's own team; not a
+  secret, every signed app carries it).
 
 ## Icon and launch screens
 

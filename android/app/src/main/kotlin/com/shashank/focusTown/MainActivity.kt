@@ -1,4 +1,4 @@
-package com.example.focus_town
+package com.shashank.focusTown
 
 import io.flutter.embedding.android.FlutterActivity
 
