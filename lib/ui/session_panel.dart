@@ -35,6 +35,13 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
     super.dispose();
   }
 
+  // What the session is doing; land and repair sessions have no building.
+  static String _label(Session s) => s.isRepair
+      ? 'Repairing a ruin'
+      : s.isLand
+      ? (s.land!.garden ? 'Making a garden' : 'Claiming land')
+      : s.tier.name;
+
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(
@@ -63,7 +70,7 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
                 style: Theme.of(context).textTheme.displayMedium,
               ),
             ),
-            Text(session.tier.name),
+            Text(_label(session)),
             const SizedBox(height: 8),
             Semantics(
               container: true,

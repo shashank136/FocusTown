@@ -4,7 +4,11 @@ import WidgetKit
 
 private extension FocusActivityAttributes.ContentState {
   var heading: String {
-    title == "repair" ? "Repairing a ruin" : "Building a \(title)"
+    switch title {
+    case "repair": return "Repairing a ruin"
+    case "land": return "Claiming land"
+    default: return "Building a \(title)"
+    }
   }
 
   var detail: String {

@@ -257,6 +257,36 @@ void main() {
       expect(find.text('Next pause on Mon 5 Jan'), findsOneWidget);
     });
 
+    testWidgets('the label says what is being done, not "hut"', (tester) async {
+      final c = await _pump(tester);
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startLand(const Parcel(-1, 3));
+      });
+      await _settle(tester);
+      expect(find.text('Claiming land'), findsOneWidget);
+      expect(find.text('hut'), findsNothing);
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startLand(const Parcel(-1, 3, garden: true));
+      });
+      await _settle(tester);
+      expect(find.text('Making a garden'), findsOneWidget);
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startRepair(1);
+      });
+      await _settle(tester);
+      expect(find.text('Repairing a ruin'), findsOneWidget);
+      expect(find.text('hut'), findsNothing);
+    });
+
     testWidgets('a land session has no pause button', (tester) async {
       final c = await _pump(tester);
       await tester.runAsync(() async {
