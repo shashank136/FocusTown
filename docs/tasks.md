@@ -1809,11 +1809,31 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 
 1. T-22.15 TestFlight beta (2 weeks, exit criteria in T-22.15).
 2. Phase V2 repair (a full town is a dead end today: abandoned builds leave permanent ruins).
-3. Phase L below: App Store submission.
-4. After launch: V3 building looks, V4 focus trends, V6 growing world, payments (StoreKit; needs the user's approval of `in_app_purchase`), Android.
-5. Phase V5 (focus shield with the Screen Time API) is undecided. It needs an Apple Family Controls entitlement application, which can take weeks. If wanted for 1.1, apply during the TestFlight beta; the user decides.
+3. Phase LA below: lock screen status (Live Activity), decided before launch on 2026-11-12.
+4. Phase L below: App Store submission.
+5. After launch: V3 building looks, V4 focus trends, V6 growing world, payments (StoreKit; needs the user's approval of `in_app_purchase`), Android.
+6. Phase V5 (focus shield with the Screen Time API) is undecided. It needs an Apple Family Controls entitlement application, which can take weeks. If wanted for 1.1, apply during the TestFlight beta; the user decides.
 
-## Phase L: App Store submission (after V2)
+## Phase LA: lock screen status (before launch)
+
+A Live Activity shows the running countdown and the building status on the lock screen and Dynamic Island, so the user can check the clock without unlocking. It counts itself down with `Text(timerInterval:)`, so the app does not need to run. iOS 16.2+, local only (no push, no server). No new Dart package: native Swift through the existing platform channel. If the user turns Live Activities off, the app works as before.
+
+### T-LA.1 [ ] Live Activity data and bridge (Dart + Swift channel)
+- Do: a `LiveStatus` value (end time, tier name, state running/away, workers) built from the active `Session` in `lib/platform`; a `LiveStatusSink` interface with a fake for tests; the controller calls it on start, state change (away/back) and finish. Failures are logged, never change a session.
+- Tests first: fake sink sees start/update/end for a run, an away and a finish.
+- Commit: `T-LA.1: live status bridge`
+
+### T-LA.2 [ ] [device] Widget extension and ActivityKit in Swift
+- Depends on: T-LA.1
+- Do: add a widget extension target in Xcode (needs the same signing team; the user may need to approve the new App ID in the developer account), `NSSupportsLiveActivities` in Info.plist, the lock screen layout (countdown, tier, "Builders working" / "Away"), compact and expanded Dynamic Island. Swift side of the channel starts, updates and ends the activity.
+- Commit: `T-LA.2: live activity`
+
+### T-LA.3 [ ] [device] Check on the iPhone
+- Depends on: T-LA.2
+- Do: record in `docs/device_tests.md`: it appears on session start, the countdown matches the app, it shows Away when the user leaves, it ends on finish and on abandon, and it disappears when the app is killed. Add the privacy manifest note if needed.
+- Commit: `T-LA.3: record live activity device check`
+
+## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.
 
