@@ -7,6 +7,7 @@ import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/session_setup.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 
 const _recoveryBanner =
     'The Last Builder. All your builders are gone. A wanderer will build '
@@ -143,6 +144,15 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
               option.reason!,
               style: TextStyle(color: theme.colorScheme.error),
             ),
+          if (!TownRules.hasRoom(town))
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'All ${town.plotsUnlocked} plots are used by buildings and '
+                'ruins. A finished build waits for the next plot.',
+                textAlign: TextAlign.center,
+              ),
+            ),
           const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.center,
@@ -150,7 +160,9 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             spacing: 12,
             children: [
               TextButton(
-                onPressed: option.enabled ? () => _choosePlot(minutes) : null,
+                onPressed: option.enabled && TownRules.hasRoom(town)
+                    ? () => _choosePlot(minutes)
+                    : null,
                 child: const Text('Choose plot…'),
               ),
               FilledButton(

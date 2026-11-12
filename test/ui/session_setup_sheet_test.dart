@@ -10,6 +10,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/data/town_repository.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -202,6 +203,38 @@ void main() {
     expect(c.read(focusControllerProvider).requireValue.active, isNull);
     expect(await c.read(townRepositoryProvider).lastDurationMinutes(), 20);
     expect(find.byType(SessionSetupSheet), findsNothing);
+  });
+
+  testWidgets('a full town explains why Choose plot… is off', (tester) async {
+    final full = TownState.initial().copyWith(
+      buildings: [
+        for (var i = 0; i < 6; i++)
+          TownBuilding(
+            id: 'b$i',
+            tier: BuildingTier.hut,
+            status: i == 0 ? BuildingStatus.complete : BuildingStatus.ruin,
+            plotIndex: i,
+          ),
+      ],
+    );
+    await _open(tester, seed: full);
+    expect(
+      find.text(
+        'All 6 plots are used by buildings and ruins. A finished build '
+        'waits for the next plot.',
+      ),
+      findsOneWidget,
+    );
+    final button = tester.widget<TextButton>(
+      find.widgetWithText(TextButton, 'Choose plot…'),
+    );
+    expect(button.onPressed, isNull);
+    expect(_start(tester).onPressed, isNotNull);
+  });
+
+  testWidgets('a town with room shows no such message', (tester) async {
+    await _open(tester);
+    expect(find.textContaining('plots are used'), findsNothing);
   });
 
   testWidgets('a failing start shows the error and keeps the sheet', (
