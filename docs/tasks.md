@@ -1845,7 +1845,7 @@ Everything outside the code that Apple asks for. None of these tasks needs new p
 
 ### T-L.2 [ ] [device] Store listing text and screenshots
 - Depends on: T-L.1
-- Do: write the name, subtitle, description, keywords, category (Productivity or Lifestyle) and age rating answers in `docs/release.md`. Capture screenshots at the sizes App Store Connect asks for (6.9-inch and 6.5-inch iPhone) from the simulator or phone: onboarding, a running build, the finished town, the setup dial. The user reviews them.
+- Do: write the name and subtitle (decided in `docs/release.md`: Focus Town / Build While You Focus; check the name is free in App Store Connect), description, keywords, category (Productivity or Lifestyle) and age rating answers in `docs/release.md`. Capture screenshots at the sizes App Store Connect asks for (6.9-inch and 6.5-inch iPhone) from the simulator or phone: onboarding, a running build, the finished town, the setup dial. The user reviews them.
 - Commit: `T-L.2: store listing`
 
 ### T-L.3 [ ] App Review notes

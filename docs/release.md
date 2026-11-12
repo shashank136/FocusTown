@@ -78,3 +78,13 @@ creating the app.
 - The Android release build could not be run on the dev machine (no Android SDK).
   `build.gradle.kts` and the resource files are written but unverified; run
   `flutter build apk --release` once the SDK is installed.
+
+## Store name (decided 2026-11-12)
+
+App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focustown: Pomodoro Timer", exists, so the exact name may be taken.
+
+- Name: `Focus Town`
+- Subtitle: `Build While You Focus`
+- If the name is taken, try in order: `Focus Town Builder`, `Focus Town: Block Builder`, `Focus Town: Build & Focus` (keep the subtitle).
+- The home screen name (`CFBundleDisplayName`) stays `Focus Town`; it need not match the store name.
+- Keep the icon and screenshots clearly different from the other app (isometric block town).
