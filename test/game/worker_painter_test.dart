@@ -115,24 +115,32 @@ class _P extends CustomPainter {
 }
 
 void main() {
-  group('BlockIndex.near', () {
-    test('returns blocks within the radius only', () {
-      final blocks = [
-        VisibleBlock(5, 5, 0, Blocks.grass, 7),
-        VisibleBlock(8, 5, 0, Blocks.grass, 7), // dx 3
-        VisibleBlock(9, 5, 0, Blocks.grass, 7), // dx 4: out
-        VisibleBlock(5, 2, 4, Blocks.grass, 7), // dy -3
-        VisibleBlock(5, 1, 0, Blocks.grass, 7), // dy -4: out
-      ];
-      final near = BlockIndex(blocks).near(5.4, 5.6);
-      expect(near.map((b) => (b.x, b.y)).toSet(), {(5, 5), (8, 5), (5, 2)});
-    });
+  group('BlockIndex.inFront', () {
+    final worker = _worker(3.5, 4.5);
+
+    List<VisibleBlock> found(List<VisibleBlock> blocks) =>
+        BlockIndex(blocks).inFront(worker, tile: _tile, origin: _origin);
 
     test('keeps the draw order of the source list', () {
       final blocks = _scene();
-      final near = BlockIndex(blocks).near(4.5, 4.5);
-      final order = near.map(blocks.indexOf).toList();
+      final order = found(blocks).map(blocks.indexOf).toList();
       expect(order, [...order]..sort());
+    });
+
+    test('a tall wall far along the same sight line is found', () {
+      // The worker is at x - y = -1; this tower stands 9 tiles nearer the
+      // viewer on that diagonal and its top reaches the worker's height.
+      final tower = VisibleBlock(12, 13, 10, Blocks.stone, 7);
+      expect(found([tower]), [tower]);
+    });
+
+    test('blocks that miss the worker on screen are not found', () {
+      final blocks = [
+        VisibleBlock(12, 13, 0, Blocks.grass, 7), // same line, far below
+        VisibleBlock(12, 4, 3, Blocks.grass, 7), // far to the side
+        VisibleBlock(2, 3, 1, Blocks.grass, 7), // behind the worker
+      ];
+      expect(found(blocks), isEmpty);
     });
   });
 

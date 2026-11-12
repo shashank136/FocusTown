@@ -6,32 +6,44 @@ import 'package:focus_town/game/workers/worker_model.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
-/// Finds the blocks around a spot without scanning the whole town.
+/// Finds the blocks that could hide a worker without scanning the whole town.
 ///
-/// Blocks are grouped by their (x, y) column; every query returns blocks in
-/// the order of the list the index was built from (back to front).
+/// Blocks are grouped by the screen column they fall in (`x - y`): a block
+/// can only cover a worker whose column is within a block's width of its own,
+/// however far toward the viewer it stands. (A tall tower on the same
+/// diagonal hides a worker many tiles behind it.)
 class BlockIndex {
   /// Builds an index of [sortedBlocks] (already in draw order).
   new(List<VisibleBlock> sortedBlocks) {
     for (var i = 0; i < sortedBlocks.length; i++) {
       final b = sortedBlocks[i];
-      (_columns[_key(b.x, b.y)] ??= []).add((i, b));
+      (_bands[b.x - b.y] ??= []).add((i, b));
     }
   }
 
-  final Map<int, List<(int, VisibleBlock)>> _columns = {};
+  final Map<int, List<(int, VisibleBlock)>> _bands = {};
 
-  static int _key(int x, int y) => ((x + 1024) << 16) | (y + 1024);
-
-  /// Blocks whose column is within [radius] tiles of ([x], [y]).
-  List<VisibleBlock> near(double x, double y, {int radius = 3}) {
-    final wx = x.floor();
-    final wy = y.floor();
+  /// The blocks nearer the viewer than [w] whose pixels overlap the worker's
+  /// own pixels, in the order of the list the index was built from (back to
+  /// front).
+  List<VisibleBlock> inFront(
+    PlacedWorker w, {
+    required double tile,
+    required Vec2 origin,
+  }) {
+    final key = _workerKey(w);
+    final bounds = workerScreenBounds(w, tile: tile, origin: origin);
+    final column = (w.worker.x - w.worker.y).floor();
     final found = <(int, VisibleBlock)>[];
-    for (var bx = wx - radius; bx <= wx + radius; bx++) {
-      for (var by = wy - radius; by <= wy + radius; by++) {
-        final column = _columns[_key(bx, by)];
-        if (column != null) found.addAll(column);
+    // A block is two tiles wide on screen and a worker about one.
+    for (var c = column - 2; c <= column + 2; c++) {
+      for (final (i, b) in _bands[c] ?? const <(int, VisibleBlock)>[]) {
+        if (b.x + b.y + b.z + 1.5 <= key) continue;
+        // The block's screen box: its top corner down to its bottom corner.
+        final left = origin.x + (b.x - b.y - 1) * tile;
+        final top = origin.y + ((b.x + b.y) / 2 - b.z - 1) * tile;
+        final box = Rect.fromLTRB(left, top, left + 2 * tile, top + 3 * tile);
+        if (box.overlaps(bounds)) found.add((i, b));
       }
     }
     found.sort((a, b) => a.$1.compareTo(b.$1));
@@ -80,14 +92,13 @@ Rect workerScreenBounds(
 /// Draws [workers] over a town that is already painted.
 ///
 /// Approach: each worker's boxes are painted on top; then, when an [index] is
-/// given, the static blocks within 3 tiles that are nearer the viewer than the
-/// worker (depth key `x + y + z + 1.5` above the worker's) are painted again
-/// over it, so a worker hides behind a wall.
+/// given, the static blocks that are nearer the viewer than the worker (depth
+/// key `x + y + z + 1.5` above the worker's) and cover some of its pixels are
+/// painted again over it, so a worker hides behind a wall.
 ///
 /// The repainting is clipped to the worker's own screen rectangle.
 ///
-/// Limits: a block further than 3 tiles never hides a worker (a tall tower
-/// far in front is ignored), and each nearby block is drawn twice.
+/// Each covering block is drawn twice.
 void paintWorkers(
   Canvas canvas,
   List<PlacedWorker> workers, {
@@ -114,11 +125,7 @@ void paintWorkers(
       );
     }
     if (index == null) continue;
-    final key = _workerKey(w);
-    final nearer = [
-      for (final b in index.near(w.worker.x, w.worker.y))
-        if (b.x + b.y + b.z + 1.5 > key) b,
-    ];
+    final nearer = index.inFront(w, tile: tile, origin: origin);
     if (nearer.isNotEmpty) {
       // Only inside the worker's own pixels: anywhere else a second coat of
       // anti-aliased edges would show as seams that move with the worker.
