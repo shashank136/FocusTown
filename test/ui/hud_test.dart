@@ -1,3 +1,5 @@
+import 'dart:ui' show SemanticsAction;
+
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -157,6 +159,19 @@ void main() {
       await tapLevel(tester, clock, 7, const Duration(seconds: 1));
       expect(find.byType(DebugScreen), findsNothing);
     });
+  });
+
+  testWidgets('the streak is a button a screen reader can press', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await _pump(tester, TownState.initial());
+    final data = tester
+        .getSemantics(find.bySemanticsLabel('Streak, 0 days'))
+        .getSemanticsData();
+    expect(data.hasAction(SemanticsAction.tap), isTrue);
+    expect(data.flagsCollection.isButton, isTrue);
+    handle.dispose();
   });
 
   testWidgets('tapping the streak opens Your focus', (tester) async {

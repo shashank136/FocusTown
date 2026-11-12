@@ -35,17 +35,9 @@ class Hud extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // The streak opens "Your focus".
-                InkWell(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const FocusTrendsScreen(),
-                    ),
-                  ),
-                  child: _Stat(
-                    Icons.local_fire_department,
-                    'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
-                    Text('$streak', key: const ValueKey('hud-streak')),
-                  ),
+                _OpenFocus(
+                  label: 'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
+                  child: Text('$streak', key: const ValueKey('hud-streak')),
                 ),
                 const SizedBox(width: 12),
                 _LevelBadge(
@@ -87,6 +79,36 @@ class Hud extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// The streak flame and number as a button that opens "Your focus".
+class _OpenFocus extends StatelessWidget {
+  const new({required this.label, required this.child});
+
+  final String label;
+  final Widget child;
+
+  void _open(BuildContext context) => Navigator.of(context)
+      .push(MaterialPageRoute<void>(builder: (_) => const FocusTrendsScreen()));
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: label,
+    onTap: () => _open(context),
+    excludeSemantics: true,
+    child: InkWell(
+      onTap: () => _open(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.local_fire_department, size: 18),
+          const SizedBox(width: 4),
+          child,
+        ],
+      ),
+    ),
+  );
 }
 
 class _Stat extends StatelessWidget {

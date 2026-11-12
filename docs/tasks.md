@@ -1973,7 +1973,7 @@ Open questions (assumed answers):
 - Tests first: widget tests for the empty state, the numbers for a seeded history, the trend sentence, and opening from the HUD; one golden of the charts.
 - Commit: `T-V4.3: focus trends screen`
 
-### T-V4.4 [ ] [device] Trends on the iPhone
+### T-V4.4 [ ] [device] Trends on the iPhone (checked on the simulator with seeded sessions 2026-11-12; the iPhone check is the user's)
 - Depends on: T-V4.3
 - Do: give the user steps (finish a few sessions, open the screen, check the numbers against what they did); record in `docs/device_tests.md`.
 - Commit: `T-V4.4: record trends device check`
