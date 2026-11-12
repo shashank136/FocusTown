@@ -456,11 +456,13 @@ class TownGame extends FlameGame
     final window = _elapsed - _fpsWindowStart;
     if (window >= const Duration(seconds: 1)) {
       final fps = _fpsWindowFrames * 1e6 / window.inMicroseconds;
-      _fps?.value = fps;
-      // No paint at all in the window means a page is covering the town.
-      if (_fpsWindowRenders == 0) {
+      // Hardly any paint in the window means a page is covering the town (or
+      // started to): that says nothing about speed, so keep the last readout
+      // and the guard calm.
+      if (_fpsWindowRenders < 5) {
         guard.recordHidden();
       } else {
+        _fps?.value = fps;
         guard.recordFps(fps, _elapsed);
       }
       _fpsWindowStart = _elapsed;

@@ -162,6 +162,29 @@ void main() {
     });
   });
 
+  group('fps while covered', () {
+    test('the readout keeps its last value while nothing is painted', () {
+      final fps = ValueNotifier<double>(0);
+      final g = TownGame(fps: fps)
+        ..onGameResize(Vector2(400, 700))
+        ..setFocus(FocusState(town: TownState.initial()));
+      // Paint until a fresh reading arrives, so a new window starts right
+      // after it.
+      var changed = false;
+      fps.addListener(() => changed = true);
+      while (!changed) {
+        _tick(g);
+      }
+      final shown = fps.value;
+      expect(shown, greaterThan(5));
+      // A page covers the town: updates go on, nothing is painted.
+      for (var i = 0; i < 60 * 4; i++) {
+        g.update(1 / 60);
+      }
+      expect(fps.value, shown);
+    });
+  });
+
   group('fps readout', () {
     test('counts the frames drawn each second', () {
       final fps = ValueNotifier<double>(0);

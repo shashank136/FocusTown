@@ -64,7 +64,7 @@ Debug build over `flutter run` (user-reported: "everything works as expected").
 
 Profile build (`flutter run --profile`) on the iPhone 15 Pro Max. User-reported: "these all check looks good." Recorded as a pass for all 15 items; the user gave no per-item detail.
 
-- [x] 1 Lock 5 minutes: session continues.
+- [x] 1 Lock 5 minutes: session continues. CORRECTED 2026-11-11: the first release build lost the builders on a real lock (the lock signal came too late). Fixed with the Darwin lock notification and a router fix (a lock just before the background is a lock); re-tested on the iPhone: 3 minutes locked, no penalty, event log `locked`, `locked`, `backgrounded`, then `foregrounded`, `unlocked`.
 - [x] 2 App switch under 5 seconds: no penalty.
 - [x] 3 Away 30 seconds: pass spent, session continues.
 - [x] 4 Away 90 seconds: workers die, ruin appears.
@@ -87,5 +87,15 @@ Profile build on the iPhone 15 Pro Max. User-reported: "both repair and pause wo
 - [x] Repair: tap a ruin, "Repair (10 min)", the ruin is cleared at the end.
 - [x] Emergency pause: armed before leaving, away for minutes, back with no penalty.
 - [ ] Not separately confirmed: a lost repair leaving the ruin, the notification texts for the 10-minute window, the disabled button with "Next pause on …".
+
+
+## Lock detection fixes (2026-11-11)
+
+Release build on the iPhone 15 Pro Max, found by the user while testing a fresh install.
+
+- [x] Real lock for about 3 minutes in a 10-minute session: no penalty (after the fixes).
+- [x] Switching to another app for 30 seconds: the free pass is spent, as designed.
+- [x] Opening the debug screen no longer turns the town into a still picture (render guard ignores a covered town). The two `render degraded` lines in the log are from before that fix.
+- [ ] Not yet confirmed: the odd bursts of `callStarted`/`callEnded` pairs in the event log at app resume (21:52:29 on the first test).
 
 ## Android
