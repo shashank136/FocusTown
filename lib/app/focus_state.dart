@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
@@ -35,6 +36,9 @@ class SessionResult {
     this.recoveryEnded = false,
     this.repair = false,
     this.land = false,
+    this.landmark,
+    this.landmarkStage = 0,
+    this.landmarkFinished = false,
   });
 
   /// How it ended.
@@ -76,6 +80,15 @@ class SessionResult {
   /// Whether the session claimed (or tried to claim) land.
   final bool land;
 
+  /// The landmark this session worked on, if any.
+  final Landmark? landmark;
+
+  /// The landmark's stage after this session.
+  final int landmarkStage;
+
+  /// Whether this session finished the landmark.
+  final bool landmarkFinished;
+
   @override
   bool operator ==(Object other) =>
       other is SessionResult &&
@@ -91,7 +104,10 @@ class SessionResult {
       other.recoveryStarted == recoveryStarted &&
       other.recoveryEnded == recoveryEnded &&
       other.repair == repair &&
-      other.land == land;
+      other.land == land &&
+      other.landmark == landmark &&
+      other.landmarkStage == landmarkStage &&
+      other.landmarkFinished == landmarkFinished;
 
   @override
   int get hashCode => Object.hash(
@@ -108,6 +124,9 @@ class SessionResult {
     recoveryEnded,
     repair,
     land,
+    landmark,
+    landmarkStage,
+    landmarkFinished,
   );
 }
 

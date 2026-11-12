@@ -288,11 +288,17 @@ class TownRules {
   }
 
   /// Applies a completed landmark [session]: its minutes join the landmark's
-  /// progress, which is done at the landmark's total.
+  /// progress, which is done at the landmark's total (a session under 10
+  /// minutes counts as a stage).
   static TownState applyLandmarkCompleted(TownState town, Session session) {
     final l = session.landmark;
     if (l == null) return town;
-    return _withProgress(town, l, (p) => p + session.plannedMinutes);
+    // A session under 10 minutes can only come from the testing aid (short
+    // test sessions): it counts as a whole stage so landmarks can be tried.
+    final credit = session.plannedMinutes < 10
+        ? l.minutesPerStage
+        : session.plannedMinutes;
+    return _withProgress(town, l, (p) => p + credit);
   }
 
   /// Applies a failed landmark [session]: the landmark loses one stage of

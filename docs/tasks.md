@@ -1884,7 +1884,7 @@ Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Towe
 - `buildings.landmark/progress`, `sessions.landmark`, mappers, migration.
 - Commit: `T-V8.2: landmark storage`
 
-### T-V8.3 [ ] Landmark sessions
+### T-V8.3 [x] Landmark sessions
 - `SessionEngine.startLandmark`, `FocusController.startLandmark`, results, failure damage.
 - Commit: `T-V8.3: landmark sessions`
 

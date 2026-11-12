@@ -7,6 +7,7 @@ import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/progression.dart';
@@ -160,6 +161,48 @@ class FocusController extends AsyncNotifier<FocusState> {
     );
     final session = _testLength(built);
     final town = _refilled(current.town, now);
+    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
+  });
+
+  /// Starts a session of [minutes] (10 to 120) that works on [landmark]. The
+  /// first one takes a free 2 x 2 block (the chosen [plotIndex], or the next
+  /// free one); the others continue the project. Nothing is at risk but its
+  /// progress.
+  Future<void> startLandmark(
+    Landmark landmark,
+    int minutes, {
+    int? plotIndex,
+  }) => _once(() async {
+    final current = await future;
+    if (current.active != null) {
+      throw StateError('A session is already active');
+    }
+    if (!BuildingTier.validDurations().contains(minutes)) {
+      throw StateError('$minutes minutes is not a valid length');
+    }
+    var town = current.town;
+    if (TownRules.landmarkProject(town, landmark) == null) {
+      if (!TownRules.canStartLandmark(town, landmark)) {
+        throw StateError('${landmark.title} cannot be started');
+      }
+      final anchor =
+          plotIndex ?? TownRules.nextFreePlot(town, BuildingTier.castle)!;
+      town =
+          TownRules.beginLandmark(town, landmark, anchor) ??
+          (throw StateError('Plot $anchor is not a free 2 x 2 block'));
+    }
+    final project = TownRules.landmarkProject(town, landmark)!;
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final built = SessionEngine.startLandmark(
+      id: 's${now.wall.microsecondsSinceEpoch}',
+      landmark: landmark,
+      minutes: minutes,
+      plotIndex: project.plotIndex,
+      now: now,
+    );
+    final session = _testLength(built);
+    town = _refilled(town, now);
     await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
     state = AsyncData(current.copyWith(town: town, active: session));
   });
@@ -338,6 +381,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     }
     final repair = finished.isRepair;
     final land = finished.isLand;
+    final landmark = finished.landmark;
     // The day counts from when the session ended, not from when the app
     // noticed (it may have been closed past midnight).
     final plannedEnd = finished.startedAt.wall.add(finished.planned);
@@ -345,6 +389,16 @@ class FocusController extends AsyncNotifier<FocusState> {
         ? plannedEnd
         : now.wall;
     final settled = switch ((repair, completed)) {
+      _ when landmark != null && completed => Progression.onSessionCompleted(
+        TownRules.applyLandmarkCompleted(base.town, finished),
+        finished,
+        doneAt,
+      ),
+      // A failed landmark session damages it by one stage; nothing else.
+      _ when landmark != null => TownRules.applyLandmarkFailed(
+        base.town,
+        finished,
+      ),
       // Land: the claim comes first, so the day's plot has room to arrive.
       _ when land && completed => Progression.onSessionCompleted(
         TownRules.applyLandCompleted(base.town, finished),
@@ -388,7 +442,7 @@ class FocusController extends AsyncNotifier<FocusState> {
           : SessionOutcome.completed,
       tier: finished.tier,
       workersLost: completed ? 0 : finished.workersAssigned,
-      workersGained: completed && !repair && !land
+      workersGained: completed && !repair && !land && landmark == null
           ? finished.tier.workersAddedOnSuccess
           : 0,
       newStreak: Progression.currentStreak(
@@ -406,6 +460,15 @@ class FocusController extends AsyncNotifier<FocusState> {
       recoveryEnded: base.town.inRecoveryMode && !town.inRecoveryMode,
       repair: repair,
       land: land,
+      landmark: landmark,
+      landmarkStage: landmark == null
+          ? 0
+          : (TownRules.landmarkProject(town, landmark)?.stage ??
+                landmark.stages),
+      landmarkFinished:
+          landmark != null &&
+          completed &&
+          TownRules.landmarkProject(town, landmark) == null,
     );
     return FocusState(town: town, lastResult: result);
   }
