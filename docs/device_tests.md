@@ -80,4 +80,12 @@ Profile build (`flutter run --profile`) on the iPhone 15 Pro Max. User-reported:
 - [x] 14 Low Power Mode: frame rate drops, no effects.
 - [x] 15 Persistence, cold start, battery, smoothness.
 
+## V2 repair and emergency pause on the iPhone (T-V2.5, 2026-11-11)
+
+Profile build on the iPhone 15 Pro Max. User-reported: "both repair and pause work on the iPhone." No per-step detail was given.
+
+- [x] Repair: tap a ruin, "Repair (10 min)", the ruin is cleared at the end.
+- [x] Emergency pause: armed before leaving, away for minutes, back with no penalty.
+- [ ] Not separately confirmed: a lost repair leaving the ruin, the notification texts for the 10-minute window, the disabled button with "Next pause on …".
+
 ## Android

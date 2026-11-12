@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-V2.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-V2.4 done: Emergency pause button on the session panel (arms; shows 'on' text; disabled with 'Next pause on <day>' when none left; hidden for repairs), LocalDate.addDays, pass-tip dialog explains the weekly pause, notifier scheduleAwayWarnings(emergency:) tells the user about the 10 minutes and warns at 8 minutes. Next: T-V2.5 [device]: user checks repair and the pause on the iPhone.
+- Current task: TestFlight (T-22.15), then Phase L (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-V2.5 done: repair and the emergency pause pass on the iPhone (docs/device_tests.md). Phase V2 is complete. Next: T-22.15 TestFlight (user's Apple account), then Phase L (privacy policy, store listing, review notes, submit).
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.shashank.focusTown` (decided 2026-11-11).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-V2.4 done)
+- Last updated: 2026-11-09 (T-V2.5 done)
 
 ## Status of steps
 
@@ -1875,7 +1875,7 @@ Open questions (assumed answers):
 - Tests first: widget tests for armed, disabled and explanation-once; notification scheduling uses the 10-minute limit.
 - Commit: `T-V2.4: emergency pause screen`
 
-### T-V2.5 [ ] [device] Repair and emergency pause on the iPhone
+### T-V2.5 [x] [device] Repair and emergency pause on the iPhone
 - Depends on: T-V2.4
 - Do: give the user steps: fail a session, repair the ruin in 10 minutes; arm the pause, leave for 5 minutes, return without penalty; record in `docs/device_tests.md`.
 - Commit: `T-V2.5: record v2 device check`
