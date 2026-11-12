@@ -343,20 +343,20 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 
 ### Step 22: error handling, debug tools, and release
 - [ ] Paste Prompt 0 + Prompt 22
-- [ ] DB write retry and user message
-- [ ] Pre-migration backup and restore; fresh-town fallback with message
-- [ ] Native bridge failure falls back to lenient source
-- [ ] Render failure / low fps falls back to static image
-- [ ] Clock tampering logged
-- [ ] Local log ring buffer (200 lines) persisted
-- [ ] Hidden debug screen in release (7-tap) with log export and beta stats
-- [ ] Accessibility: labels on buttons and HUD, Dynamic Type, town summary for screen readers, reduced motion
-- [ ] App icon (block house) and splash screen
-- [ ] Bundle id, version, and build number set
-- [ ] iOS release signing configured
-- [ ] Android release keystore created and backed up safely (not in git)
-- [ ] iOS `PrivacyInfo.xcprivacy` declares no tracking and no data collected
-- [ ] Final integration test (full flow with fast fake clock) passing
+- [x] DB write retry and user message
+- [x] Pre-migration backup and restore; fresh-town fallback with message
+- [x] Native bridge failure falls back to lenient source
+- [x] Render failure / low fps falls back to static image
+- [x] Clock tampering logged
+- [x] Local log ring buffer (200 lines) persisted
+- [x] Hidden debug screen in release (7-tap) with log export and beta stats
+- [x] Accessibility: labels on buttons and HUD, Dynamic Type, town summary for screen readers, reduced motion
+- [x] App icon (block house) and splash screen
+- [ ] Bundle id, version, and build number set (version 1.0.0+1 done; final id still a placeholder, see docs/release.md)
+- [ ] iOS release signing configured (steps in docs/release.md; needs the user's team)
+- [ ] Android release keystore created and backed up safely (not in git) (Gradle config done; user creates the key)
+- [x] iOS `PrivacyInfo.xcprivacy` declares no tracking and no data collected
+- [x] Final integration test (full flow with fast fake clock) passing
 - [ ] Committed: `step 22`
 
 ---
