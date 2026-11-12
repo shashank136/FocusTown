@@ -127,6 +127,18 @@ class TownRules {
     );
   }
 
+  /// Gives the weekly pause back when [session] ended with it armed but
+  /// never needed: not used, no time away, finished or abandoned.
+  static TownState refundEmergency(TownState town, Session session) {
+    final unused =
+        session.emergencyArmed &&
+        !session.emergencyUsed &&
+        session.awayTotal == Duration.zero &&
+        (session.state == SessionState.completed ||
+            session.outcomeReason == OutcomeReason.abandoned);
+    return unused ? town.copyWith(emergencyPauses: 1) : town;
+  }
+
   /// Whether plot [plot] holds a ruin that a repair could clear.
   static bool canRepair(TownState town, int plot) => town.buildings.any(
     (b) => b.plotIndex == plot && b.status == BuildingStatus.ruin,

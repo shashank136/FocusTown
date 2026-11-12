@@ -62,6 +62,15 @@ void main() {
     expect(_state(again).active!.emergencyArmed, isTrue);
   });
 
+  test('an armed pause that is never used comes back at the end', () async {
+    final c = await _started(minutes: 25);
+    final n = c.read(focusControllerProvider.notifier);
+    await n.armEmergencyPause();
+    _clock.advance(const Duration(minutes: 26));
+    await n.tick();
+    expect(_state(c).town.emergencyPauses, 1);
+  });
+
   test('a second arming is refused', () async {
     final c = await _started();
     final n = c.read(focusControllerProvider.notifier);
@@ -95,6 +104,10 @@ void main() {
     final c = await _started();
     final n = c.read(focusControllerProvider.notifier);
     await n.armEmergencyPause();
+    // Use the pause on a 2-minute absence, so it is really spent.
+    await n.onBackgroundedUnlocked();
+    _clock.advance(const Duration(minutes: 2));
+    await n.onForegrounded();
     await n.abandon();
     n.clearResult();
     _clock.advance(const Duration(days: 2)); // still the same week

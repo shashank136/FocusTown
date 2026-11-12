@@ -80,6 +80,43 @@ void main() {
     });
   });
 
+  group('refund', () {
+    (TownState, Session) armed() =>
+        TownRules.armEmergency(TownState.initial(), _session())!;
+
+    test('an armed pause that was never used comes back', () {
+      final (town, session) = armed();
+      final done = session.copyWith(state: SessionState.completed);
+      expect(TownRules.refundEmergency(town, done).emergencyPauses, 1);
+      final gone = session.copyWith(
+        state: SessionState.failed,
+        outcomeReason: OutcomeReason.abandoned,
+      );
+      expect(TownRules.refundEmergency(town, gone).emergencyPauses, 1);
+    });
+
+    test('a used pause, or one that covered an absence, stays spent', () {
+      final (town, session) = armed();
+      final used = session.copyWith(
+        state: SessionState.completed,
+        emergencyArmed: false,
+        emergencyUsed: true,
+      );
+      expect(TownRules.refundEmergency(town, used).emergencyPauses, 0);
+      final lost = session.copyWith(
+        state: SessionState.failed,
+        awayTotal: const Duration(minutes: 11),
+        outcomeReason: OutcomeReason.leftTooLong,
+      );
+      expect(TownRules.refundEmergency(town, lost).emergencyPauses, 0);
+    });
+
+    test('a session that never armed changes nothing', () {
+      final town = TownState.initial();
+      expect(TownRules.refundEmergency(town, _session()), town);
+    });
+  });
+
   group('arming', () {
     test('uses up the pause and marks the session', () {
       final (town, session) = TownRules.armEmergency(

@@ -254,7 +254,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     final doneAt = completed && plannedEnd.isBefore(now.wall)
         ? plannedEnd
         : now.wall;
-    final town = switch ((repair, completed)) {
+    final settled = switch ((repair, completed)) {
       (true, true) => Progression.onSessionCompleted(
         TownRules.applyRepairCompleted(base.town, finished),
         finished,
@@ -269,6 +269,7 @@ class FocusController extends AsyncNotifier<FocusState> {
       ),
       (false, false) => TownRules.applyFailed(base.town, finished),
     };
+    final town = TownRules.refundEmergency(settled, finished);
     try {
       await ref
           .read(townRepositoryProvider)
