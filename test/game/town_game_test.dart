@@ -6,11 +6,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/session.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/workers/worker_model.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
+import 'package:focus_town/game/world/vec2.dart';
 
 Session _session(BuildingTier t, int assigned) => Session(
   id: 's',
@@ -226,6 +228,54 @@ void main() {
       g.setFocus(FocusState(town: TownState.initial()));
       _drawn(g, seconds: 2);
       expect(g.renderer.recordCount, records);
+    });
+
+    test('finished land shows the whole island so the new land is seen', () {
+      final g = _game();
+      final cam = g.renderer.camera!;
+      g.onPinch(const Vec2(200, 350), 3); // zoomed in on the town
+      final zoomed = cam.tile;
+      final session = Session(
+        id: 'l',
+        plannedMinutes: 25,
+        tier: BuildingTier.hut,
+        workersAssigned: 0,
+        state: SessionState.running,
+        startedAt: TimeStamp(DateTime(2026), Duration.zero),
+        land: const Parcel(-1, 3),
+      );
+      g.setFocus(FocusState(town: TownState.initial(), active: session));
+      _drawn(g);
+      g
+        ..setFocus(
+          FocusState(
+            town: TownState.initial().copyWith(parcels: const [Parcel(-1, 3)]),
+            lastResult: const SessionResult(
+              outcome: SessionOutcome.completed,
+              tier: BuildingTier.hut,
+              workersLost: 0,
+              workersGained: 0,
+              newStreak: 1,
+              plotGranted: false,
+              land: true,
+            ),
+          ),
+        )
+        ..update(1);
+      expect(cam.tile, lessThan(zoomed));
+      expect(cam.tile, closeTo(cam.fitMapTile, 1e-6));
+    });
+
+    test('claimed land redraws the town', () {
+      final g = _game();
+      final records = g.renderer.recordCount;
+      g.setFocus(
+        FocusState(
+          town: TownState.initial().copyWith(parcels: const [Parcel(-1, 3)]),
+        ),
+      );
+      _drawn(g);
+      expect(g.renderer.recordCount, records + 1);
     });
 
     test('a session adds the site once, then frames re-record nothing', () {

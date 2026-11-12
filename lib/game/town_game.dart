@@ -133,8 +133,17 @@ class TownGame extends FlameGame
     _town = focus.town;
     if (old == null ||
         old.plotsUnlocked != focus.town.plotsUnlocked ||
+        !listEquals(old.parcels, focus.town.parcels) ||
         !listEquals(old.buildings, focus.town.buildings)) {
       setTown(focus.town);
+    }
+    // The new land lies at the coast: step back so it is seen (after the
+    // world, and so the camera's island box, has grown).
+    if (result != null &&
+        result.land &&
+        result.outcome == SessionOutcome.completed &&
+        !identical(result, _focus?.lastResult)) {
+      showIsland();
     }
     _focus = focus;
   }

@@ -153,21 +153,17 @@ void _tower(VoxelWorld w, int ox, int oy, int stage) {
 
 // Second looks. Each keeps the footprint and the stage count of its tier.
 
-// A wool tent with a pole and a pennant.
+// An A-frame wool tent: two walls and a ridge over an open floor, with a pole
+// and a pennant at the front.
 void _tent(VoxelWorld w, int ox, int oy, int stage) {
-  w.fill(ox, oy, 1, ox + 2, oy + 2, 1, Blocks.wool);
-  if (stage >= 2) w.fill(ox, oy, 2, ox + 2, oy + 2, 2, Blocks.wool);
-  if (stage >= 3) {
-    w
-      ..fill(ox + 1, oy, 3, ox + 1, oy + 2, 3, Blocks.wool)
-      ..fill(ox, oy + 1, 3, ox + 2, oy + 1, 3, Blocks.wool);
-  }
+  w.fill(ox, oy, 1, ox, oy + 2, 1, Blocks.wool);
+  if (stage >= 2) w.fill(ox + 2, oy, 1, ox + 2, oy + 2, 1, Blocks.wool);
+  if (stage >= 3) w.fill(ox + 1, oy, 2, ox + 1, oy + 2, 2, Blocks.wool);
   if (stage >= 4) {
     w
-      ..fill(ox + 1, oy + 1, 4, ox + 1, oy + 1, 5, Blocks.log)
-      ..set(ox + 2, oy + 1, 5, Blocks.wool);
+      ..fill(ox + 1, oy + 2, 3, ox + 1, oy + 2, 4, Blocks.log)
+      ..set(ox + 2, oy + 2, 4, Blocks.wool);
   }
-  w.remove(ox + 1, oy + 2, 1); // door
 }
 
 // A tall plank house with a flat roof and a chimney.
