@@ -97,6 +97,10 @@ void main() {
     ) async {
       await _show(tester, repair());
       expect(find.text('Ruin cleared'), findsOneWidget);
+      expect(
+        find.text('This plot is free again: build something new here.'),
+        findsOneWidget,
+      );
       expect(find.text('+10 XP'), findsOneWidget);
       expect(find.text('Streak: 2 days'), findsOneWidget);
       expect(find.textContaining('worker'), findsNothing);

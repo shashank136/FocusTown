@@ -202,8 +202,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       builder: (context) => AlertDialog(
         title: const Text('Repair this ruin?'),
         content: const Text(
-          'Focus for 10 minutes to clear it. Nothing is at risk: if you '
-          'leave, the ruin just stays.',
+          'Focus for 10 minutes to clear it and free the plot for a new '
+          'building. Nothing is at risk: if you leave, the ruin just stays.',
         ),
         actions: [
           TextButton(

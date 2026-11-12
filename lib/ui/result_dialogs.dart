@@ -79,6 +79,7 @@ TextStyle? _heading(BuildContext context) =>
     ? (
         'Ruin cleared',
         [
+          ('This plot is free again: build something new here.', true),
           if (r.xpGained > 0) ('+${r.xpGained} XP', false),
           if (r.newStreak > 0)
             (
