@@ -148,6 +148,12 @@ final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
   }
 
   deinit {
+    CFNotificationCenterRemoveObserver(
+      CFNotificationCenterGetDarwinNotifyCenter(),
+      Unmanaged.passUnretained(self).toOpaque(),
+      nil,
+      nil
+    )
     observers.forEach(NotificationCenter.default.removeObserver)
   }
 }

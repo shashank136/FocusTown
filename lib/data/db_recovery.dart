@@ -8,13 +8,17 @@ import 'package:focus_town/platform/local_log.dart';
 /// An opened database, and whether the old town had to be given up.
 class OpenResult {
   /// Creates a result.
-  const new(this.db, {required this.startedFresh});
+  const new(this.db, {required this.startedFresh, this.restored = false});
 
   /// The open database.
   final AppDatabase db;
 
   /// True when the saved town could not be opened or restored.
   final bool startedFresh;
+
+  /// True when the town came back from the backup, which may be a little
+  /// older than the last session.
+  final bool restored;
 }
 
 // The database file and its write-ahead-log companions.
@@ -50,6 +54,7 @@ Future<OpenResult> openDatabaseSafely({
       await db.customSelect('SELECT 1').get();
       await TownRepository(db, clock ?? SystemClock()).loadOrCreate();
       marker.writeAsStringSync('$schemaVersion');
+      await _refreshBackup(db, backup, log);
       return db;
     } on Object catch (e) {
       log?.write('db: open failed: $e');
@@ -67,7 +72,7 @@ Future<OpenResult> openDatabaseSafely({
     final restored = await attempt();
     if (restored != null) {
       log?.write('db: restored the backup');
-      return OpenResult(restored, startedFresh: false);
+      return OpenResult(restored, startedFresh: false, restored: true);
     }
   }
 
@@ -77,6 +82,29 @@ Future<OpenResult> openDatabaseSafely({
   await TownRepository(fresh, clock ?? SystemClock()).loadOrCreate();
   marker.writeAsStringSync('$schemaVersion');
   return OpenResult(fresh, startedFresh: true);
+}
+
+// Keeps the backup as recent as the last launch that opened cleanly, so a
+// later failure never rolls the town back to the last schema change. `VACUUM
+// INTO` writes one consistent file even while the database is open.
+Future<void> _refreshBackup(
+  AppDatabase db,
+  String backup,
+  LocalLog? log,
+) async {
+  final tmp = File('$backup.tmp');
+  try {
+    if (tmp.existsSync()) tmp.deleteSync();
+    await db.customStatement('VACUUM INTO ?', [tmp.path]);
+    for (final s in _suffixes) {
+      final old = File('$backup$s');
+      if (s.isNotEmpty && old.existsSync()) old.deleteSync();
+    }
+    tmp.renameSync(backup);
+  } on Object catch (e) {
+    log?.write('db: backup refresh failed: $e');
+    if (tmp.existsSync()) tmp.deleteSync();
+  }
 }
 
 void _copy(String from, String to) {

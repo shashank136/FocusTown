@@ -41,6 +41,8 @@ Future<void> main() async {
         startupMessageProvider.overrideWithValue(
           opened.startedFresh
               ? "We couldn't load your town and started a new one."
+              : opened.restored
+              ? "We couldn't open your town and restored a recent save."
               : null,
         ),
         lifecycleSourceProvider.overrideWithValue(platform.source),

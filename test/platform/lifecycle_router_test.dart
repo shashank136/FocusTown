@@ -113,6 +113,19 @@ void main() {
     },
   );
 
+  test(
+    'a call that never reports its end stops counting after 3 hours',
+    () async {
+      await controller.start(25);
+      await send(CallStartedEvent(now()));
+      clock.advance(const Duration(hours: 3, minutes: 1));
+      await send(BackgroundedEvent(now()));
+      clock.advance(const Duration(milliseconds: 600));
+      await router.flushExpired();
+      expect(active()!.state, SessionState.away);
+    },
+  );
+
   test('events with no active session are no-ops and do not throw', () async {
     await send(LockedEvent(now()));
     await send(BackgroundedEvent(now()));

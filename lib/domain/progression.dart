@@ -53,19 +53,23 @@ class Progression {
   ) {
     final today = LocalDate.fromDateTime(completedAtLocal);
     final last = town.lastStreakDate;
-    // Same day keeps the streak, the next day extends it, anything else
-    // (first ever, a gap, or a date in the past) starts again at 1.
+    // Same day keeps the streak, the next day extends it, a gap (or the first
+    // ever) starts again at 1. A date in the past, from a clock set back,
+    // changes no date, so it cannot earn a second plot or break the streak.
     final gap = last?.daysBetween(today);
+    final past = gap != null && gap < 0;
     final streak = switch (gap) {
       0 => town.streakCount,
       1 => town.streakCount + 1,
+      _ when past => town.streakCount,
       _ => 1,
     };
-    final grant = town.lastPlotGrantDate != today;
+    final lastGrant = town.lastPlotGrantDate;
+    final grant = lastGrant == null || lastGrant.compareTo(today) < 0;
     final updated = town.copyWith(
       xp: town.xp + session.plannedMinutes,
       streakCount: streak,
-      lastStreakDate: today,
+      lastStreakDate: past ? last : today,
       plotsUnlocked: grant ? town.plotsUnlocked + 1 : null,
       lastPlotGrantDate: grant ? today : null,
     );

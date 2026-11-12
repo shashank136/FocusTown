@@ -108,11 +108,21 @@ void main() {
       expect(t.streakCount, 2);
     });
 
-    test('a completion dated before lastStreakDate resets to 1', () {
+    test('a completion dated before lastStreakDate changes no dates', () {
       var t = _complete(TownState.initial(), 25, DateTime(2026, 5, 5, 9));
+      t = _complete(t, 25, DateTime(2026, 5, 6, 9));
       t = _complete(t, 25, DateTime(2026, 5, 2, 9));
-      expect(t.streakCount, 1);
-      expect(t.lastStreakDate, const LocalDate(2026, 5, 2));
+      expect(t.streakCount, 2);
+      expect(t.lastStreakDate, const LocalDate(2026, 5, 6));
+      expect(t.lastPlotGrantDate, const LocalDate(2026, 5, 6));
+    });
+
+    test('setting the clock back and forward grants no extra plot', () {
+      var t = _complete(TownState.initial(), 25, DateTime(2026, 5, 5, 9));
+      final plots = t.plotsUnlocked;
+      t = _complete(t, 25, DateTime(2026, 5, 4, 9));
+      t = _complete(t, 25, DateTime(2026, 5, 5, 20));
+      expect(t.plotsUnlocked, plots);
     });
 
     test('a failed session leaves xp, streak and dates untouched', () {

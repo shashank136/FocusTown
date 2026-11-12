@@ -23,25 +23,52 @@ void main() {
     final r = await _open();
     expect(r.startedFresh, isFalse);
     expect(_f('schema_version.txt').readAsStringSync(), '4');
-    expect(_f('focus_town.backup.sqlite').existsSync(), isFalse);
+    expect(_f('focus_town.backup.sqlite').existsSync(), isTrue);
     await r.db.close();
   });
 
   test('a version bump backs the file up first', () async {
     await (await _open(version: 3)).db.close();
-    final before = _f('focus_town.sqlite').readAsBytesSync();
+    _f('focus_town.backup.sqlite').deleteSync();
     final r = await _open();
-    expect(_f('focus_town.backup.sqlite').readAsBytesSync(), before);
+    expect(_f('focus_town.backup.sqlite').existsSync(), isTrue);
     expect(_f('schema_version.txt').readAsStringSync(), '4');
     await r.db.close();
   });
 
-  test('the backup is kept when the version has not changed', () async {
+  test('every clean launch refreshes the backup', () async {
     await (await _open()).db.close();
     _f('focus_town.backup.sqlite').writeAsStringSync('old');
     await (await _open()).db.close();
-    expect(_f('focus_town.backup.sqlite').readAsStringSync(), 'old');
+    final backup = _f('focus_town.backup.sqlite');
+    expect(backup.readAsBytesSync().length, greaterThan(100));
+    final db = _real(backup);
+    expect(await db.select(db.towns).get(), hasLength(1));
+    await db.close();
   });
+
+  test(
+    'a later failed open restores the latest save, not an old one',
+    () async {
+      final clock = FakeClock(start: DateTime(2021));
+      await (await openDatabaseSafely(
+        dir: _dir,
+        schemaVersion: 4,
+        open: _real,
+        clock: clock,
+      )).db.close();
+      var calls = 0;
+      final r = await _open(
+        open: (f) {
+          if (++calls == 1) throw StateError('transient');
+          return _real(f);
+        },
+      );
+      expect(r.restored, isTrue);
+      expect(r.startedFresh, isFalse);
+      await r.db.close();
+    },
+  );
 
   test('a failed upgrade restores the backup and opens it', () async {
     await (await openDatabaseSafely(

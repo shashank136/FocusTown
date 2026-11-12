@@ -46,9 +46,23 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(clearLastResult: true));
   }
 
+  // True while a start, repair or pause is being saved, so a double tap
+  // cannot create a second session.
+  bool _busy = false;
+
+  Future<T?> _once<T>(Future<T> Function() body) async {
+    if (_busy) return null;
+    _busy = true;
+    try {
+      return await body();
+    } finally {
+      _busy = false;
+    }
+  }
+
   /// Starts a session of [minutes] on [plotIndex] (a free unlocked plot), or
   /// on the next free plot when null; it exists only once it is saved.
-  Future<void> start(int minutes, {int? plotIndex}) async {
+  Future<void> start(int minutes, {int? plotIndex}) => _once(() async {
     final current = await future;
     if (current.active != null) {
       throw StateError('A session is already active');
@@ -73,27 +87,31 @@ class FocusController extends AsyncNotifier<FocusState> {
     // Save first: a session that was not saved never starts.
     await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
     state = AsyncData(current.copyWith(town: town, active: session));
-  }
+  });
 
   TownState _refilled(TownState town, TimeStamp now) =>
       TownRules.refillEmergency(town, LocalDate.fromDateTime(now.wall));
 
   /// Switches on this week's emergency pause for the running session: the next
   /// absence may last 10 minutes. False when it is not allowed.
-  Future<bool> armEmergencyPause() async {
-    final current = await future;
-    final active = current.active;
-    if (active == null) return false;
-    final armed = TownRules.armEmergency(current.town, active);
-    if (armed == null) return false;
-    final (town, session) = armed;
-    await ref.read(townRepositoryProvider).saveEmergencyArmed(town, session);
-    state = AsyncData(current.copyWith(town: town, active: session));
-    return true;
-  }
+  Future<bool> armEmergencyPause() async =>
+      await _once(() async {
+        final current = await future;
+        final active = current.active;
+        if (active == null) return false;
+        final armed = TownRules.armEmergency(current.town, active);
+        if (armed == null) return false;
+        final (town, session) = armed;
+        await ref
+            .read(townRepositoryProvider)
+            .saveEmergencyArmed(town, session);
+        state = AsyncData(current.copyWith(town: town, active: session));
+        return true;
+      }) ??
+      false;
 
   /// Starts a 10-minute repair of the ruin on [plot]. Nothing is at risk.
-  Future<void> startRepair(int plot) async {
+  Future<void> startRepair(int plot) => _once(() async {
     final current = await future;
     if (current.active != null) {
       throw StateError('A session is already active');
@@ -110,7 +128,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     final town = _refilled(current.town, now);
     await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
     state = AsyncData(current.copyWith(town: town, active: session));
-  }
+  });
 
   /// Resolves the active session from the clock; finishes it if due.
   Future<void> tick() async {
@@ -184,6 +202,12 @@ class FocusController extends AsyncNotifier<FocusState> {
     } on SaveFailedException catch (e) {
       _log('$e'); // keep the last good state; the next event retries
       return;
+      // The repository reports a missing row as a StateError (a bug elsewhere);
+      // an event must never be lost to an uncaught error in the router queue.
+      // ignore: avoid_catching_errors
+    } on StateError catch (e) {
+      _log('$e');
+      return;
     }
     state = AsyncData(current.copyWith(active: updated));
     if (updated.state == SessionState.away &&
@@ -224,18 +248,24 @@ class FocusController extends AsyncNotifier<FocusState> {
       _log('clock tamper detected');
     }
     final repair = finished.isRepair;
+    // The day counts from when the session ended, not from when the app
+    // noticed (it may have been closed past midnight).
+    final plannedEnd = finished.startedAt.wall.add(finished.planned);
+    final doneAt = completed && plannedEnd.isBefore(now.wall)
+        ? plannedEnd
+        : now.wall;
     final town = switch ((repair, completed)) {
       (true, true) => Progression.onSessionCompleted(
         TownRules.applyRepairCompleted(base.town, finished),
         finished,
-        now.wall,
+        doneAt,
       ),
       // A lost repair costs nothing.
       (true, false) => base.town,
       (false, true) => Progression.onSessionCompleted(
         TownRules.applyCompleted(base.town, finished),
         finished,
-        now.wall,
+        doneAt,
       ),
       (false, false) => TownRules.applyFailed(base.town, finished),
     };

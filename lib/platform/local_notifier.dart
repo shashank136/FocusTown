@@ -29,8 +29,8 @@ class LocalNotifier implements Notifier {
   /// Sets up the plugin and time zones. Permission is not asked here.
   Future<void> initialize() async {
     tz_data.initializeTimeZones();
-    // shortcut: the time zone is fixed to EST for testing, detect the device
-    // zone before release (needs a package, ask the user first).
+    // Every schedule is "now plus a duration", so the zone never changes
+    // when a notification fires; it only needs to be set.
     tz.setLocalLocation(tz.getLocation('America/New_York'));
     await _plugin.initialize(
       settings: const InitializationSettings(

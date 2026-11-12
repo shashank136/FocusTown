@@ -9,6 +9,8 @@ import 'package:focus_town/platform/lifecycle_events.dart';
 /// How long a backgrounded event waits for a lock to follow it.
 const kLockWindow = Duration(milliseconds: 500);
 
+const _kCallLimit = Duration(hours: 3);
+
 /// Routes lifecycle events to the [FocusController], one at a time.
 class LifecycleRouter {
   /// Creates a router; call [start] to begin listening.
@@ -23,12 +25,20 @@ class LifecycleRouter {
 
   StreamSubscription<LifecycleEvent>? _subscription;
   Future<void> _queue = Future<void>.value();
-  bool _inCall = false;
+  // When the last call started; a call whose end was never seen (the app was
+  // suspended) stops counting after [_kCallLimit].
+  TimeStamp? _callStartedAt;
   BackgroundedEvent? _pending;
   // The last lock. On the iPhone the lock comes just BEFORE the background
   // (the screen locks, then the app is sent away), so a background right after
   // a lock is part of that lock.
   LockedEvent? _lockedAt;
+
+  bool _inCall(LifecycleEvent at) {
+    final started = _callStartedAt;
+    return started != null &&
+        elapsedBetween(started, at.timestamp) < _kCallLimit;
+  }
 
   /// Completes when every event received so far has been handled.
   Future<void> get idle => _queue;
@@ -93,14 +103,14 @@ class LifecycleRouter {
         _lockedAt = e;
         await _controller.onLocked(at: e.timestamp);
       case CallStartedEvent():
-        _inCall = true;
+        _callStartedAt = e.timestamp;
         await _controller.onCallStarted(at: e.timestamp);
       case CallEndedEvent():
-        _inCall = false;
+        _callStartedAt = null;
       case BackgroundedEvent():
         final lock = _lockedAt;
         final partOfLock = lock != null && _withinWindow(lock, e);
-        if (!_inCall && !partOfLock) _pending = e;
+        if (!_inCall(e) && !partOfLock) _pending = e;
       case ForegroundedEvent():
         _lockedAt = null;
         await _controller.onForegrounded(at: e.timestamp);
