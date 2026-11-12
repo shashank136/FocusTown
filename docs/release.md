@@ -88,3 +88,39 @@ App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focu
 - If the name is taken, try in order: `Focus Town Builder`, `Focus Town: Block Builder`, `Focus Town: Build & Focus` (keep the subtitle).
 - The home screen name (`CFBundleDisplayName`) stays `Focus Town`; it need not match the store name.
 - Keep the icon and screenshots clearly different from the other app (isometric block town).
+
+## Store listing (draft 2026-11-12)
+
+- Name / subtitle: see above (`Focus Town` / `Build While You Focus`).
+- Category: Productivity (primary), Lifestyle (secondary).
+- Age rating: 4+. No violence, no user content, no web access, no purchases, no gambling.
+- Keywords (max 100 characters): `focus,timer,pomodoro,study,productivity,habit,streak,town,builder,deep work`
+- Promotional text (max 170): `Start a focus session and your builders raise a block town. Leave the app and they stop. Build a streak, grow your town.`
+- Description:
+
+  Focus Town turns focus time into a town you can see.
+
+  Pick how long you want to focus, from 10 minutes to 2 hours. Little builders start work on a new building. Put your phone down, and watch them finish. Leave the app before the time is up, and they stop and leave a ruin behind.
+
+  - A block-style town that grows with every session
+  - Bigger sessions build bigger buildings: huts, houses, workshops, towers and castles
+  - A daily streak, and a new plot of land each day you focus
+  - Lock your phone and keep going: locking never counts as leaving
+  - A countdown on your lock screen and Dynamic Island
+  - A weekly emergency pause for the day something really comes up
+  - Repair a ruin with a short session
+  - Works fully offline. No account, no ads, no tracking
+
+- Screenshots (6.9-inch and 6.5-inch iPhone): onboarding page 2, a running build, the finished town, the setup dial, the lock screen card. Capture on the iPhone or the simulator; the user reviews them.
+- URLs: privacy policy `docs/privacy.md`, support `docs/support.md`; host them (for example GitHub Pages) and record the URLs here. Fill in `<contact email>` in both first.
+- Copyright: the user's name and year.
+
+## App Review notes (draft 2026-11-12)
+
+- No account or login is needed. The app works offline, no demo account.
+- To test: finish the three onboarding pages, allow notifications, choose 10 minutes and start. A hut is built. Lock the phone and unlock after a minute: the session continues. Press Home and wait more than 70 seconds, then return: the builders stopped and a ruin is shown. A 10-minute session is the shortest one.
+- Notifications warn the user 10 seconds after leaving the app during a session, and again before the builders stop. They are local only.
+- Live Activity: a running session shows its countdown on the lock screen and in the Dynamic Island. It is started and updated locally by the app; there is no push or server.
+- Why it works with the screen locked: the point of the app is to focus away from the phone, so a locked screen is not leaving. To tell a lock from leaving the app, the app listens to the Darwin notification `com.apple.springboard.lockcomplete`. It reads no data from the system and sends nothing anywhere. If review prefers, we can remove it and use a longer grace period for every exit instead; please tell us.
+- Phone calls: the app uses CallKit's call observer only to know that a call started, so a call does not count as leaving. It reads no call details.
+- The app collects no data (Data Not Collected). No network connections are made.
