@@ -108,6 +108,7 @@ Release build on the iPhone 15 Pro Max, in-place install, user-reported.
 - [x] Away shows the "Away" text and returns to "Builders working" on coming back.
 - [x] It disappears when the session ends.
 - [x] Swiping the app away removes the card (iOS ends a force-quit app's Live Activities); reopening the app shows it again, and the away warning notification still arrives.
-- [ ] The card showed a Flutter icon: the extension had no app icon. Fixed with an icon set in `ios/FocusStatus/Assets.xcassets`; the user checks the new build.
+- [x] The card icon is fine after adding an icon set to the extension (`ios/FocusStatus/Assets.xcassets`).
+- [ ] The away warning banner still shows the Flutter icon, probably a stale iOS icon cache (the build contains the house icon). Check again after the next phone restart. A fresh TestFlight install should not be affected.
 
 ## Android
