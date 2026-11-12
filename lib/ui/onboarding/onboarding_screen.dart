@@ -74,34 +74,47 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Text(
-                            _titles[i],
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall,
+                          // The words scroll when the text is very large, so
+                          // the picture gives way instead of overflowing.
+                          Flexible(
+                            flex: 2,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    _titles[i],
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.headlineSmall,
+                                  ),
+                                  if (i == 1) ...[
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Going to the home screen or another app '
+                                      'counts as leaving. To take a break, stay in '
+                                      'the app and lock your phone.',
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.bodyMedium,
+                                    ),
+                                  ],
+                                  if (i == _titles.length - 1) ...[
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      '10-minute hut',
+                                      style: theme.textTheme.titleMedium,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'So we can warn you before your '
+                                      'builders stop.',
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.bodyMedium,
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
                           ),
-                          if (i == 1) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              'Going to the home screen or another app '
-                              'counts as leaving. To take a break, stay in '
-                              'the app and lock your phone.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                          if (i == _titles.length - 1) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              '10-minute hut',
-                              style: theme.textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'So we can warn you before your builders stop.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
                         ],
                       ),
                     ),
