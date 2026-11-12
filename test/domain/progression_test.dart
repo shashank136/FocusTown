@@ -114,15 +114,13 @@ void main() {
       t = _complete(t, 25, DateTime(2026, 5, 2, 9));
       expect(t.streakCount, 2);
       expect(t.lastStreakDate, const LocalDate(2026, 5, 6));
-      expect(t.lastPlotGrantDate, const LocalDate(2026, 5, 6));
     });
 
-    test('setting the clock back and forward grants no extra plot', () {
+    test('setting the clock back and forward does not stretch the streak', () {
       var t = _complete(TownState.initial(), 25, DateTime(2026, 5, 5, 9));
-      final plots = t.plotsUnlocked;
       t = _complete(t, 25, DateTime(2026, 5, 4, 9));
       t = _complete(t, 25, DateTime(2026, 5, 5, 20));
-      expect(t.plotsUnlocked, plots);
+      expect(t.streakCount, 1);
     });
 
     test('a failed session leaves xp, streak and dates untouched', () {
@@ -132,40 +130,30 @@ void main() {
       expect(after.xp, before.xp);
       expect(after.streakCount, before.streakCount);
       expect(after.lastStreakDate, before.lastStreakDate);
-      expect(after.lastPlotGrantDate, before.lastPlotGrantDate);
     });
   });
 
-  group('daily plot grant', () {
-    test('two sessions the same day grant one plot: 6 to 7', () {
-      var t = _complete(TownState.initial(), 25, DateTime(2026, 5, 1, 9));
-      t = _complete(t, 10, DateTime(2026, 5, 1, 21));
-      expect(t.plotsUnlocked, 7);
-      expect(t.lastPlotGrantDate, const LocalDate(2026, 5, 1));
-    });
-
-    test('consecutive days: plots 8 and streak 2', () {
+  group('plots', () {
+    test('finishing sessions never changes the plots unlocked', () {
       var t = _complete(TownState.initial(), 25, DateTime(2026, 5, 1, 9));
       t = _complete(t, 25, DateTime(2026, 5, 2, 9));
-      expect(t.plotsUnlocked, 8);
-      expect(t.streakCount, 2);
+      expect(t.plotsUnlocked, TownState.initial().plotsUnlocked);
+      expect(t.lastPlotGrantDate, isNull);
     });
 
-    test('a gap day resets the streak but still grants a plot', () {
-      var t = _complete(TownState.initial(), 25, DateTime(2026, 5, 1, 9));
-      t = _complete(t, 25, DateTime(2026, 5, 4, 9));
-      expect(t.streakCount, 1);
-      expect(t.plotsUnlocked, 8);
-      expect(t.lastPlotGrantDate, const LocalDate(2026, 5, 4));
-    });
-
-    test('the queue drains when a daily plot arrives', () {
+    test('the queue drains when there is room', () {
       const queued = QueuedBuilding(id: 'q1', tier: BuildingTier.hut);
-      final full = TownState(
-        workers: 3,
-        plotsUnlocked: 6,
+      final open = TownState.initial().copyWith(queue: [queued]);
+      final t = _complete(open, 25, DateTime(2026, 5, 1, 9));
+      expect(t.queue, isEmpty);
+      expect(t.buildings.last.id, 'q1');
+    });
+
+    test('the queue keeps waiting while every plot is used', () {
+      const queued = QueuedBuilding(id: 'q1', tier: BuildingTier.hut);
+      final full = TownState.initial().copyWith(
         buildings: [
-          for (var i = 0; i < 6; i++)
+          for (var i = 0; i < 64; i++)
             TownBuilding(
               id: 'b$i',
               tier: BuildingTier.hut,
@@ -173,25 +161,9 @@ void main() {
               plotIndex: i,
             ),
         ],
-        queue: const [queued],
-        inRecoveryMode: false,
-      );
-      final t = _complete(full, 25, DateTime(2026, 5, 1, 9));
-      expect(t.queue, isEmpty);
-      expect(t.plotsUnlocked, 7);
-      expect(t.buildings.last.id, 'q1');
-      expect(t.buildings.last.plotIndex, 6);
-    });
-
-    test('the queue drains even without a new grant', () {
-      const queued = QueuedBuilding(id: 'q1', tier: BuildingTier.hut);
-      final open = TownState.initial().copyWith(
-        lastPlotGrantDate: const LocalDate(2026, 5, 1),
         queue: [queued],
       );
-      final t = _complete(open, 25, DateTime(2026, 5, 1, 9));
-      expect(t.plotsUnlocked, 6);
-      expect(t.queue, isEmpty);
+      expect(_complete(full, 25, DateTime(2026, 5, 1, 9)).queue, [queued]);
     });
   });
 

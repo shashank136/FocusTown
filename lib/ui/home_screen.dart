@@ -8,7 +8,9 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/tips.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/render_guard.dart';
@@ -171,9 +173,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             }
           : {
               for (var i = 0; i < TownRules.plotCountOf(town); i++)
-                if (TownRules.isPlotFree(town, i)) i,
+                if (TownRules.isPlotFree(
+                  town,
+                  i,
+                  BuildingTier.forMinutes(placement.minutes),
+                ))
+                  i,
             },
       placement?.plot,
+      span:
+          placement != null &&
+              !placement.land &&
+              plotsOf(BuildingTier.forMinutes(placement.minutes)) == 4
+          ? 2
+          : 1,
     );
   }
 

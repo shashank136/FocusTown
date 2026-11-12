@@ -11,7 +11,6 @@ SessionResult _completed({
   int gained = 2,
   int xp = 25,
   int streak = 3,
-  bool plot = false,
   TownLevel? level,
   bool recoveryEnded = false,
   SessionOutcome outcome = SessionOutcome.completed,
@@ -21,7 +20,6 @@ SessionResult _completed({
   workersLost: 0,
   workersGained: gained,
   newStreak: streak,
-  plotGranted: plot,
   xpGained: xp,
   reason: OutcomeReason.completed,
   leveledUpTo: level,
@@ -39,7 +37,6 @@ SessionResult _failed({
   workersLost: lost,
   workersGained: 0,
   newStreak: 0,
-  plotGranted: false,
   awaySeconds: away,
   reason: reason,
   recoveryStarted: recoveryStarted,
@@ -80,23 +77,20 @@ Iterable<String> _allText(WidgetTester tester) => [
 
 void main() {
   group('repair', () {
-    SessionResult repair({
-      SessionOutcome outcome = SessionOutcome.completed,
-      bool plot = false,
-    }) => SessionResult(
-      outcome: outcome,
-      tier: BuildingTier.hut,
-      workersLost: 0,
-      workersGained: 0,
-      newStreak: 2,
-      plotGranted: plot,
-      xpGained: outcome == SessionOutcome.completed ? 10 : 0,
-      reason: outcome == SessionOutcome.completed
-          ? OutcomeReason.completed
-          : OutcomeReason.leftTooLong,
-      awaySeconds: 90,
-      repair: true,
-    );
+    SessionResult repair({SessionOutcome outcome = SessionOutcome.completed}) =>
+        SessionResult(
+          outcome: outcome,
+          tier: BuildingTier.hut,
+          workersLost: 0,
+          workersGained: 0,
+          newStreak: 2,
+          xpGained: outcome == SessionOutcome.completed ? 10 : 0,
+          reason: outcome == SessionOutcome.completed
+              ? OutcomeReason.completed
+              : OutcomeReason.leftTooLong,
+          awaySeconds: 90,
+          repair: true,
+        );
 
     testWidgets('a cleared ruin shows XP and streak, no workers', (
       tester,
@@ -127,7 +121,6 @@ void main() {
           workersLost: 0,
           workersGained: 0,
           newStreak: 2,
-          plotGranted: outcome == SessionOutcome.completed,
           xpGained: outcome == SessionOutcome.completed ? 25 : 0,
           land: true,
         );
@@ -139,7 +132,6 @@ void main() {
       expect(find.text('Land claimed'), findsOneWidget);
       expect(find.text('Your island has grown.'), findsOneWidget);
       expect(find.text('+25 XP'), findsOneWidget);
-      expect(find.text('New plot unlocked'), findsOneWidget);
       expect(find.textContaining('worker'), findsNothing);
     });
 
@@ -160,12 +152,10 @@ void main() {
       expect(find.text('+2 workers'), findsOneWidget);
       expect(find.text('+25 XP'), findsOneWidget);
       expect(find.text('Streak: 3 days'), findsOneWidget);
-      expect(find.text('New plot unlocked'), findsNothing);
     });
 
-    testWidgets('a new plot and a level-up are announced', (tester) async {
-      await _show(tester, _completed(plot: true, level: TownLevel.village));
-      expect(find.text('New plot unlocked'), findsOneWidget);
+    testWidgets('a level-up is announced', (tester) async {
+      await _show(tester, _completed(level: TownLevel.village));
       expect(find.text('Your town is now a Village'), findsOneWidget);
     });
 
@@ -209,8 +199,9 @@ void main() {
     expect(find.text('Ready to place'), findsOneWidget);
     expect(
       find.text(
-        'Your tower is finished, but every plot is taken. It will be placed '
-        'when the next plot unlocks.',
+        'Your tower is finished, but there is no free space for it. Extend '
+        'your land (Start focus, then Extend land) or repair a ruin, and it '
+        'will be placed.',
       ),
       findsOneWidget,
     );
@@ -275,7 +266,7 @@ void main() {
     unicode: true,
   );
   for (final (name, result) in [
-    ('completed', _completed(plot: true, level: TownLevel.city)),
+    ('completed', _completed(level: TownLevel.city)),
     ('queued', _completed(outcome: SessionOutcome.queued)),
     ('failed', _failed(recoveryStarted: true)),
   ]) {

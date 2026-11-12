@@ -12,6 +12,7 @@ import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
@@ -220,7 +221,7 @@ void main() {
   ) async {
     final full = TownState.initial().copyWith(
       buildings: [
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 64; i++)
           TownBuilding(
             id: 'b$i',
             tier: BuildingTier.hut,
@@ -230,27 +231,29 @@ void main() {
       ],
     );
     await _open(tester, seed: full);
-    expect(find.textContaining('All 6 plots are used.'), findsOneWidget);
+    expect(find.textContaining('Every plot is used.'), findsOneWidget);
     expect(find.textContaining('ruin'), findsNothing);
-    expect(find.textContaining('first session each day'), findsOneWidget);
+    expect(find.textContaining('Extend land to add some'), findsOneWidget);
   });
 
-  testWidgets('a castle says it needs four plots', (tester) async {
+  testWidgets('a castle says it needs a free 2 x 2 block', (tester) async {
+    // A hut on every other plot: free plots, but no free block.
     final town = TownState.initial().copyWith(
       workers: 8,
-      plotsUnlocked: 6,
       buildings: [
-        for (var i = 0; i < 3; i++)
-          TownBuilding(
-            id: 'b$i',
-            tier: BuildingTier.hut,
-            status: BuildingStatus.complete,
-            plotIndex: i,
-          ),
+        for (var gx = 0; gx < 8; gx++)
+          for (var gy = 0; gy < 8; gy++)
+            if ((gx + gy).isEven)
+              TownBuilding(
+                id: 'b$gx$gy',
+                tier: BuildingTier.hut,
+                status: BuildingStatus.complete,
+                plotIndex: plotAtCell(gx, gy, const [])!,
+              ),
       ],
     );
     await _open(tester, seed: town, lastDuration: 120);
-    expect(find.textContaining('A castle takes 4 plots'), findsOneWidget);
+    expect(find.textContaining('no free 2 x 2 block'), findsOneWidget);
     final button = tester.widget<TextButton>(
       find.widgetWithText(TextButton, 'Choose plot…'),
     );
@@ -260,7 +263,7 @@ void main() {
   testWidgets('a full town explains why Choose plot… is off', (tester) async {
     final full = TownState.initial().copyWith(
       buildings: [
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 64; i++)
           TownBuilding(
             id: 'b$i',
             tier: BuildingTier.hut,
@@ -272,9 +275,8 @@ void main() {
     await _open(tester, seed: full);
     expect(
       find.text(
-        'All 6 plots are used. A finished build waits for the next plot, which '
-        'unlocks with your first session each day. Tap a ruin on the island '
-        'to repair it and free its plot.',
+        'Every plot is used. A finished build waits until there is room. Tap '
+        'Extend land to add some, or tap a ruin to repair it.',
       ),
       findsOneWidget,
     );

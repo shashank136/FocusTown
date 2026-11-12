@@ -25,26 +25,26 @@ class TownRules {
       ...(footprintOf(b.tier, b.plotIndex, town.parcels) ?? [b.plotIndex]),
   };
 
-  /// Whether the town may still take a building of [tier] (a hut by default):
-  /// the plots used by buildings and ruins plus the plots it needs fit in the
-  /// plots unlocked. Which plots they stand on is the player's choice.
+  /// Whether the town may still take a building of [tier]: some block of free
+  /// plots can hold it. Space is the only limit; the player chooses which
+  /// plots to use.
   static bool hasRoom(TownState town, [BuildingTier tier = BuildingTier.hut]) =>
-      occupied(town).length + plotsOf(tier) <= town.plotsUnlocked;
+      firstUnusedPlot(town, tier) != null;
 
   /// Lowest plot a building of [tier] could be anchored on, or null when the
   /// town has no room left.
   static int? nextFreePlot(
     TownState town, [
     BuildingTier tier = BuildingTier.hut,
-  ]) => hasRoom(town, tier) ? firstUnusedPlot(town, tier) : null;
+  ]) => firstUnusedPlot(town, tier);
 
   /// Whether a building of [tier] may be anchored on plot [i]: its plots are
-  /// on the island, nothing stands there, and the town has room.
+  /// on the island and nothing stands there.
   static bool isPlotFree(
     TownState town,
     int i, [
     BuildingTier tier = BuildingTier.hut,
-  ]) => hasRoom(town, tier) && _blockFree(town, i, tier);
+  ]) => _blockFree(town, i, tier);
 
   // The plots [tier] would cover from [i] exist and nothing stands on them.
   static bool _blockFree(TownState town, int i, BuildingTier tier) {

@@ -20,6 +20,9 @@ import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
+// The view starts on the plots nearest the crossing and on every building.
+const _kViewPlots = 6;
+
 /// A finished building drawn as a see-through floating copy.
 class ReadyPreview {
   /// Creates a preview of [tier] above [plot] at opacity [alpha].
@@ -50,6 +53,7 @@ class TownRenderer {
   ReadyPreview? _preview;
   Set<int> _outlines = const {};
   int? _selected;
+  int _selectedSpan = 1;
   List<VisibleBlock> _previewBlocks = const [];
   (BuildingTier, int, int)? _previewKey;
   int _worldVersion = 0;
@@ -77,7 +81,7 @@ class TownRenderer {
     _camera?.box = _box;
     // The view starts on the first unlocked plots and wherever buildings are.
     _regionPlots = {
-      for (var i = 0; i < town.plotsUnlocked && i < kPlots.length; i++) i,
+      for (var i = 0; i < _kViewPlots; i++) i,
       for (final b in town.buildings) b.plotIndex,
     };
     _rebuild();
@@ -128,11 +132,15 @@ class TownRenderer {
   /// The plot drawn filled, if any.
   int? get selectedPlot => _selected;
 
+  /// How many plots wide the selection is (2 for a castle's block).
+  int get selectedSpan => _selectedSpan;
+
   /// Outlines the [free] plots and fills [selected]; an empty set hides them.
   /// Drawn over the cached town every frame, so it never re-records it.
-  void setPlotOverlay(Set<int> free, int? selected) {
+  void setPlotOverlay(Set<int> free, int? selected, {int span = 1}) {
     _outlines = free;
     _selected = selected;
+    _selectedSpan = span;
   }
 
   /// The floating "ready to place" building, if shown.
@@ -191,6 +199,7 @@ class TownRenderer {
         canvas,
         _outlines,
         _selected,
+        selectedSpan: _selectedSpan,
         parcels: parcels,
         tile: cam.tile,
         origin: cam.origin,

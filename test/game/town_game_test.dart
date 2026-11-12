@@ -256,7 +256,6 @@ void main() {
               workersLost: 0,
               workersGained: 0,
               newStreak: 1,
-              plotGranted: false,
               land: true,
             ),
           ),

@@ -80,7 +80,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.bySemanticsLabel('Workers, 3'), findsOneWidget);
-      expect(find.bySemanticsLabel('Plots, 1 of 6 used'), findsOneWidget);
+      expect(find.bySemanticsLabel('Plots, 1 of 64 used'), findsOneWidget);
       handle.dispose();
     });
 

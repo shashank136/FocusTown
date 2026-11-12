@@ -62,4 +62,16 @@ void main() {
       ..update(0.1);
     expect(g.renderer.plotOutlines, isEmpty);
   });
+
+  test('a castle selection is drawn over its whole 2 x 2 block', () {
+    final g = _game()
+      ..setPlacement({1, 2}, 2, span: 2)
+      ..update(0.1)
+      ..render(ui.Canvas(ui.PictureRecorder()));
+    expect(g.renderer.selectedSpan, 2);
+    g
+      ..setPlacement({1, 2}, 2)
+      ..update(0.1);
+    expect(g.renderer.selectedSpan, 1);
+  });
 }

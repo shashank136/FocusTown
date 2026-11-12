@@ -11,7 +11,6 @@ import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
-import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -24,7 +23,6 @@ const _result = SessionResult(
   workersLost: 0,
   workersGained: 1,
   newStreak: 1,
-  plotGranted: true,
 );
 
 /// Starts with a result already set, so `clearResult` can be tested alone.
@@ -261,7 +259,6 @@ void main() {
               workersLost: 0,
               workersGained: 1,
               newStreak: 1,
-              plotGranted: true,
               xpGained: 10,
               reason: OutcomeReason.completed,
             ),
@@ -291,7 +288,7 @@ void main() {
         await seed(
           TownState.initial().copyWith(
             buildings: [
-              for (var i = 0; i < 6; i++)
+              for (var i = 0; i < 64; i++)
                 TownBuilding(
                   id: 'b$i',
                   tier: BuildingTier.hut,
@@ -299,7 +296,6 @@ void main() {
                   plotIndex: i,
                 ),
             ],
-            lastPlotGrantDate: LocalDate.fromDateTime(_clock.nowWall()),
           ),
         );
         final c = await loaded();

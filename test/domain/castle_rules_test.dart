@@ -30,6 +30,15 @@ TownState _town({
   parcels: parcels,
 );
 
+// A hut on every other plot of the starting island: free plots, no free block.
+TownState _crowded() => _town(
+  buildings: [
+    for (var gx = 0; gx < 8; gx += 1)
+      for (var gy = 0; gy < 8; gy += 1)
+        if ((gx + gy).isEven) _b(_at(gx, gy), BuildingTier.hut),
+  ],
+);
+
 Session _castle({int? plot}) => SessionEngine.start(
   id: 'c',
   minutes: 120,
@@ -46,15 +55,11 @@ void main() {
     expect(TownRules.occupied(town), {block, _at(1, 0), _at(0, 1), _at(1, 1)});
   });
 
-  test('room is measured in plots: a castle needs four, a hut one', () {
-    final three = _town(
-      unlocked: 6,
-      buildings: [for (var i = 0; i < 3; i++) _b(i, BuildingTier.hut)],
-    );
-    expect(TownRules.hasRoom(three), isTrue);
-    expect(TownRules.hasRoom(three, BuildingTier.castle), isFalse);
-    final one = _town(unlocked: 6, buildings: [_b(60, BuildingTier.hut)]);
-    expect(TownRules.hasRoom(one, BuildingTier.castle), isTrue);
+  test('a castle needs a free block, a hut just a free plot', () {
+    final crowded = _crowded();
+    expect(TownRules.hasRoom(crowded), isTrue);
+    expect(TownRules.hasRoom(crowded, BuildingTier.castle), isFalse);
+    expect(TownRules.hasRoom(_town(), BuildingTier.castle), isTrue);
   });
 
   test('a castle needs a free block, even with room', () {
@@ -88,15 +93,7 @@ void main() {
   });
 
   test('a castle with no free block waits in the queue, then is placed', () {
-    final crowded = _town(
-      unlocked: 8,
-      buildings: [
-        // One hut in every 2 x 2 block of the starting island's corners.
-        for (var gx = 0; gx < 8; gx += 1)
-          for (var gy = 0; gy < 8; gy += 1)
-            if ((gx + gy).isEven) _b(_at(gx, gy), BuildingTier.hut),
-      ],
-    );
+    final crowded = _crowded();
     final done = _castle().copyWith(state: SessionState.completed);
     final queued = TownRules.applyCompleted(crowded, done);
     expect(queued.queue.single.tier, BuildingTier.castle);
@@ -106,16 +103,13 @@ void main() {
     );
   });
 
-  test('a queued castle is placed once a block and the plots are there', () {
-    final town = _town(
-      unlocked: 5,
-      queue: const [QueuedBuilding(id: 'q', tier: BuildingTier.castle)],
-    );
-    final placed = TownRules.placeQueued(town);
+  test('a queued castle waits for a block, then is placed', () {
+    const queue = [QueuedBuilding(id: 'q', tier: BuildingTier.castle)];
+    final placed = TownRules.placeQueued(_town(queue: queue));
     expect(placed.queue, isEmpty);
     expect(placed.buildings.single.tier, BuildingTier.castle);
-    final short = TownRules.placeQueued(town.copyWith(plotsUnlocked: 3));
-    expect(short.queue, hasLength(1));
+    final waiting = TownRules.placeQueued(_crowded().copyWith(queue: queue));
+    expect(waiting.queue, hasLength(1));
   });
 
   test('a failed castle leaves one ruin over its block', () {
@@ -131,14 +125,7 @@ void main() {
   });
 
   test('with no block left the failed castle leaves a one-plot ruin', () {
-    final crowded = _town(
-      unlocked: 8,
-      buildings: [
-        for (var gx = 0; gx < 8; gx += 1)
-          for (var gy = 0; gy < 8; gy += 1)
-            if ((gx + gy).isEven) _b(_at(gx, gy), BuildingTier.hut),
-      ],
-    );
+    final crowded = _crowded();
     final failed = _castle().copyWith(
       state: SessionState.failed,
       outcomeReason: OutcomeReason.abandoned,

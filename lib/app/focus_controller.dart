@@ -379,7 +379,6 @@ class FocusController extends AsyncNotifier<FocusState> {
         town,
         LocalDate.fromDateTime(now.wall),
       ),
-      plotGranted: town.plotsUnlocked > base.town.plotsUnlocked,
       xpGained: completed ? finished.plannedMinutes : 0,
       awaySeconds: finished.awayTotal.inSeconds,
       reason: finished.outcomeReason,

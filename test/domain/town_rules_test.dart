@@ -58,8 +58,8 @@ void main() {
       expect(TownRules.nextFreePlot(t), 2);
     });
 
-    test('all 6 plots used gives null', () {
-      final t = _town(buildings: [for (var i = 0; i < 6; i++) _b(i)]);
+    test('all 64 plots used gives null', () {
+      final t = _town(buildings: [for (var i = 0; i < 64; i++) _b(i)]);
       expect(TownRules.nextFreePlot(t), isNull);
     });
 
@@ -68,14 +68,9 @@ void main() {
       expect(TownRules.nextFreePlot(t), 1);
     });
 
-    test('7 unlocked with 6 used gives plot 6', () {
-      final t = _town(plots: 7, buildings: [for (var i = 0; i < 6; i++) _b(i)]);
+    test('with 6 used the next free plot is plot 6, whatever is unlocked', () {
+      final t = _town(buildings: [for (var i = 0; i < 6; i++) _b(i)]);
       expect(TownRules.nextFreePlot(t), 6);
-    });
-
-    test('an occupied plot beyond plotsUnlocked is ignored', () {
-      final t = _town(plots: 1, buildings: [_b(0)]);
-      expect(TownRules.nextFreePlot(t), isNull);
     });
   });
 
@@ -152,7 +147,7 @@ void main() {
     });
 
     test('all plots full: queued, buildings unchanged', () {
-      final full = _town(buildings: [for (var i = 0; i < 6; i++) _b(i)]);
+      final full = _town(buildings: [for (var i = 0; i < 64; i++) _b(i)]);
       final t = TownRules.applyCompleted(full, _done(BuildingTier.tower));
       expect(t.queue, [
         const QueuedBuilding(id: 's1', tier: BuildingTier.tower),
@@ -183,17 +178,18 @@ void main() {
     const q1 = QueuedBuilding(id: 'q1', tier: BuildingTier.hut);
     const q2 = QueuedBuilding(id: 'q2', tier: BuildingTier.house);
 
-    TownState full({List<QueuedBuilding> queue = const [], int plots = 6}) =>
+    // The island with its last [free] plots empty.
+    TownState full({List<QueuedBuilding> queue = const [], int free = 0}) =>
         TownState(
           workers: 3,
-          plotsUnlocked: plots,
-          buildings: [for (var i = 0; i < 6; i++) _b(i)],
+          plotsUnlocked: 6,
+          buildings: [for (var i = 0; i < 64 - free; i++) _b(i)],
           queue: queue,
           inRecoveryMode: false,
         );
 
-    test('raising plotsUnlocked to 7 places the queued building on plot 6', () {
-      final t = TownRules.placeQueued(full(queue: [q1], plots: 7));
+    test('a free plot places the queued building on it', () {
+      final t = TownRules.placeQueued(full(queue: [q1], free: 1));
       expect(t.queue, isEmpty);
       expect(
         t.buildings.last,
@@ -201,13 +197,13 @@ void main() {
           id: 'q1',
           tier: BuildingTier.hut,
           status: BuildingStatus.complete,
-          plotIndex: 6,
+          plotIndex: 63,
         ),
       );
     });
 
     test('two queued, one free plot: oldest placed, one left', () {
-      final t = TownRules.placeQueued(full(queue: [q1, q2], plots: 7));
+      final t = TownRules.placeQueued(full(queue: [q1, q2], free: 1));
       expect(t.buildings.last.id, 'q1');
       expect(t.queue, [q2]);
     });

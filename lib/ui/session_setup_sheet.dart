@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -186,19 +185,14 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     );
   }
 
-  // Why there is no room for a [tier] now, and what frees some.
+  // Why there is no room for a [tier] now, and what makes some.
   static String _roomNote(TownState town, BuildingTier tier) {
-    final free = town.plotsUnlocked - TownRules.occupied(town).length;
     final ruins = town.buildings.any((b) => b.status == BuildingStatus.ruin);
     final head = plotsOf(tier) == 1
-        ? 'All ${town.plotsUnlocked} plots are used.'
-        : free < plotsOf(tier)
-        ? 'A castle takes 4 plots and only ${max(free, 0)} '
-              '${free == 1 ? 'is' : 'are'} free.'
+        ? 'Every plot is used.'
         : 'There is no free 2 x 2 block of plots for a castle.';
-    const repair = ' Tap a ruin on the island to repair it and free its plot.';
-    return '$head A finished build waits for the next plot, which unlocks '
-        'with your first session each day.${ruins ? repair : ''}';
+    return '$head A finished build waits until there is room. Tap Extend '
+        'land to add some${ruins ? ', or tap a ruin to repair it' : ''}.';
   }
 
   Widget _preview(DurationOption option) {

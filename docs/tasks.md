@@ -1841,11 +1841,12 @@ Rules are in `docs/spec.md` ("Multi-plot buildings"). Built in this order, each 
 - `lib/domain/plot_grid.dart` (cells of plots, footprint of a tier on an anchor), `TownRules` (`occupied`, `hasRoom(town, tier)`, `isPlotFree`, `nextFreePlot`, `firstUnusedPlot`, `canRepair`, `applyRepairCompleted`, `placeQueued`) work on footprints.
 - Commit: `T-M.1: footprint rules`
 
-### T-M.2 [ ] 14 x 14 castle and pyramid
+### T-M.2 [x] 14 x 14 castle and pyramid
 - New layouts for the castle and the pyramid on a 14 x 14 footprint, 12 stages each; the tier preview, site workers and ruin follow.
 - Commit: `T-M.2: big castle`
 
-### T-M.3 [ ] World, choosing and HUD
+### T-M.3 [x] World, choosing and HUD
+- Done 2026-11-12. Also changed the same day, at the user's request: there is no daily plot unlock any more. All 64 plots are open from the start and space is the only limit (`TownRules.hasRoom` is "a free block exists"); `plotsUnlocked` and `lastPlotGrantDate` are still stored but unused, and `SessionResult.plotGranted` is gone. The HUD shows plots used out of all plots, and a waiting queue shows "N waiting" with an explanation when tapped.
 - World builder (borders, forest, ruin, site), choose-plot outlines with a 2 x 2 selection, repair by tapping any covered plot, HUD plots used.
 - Commit: `T-M.3: multi-plot world and choosing`
 

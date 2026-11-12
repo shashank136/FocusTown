@@ -67,7 +67,6 @@ TextStyle? _heading(BuildContext context) =>
     if (r.xpGained > 0) ('+${r.xpGained} XP', false),
     if (r.newStreak > 0)
       ('Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}', false),
-    if (r.plotGranted) ('New plot unlocked', false),
     if (r.leveledUpTo != null)
       ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
     if (r.recoveryEnded) ('Your town is back on its feet.', true),
@@ -86,7 +85,6 @@ TextStyle? _heading(BuildContext context) =>
               'Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}',
               false,
             ),
-          if (r.plotGranted) ('New plot unlocked', false),
           if (r.leveledUpTo != null)
             ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
         ],
@@ -112,7 +110,6 @@ TextStyle? _heading(BuildContext context) =>
               'Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}',
               false,
             ),
-          if (r.plotGranted) ('New plot unlocked', false),
           if (r.leveledUpTo != null)
             ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
         ],
@@ -130,8 +127,9 @@ TextStyle? _heading(BuildContext context) =>
   'Ready to place',
   [
     (
-      'Your ${r.tier.name} is finished, but every plot is taken. It will be '
-          'placed when the next plot unlocks.',
+      'Your ${r.tier.name} is finished, but there is no free space for it. '
+          'Extend your land (Start focus, then Extend land) or repair a ruin, '
+          'and it will be placed.',
       false,
     ),
   ],

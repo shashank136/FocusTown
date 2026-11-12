@@ -24,7 +24,6 @@ const result0 = SessionResult(
   workersLost: 0,
   workersGained: 0,
   newStreak: 1,
-  plotGranted: false,
 );
 
 void main() {
@@ -156,7 +155,6 @@ void main() {
       workersLost: 0,
       workersGained: 0,
       newStreak: 1,
-      plotGranted: false,
     );
 
     TownGame running() => TownGame(clock: clock)
@@ -260,7 +258,6 @@ void main() {
           workersLost: 3,
           workersGained: 0,
           newStreak: 0,
-          plotGranted: false,
         ),
       );
       g.update(0.1);
@@ -283,7 +280,6 @@ void main() {
       workersLost: 1,
       workersGained: 0,
       newStreak: 0,
-      plotGranted: false,
     );
 
     TownGame running() => TownGame(clock: clock)
@@ -361,7 +357,6 @@ void main() {
       workersLost: 0,
       workersGained: 0,
       newStreak: 1,
-      plotGranted: false,
     );
 
     TownGame running() => TownGame(clock: clock)
@@ -415,7 +410,6 @@ void main() {
           workersLost: 1,
           workersGained: 0,
           newStreak: 0,
-          plotGranted: false,
         ),
       ]) {
         final g = running();

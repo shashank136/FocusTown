@@ -61,14 +61,16 @@ void main() {
         test('$count workers around a ${tier.name} stay near the plot', () {
           final w = siteWorkers(plot, tier, count, 0);
           expect(w, hasLength(count));
+          // A castle stands on a 2 x 2 block: its walls are twice as long.
+          final reach = tier == BuildingTier.castle ? 15 : 8;
           for (final p in w) {
             expect(
               p.worker.x,
-              inInclusiveRange(plot.originX - 1, plot.originX + 8),
+              inInclusiveRange(plot.originX - 1, plot.originX + reach),
             );
             expect(
               p.worker.y,
-              inInclusiveRange(plot.originY - 1, plot.originY + 8),
+              inInclusiveRange(plot.originY - 1, plot.originY + reach),
             );
           }
         });
@@ -93,9 +95,9 @@ void main() {
       expect(w[1].worker.facing, (-1, 0));
     });
 
-    test('the castle uses the plot origin itself', () {
+    test('the castle uses the block origin itself', () {
       final w = siteWorkers(plot, BuildingTier.castle, 1, 0);
-      expect(w[0].worker.y, closeTo(plot.originY + 7 + 0.7, 1e-9));
+      expect(w[0].worker.y, closeTo(plot.originY + 14 + 0.7, 1e-9));
       expect(w[0].worker.x, closeTo(plot.originX + 0.8, 1e-9));
     });
 
@@ -182,4 +184,23 @@ void main() {
       expect(spareWalkers(0, 3), isEmpty);
     });
   });
+
+  test(
+    'castle builders spread along the two front walls of its 14 x 14 block',
+    () {
+      const plot = Plot(0, 10, 10, 2);
+      final out = siteWorkers(plot, BuildingTier.castle, 8, 0);
+      expect(out, hasLength(8));
+      final front = out.where((w) => w.worker.facing == (0, -1)).toList();
+      final xs = front.map((w) => w.worker.x);
+      expect(
+        xs.reduce((a, b) => a > b ? a : b) - xs.reduce((a, b) => a < b ? a : b),
+        greaterThan(5),
+      );
+      for (final w in out) {
+        expect(w.worker.x, inInclusiveRange(10, 25));
+        expect(w.worker.y, inInclusiveRange(10, 25));
+      }
+    },
+  );
 }

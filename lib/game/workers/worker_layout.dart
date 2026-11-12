@@ -43,7 +43,7 @@ final FlatColor _shirt = FlatColor.of(WorkerColors.shirt);
 (int, int) _footprint(BuildingTier t) => switch (t) {
   BuildingTier.hut || BuildingTier.tower => (3, 3),
   BuildingTier.house || BuildingTier.workshop => (5, 5),
-  BuildingTier.castle => (7, 7),
+  BuildingTier.castle => (14, 14),
 };
 
 /// Up to [count] (max 8) hammering workers along the two front sides of the
@@ -60,19 +60,21 @@ List<PlacedWorker> siteWorkers(
   final ox = site.originX + margin;
   final oy = site.originY + margin;
   final out = <PlacedWorker>[];
+  // A castle's walls are twice as long: spread its builders out.
+  final step = width > 7 ? 2.2 : 1.2;
   for (var k = 0; k < math.min(count, kMaxSiteWorkers); k++) {
     final index = k ~/ 2; // position along its side
     final onSideA = k.isEven;
     final worker = onSideA
         ? Worker(
-            x: ox + 0.8 + 1.2 * index,
+            x: ox + 0.8 + step * index,
             y: oy + depth + 0.7,
             facing: (0, -1),
             shirt: _vest,
           )
         : Worker(
             x: ox + width + 0.7,
-            y: oy + 0.8 + 1.2 * index,
+            y: oy + 0.8 + step * index,
             facing: (-1, 0),
             shirt: _vest,
           );

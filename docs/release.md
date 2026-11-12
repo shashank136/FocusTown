@@ -104,7 +104,7 @@ App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focu
 
   - A block-style town that grows with every session
   - Bigger sessions build bigger buildings: huts, houses, workshops, towers and castles
-  - A daily streak, and a new plot of land each day you focus
+  - A daily streak, and land you can extend whenever you want more room
   - Lock your phone and keep going: locking never counts as leaving
   - A countdown on your lock screen and Dynamic Island
   - A weekly emergency pause for the day something really comes up

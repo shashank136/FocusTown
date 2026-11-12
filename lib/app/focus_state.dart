@@ -27,7 +27,6 @@ class SessionResult {
     required this.workersLost,
     required this.workersGained,
     required this.newStreak,
-    required this.plotGranted,
     this.xpGained = 0,
     this.awaySeconds = 0,
     this.reason,
@@ -52,9 +51,6 @@ class SessionResult {
 
   /// Streak after this session.
   final int newStreak;
-
-  /// Whether this session earned the day's new plot.
-  final bool plotGranted;
 
   /// XP earned (the planned minutes when completed, else 0).
   final int xpGained;
@@ -88,7 +84,6 @@ class SessionResult {
       other.workersLost == workersLost &&
       other.workersGained == workersGained &&
       other.newStreak == newStreak &&
-      other.plotGranted == plotGranted &&
       other.xpGained == xpGained &&
       other.awaySeconds == awaySeconds &&
       other.reason == reason &&
@@ -105,7 +100,6 @@ class SessionResult {
     workersLost,
     workersGained,
     newStreak,
-    plotGranted,
     xpGained,
     awaySeconds,
     reason,

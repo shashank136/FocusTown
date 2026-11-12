@@ -60,12 +60,14 @@ void main() {
       expect(TownRules.isPlotFree(_town(), 64), isFalse);
     });
 
-    test('with no room left (buildings = unlocked) nothing is free', () {
-      final full = _town(buildings: [for (var i = 1; i < 6; i++) _b(i)]);
+    test('with every plot used nothing is free', () {
+      final full = _town(buildings: [for (var i = 0; i < 64; i++) _b(i)]);
       expect(TownRules.isPlotFree(full, 20), isFalse);
       expect(
         TownRules.isPlotFree(
-          _town(plots: 7, buildings: full.buildings.skip(1).toList()),
+          _town(
+            buildings: full.buildings.where((b) => b.plotIndex != 20).toList(),
+          ),
           20,
         ),
         isTrue,
@@ -102,7 +104,7 @@ void main() {
     });
 
     test('a full town gives null', () {
-      final t = _town(buildings: [for (var i = 1; i < 6; i++) _b(i)]);
+      final t = _town(buildings: [for (var i = 0; i < 64; i++) _b(i)]);
       expect(
         TownRules.sitePlot(t, _session(SessionState.running, plot: 2)),
         isNull,
@@ -139,7 +141,7 @@ void main() {
 
     test('a chosen plot with a full town still queues', () {
       final t = TownRules.applyCompleted(
-        _town(buildings: [for (var i = 1; i < 6; i++) _b(i)]),
+        _town(buildings: [for (var i = 0; i < 64; i++) _b(i)]),
         _session(SessionState.completed, plot: 2),
       );
       expect(t.queue, hasLength(1));

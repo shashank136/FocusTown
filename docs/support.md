@@ -14,7 +14,7 @@ Focus Town is an offline focus timer: you start a session, builders build, and y
 - Going to the home screen or another app counts as leaving. You get 10 seconds free, then one 60-second pass per session. After that your builders stop and a ruin is left.
 - Once a week you can arm an emergency pause before leaving, which allows one absence of up to 10 minutes.
 - A ruin can be cleared with a 10-minute repair session.
-- Every day you focus gives you a new plot, and your streak grows.
+- Build on any free plot. When you want more room, or space between your buildings, use Extend land. Your streak grows with every day you focus.
 
 ## Common questions
 

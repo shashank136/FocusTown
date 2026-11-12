@@ -10,7 +10,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
-import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town.dart';
@@ -301,7 +301,7 @@ void main() {
       tester,
       seed: TownState.initial().copyWith(
         buildings: [
-          for (var i = 0; i < 6; i++)
+          for (var i = 0; i < 64; i++)
             TownBuilding(
               id: 'b$i',
               tier: BuildingTier.hut,
@@ -309,7 +309,6 @@ void main() {
               plotIndex: i,
             ),
         ],
-        lastPlotGrantDate: LocalDate.fromDateTime(_clock.nowWall()),
       ),
     );
     final controller = c.read(focusControllerProvider.notifier);
@@ -383,6 +382,28 @@ void main() {
       await tester.tap(find.text('Make it a garden'));
       await tester.pump();
       expect(c.read(placementProvider)!.garden, isTrue);
+    });
+  });
+
+  group('choose a plot for a castle', () {
+    testWidgets('only anchors of free 2 x 2 blocks are outlined', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      c.read(placementProvider.notifier).begin(120);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      final outlines = _game.renderer.plotOutlines;
+      expect(outlines, isNotEmpty);
+      for (final i in outlines) {
+        expect(
+          footprintOf(BuildingTier.castle, i, const []),
+          isNotNull,
+          reason: 'plot $i',
+        );
+      }
+      // Fewer anchors than plots: a block needs room for four.
+      expect(outlines.length, lessThan(63));
     });
   });
 

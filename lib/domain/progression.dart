@@ -42,8 +42,8 @@ class Progression {
     return ((xp - level.minXp) / (next.minXp - level.minXp)).clamp(0, 1);
   }
 
-  /// Adds XP, updates the daily streak, grants the day's plot and drains the
-  /// queue for a completed [session].
+  /// Adds XP, updates the daily streak and drains the queue for a completed
+  /// [session].
   ///
   /// [completedAtLocal] must be local time, so the calendar day is the user's.
   static TownState onSessionCompleted(
@@ -55,7 +55,7 @@ class Progression {
     final last = town.lastStreakDate;
     // Same day keeps the streak, the next day extends it, a gap (or the first
     // ever) starts again at 1. A date in the past, from a clock set back,
-    // changes no date, so it cannot earn a second plot or break the streak.
+    // changes no date, so it cannot break or stretch the streak.
     final gap = last?.daysBetween(today);
     final past = gap != null && gap < 0;
     final streak = switch (gap) {
@@ -64,17 +64,10 @@ class Progression {
       _ when past => town.streakCount,
       _ => 1,
     };
-    final lastGrant = town.lastPlotGrantDate;
-    // A new plot needs land: the island's plots cap the daily plot.
-    final grant =
-        (lastGrant == null || lastGrant.compareTo(today) < 0) &&
-        town.plotsUnlocked < TownRules.plotCountOf(town);
     final updated = town.copyWith(
       xp: town.xp + session.plannedMinutes,
       streakCount: streak,
       lastStreakDate: past ? last : today,
-      plotsUnlocked: grant ? town.plotsUnlocked + 1 : null,
-      lastPlotGrantDate: grant ? today : null,
     );
     return TownRules.placeQueued(updated);
   }

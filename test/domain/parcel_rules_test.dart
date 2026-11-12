@@ -1,9 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
-import 'package:focus_town/domain/progression.dart';
-import 'package:focus_town/domain/session.dart';
-import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
 
@@ -41,30 +37,5 @@ void main() {
       Parcel(1, 1),
     ]);
     expect(_town(parcels: const [Parcel(1, 1)]), isNot(_town()));
-  });
-
-  test('the daily plot stops at the plots the island has', () {
-    final session = Session(
-      id: 's',
-      plannedMinutes: 25,
-      tier: BuildingTier.house,
-      workersAssigned: 2,
-      state: SessionState.completed,
-      startedAt: TimeStamp(DateTime(2026, 11, 11, 9), Duration.zero),
-    );
-    final day = DateTime(2026, 11, 11, 10);
-    final full = Progression.onSessionCompleted(_town(plots: 64), session, day);
-    expect(full.plotsUnlocked, 64);
-    final room = Progression.onSessionCompleted(
-      _town(plots: 64, parcels: const [Parcel(-1, 3)]),
-      session,
-      day,
-    );
-    expect(room.plotsUnlocked, 65);
-  });
-
-  test('a garden adds land but no plot', () {
-    final town = _town(parcels: const [Parcel(-1, 3, garden: true)]);
-    expect(TownRules.plotCountOf(town), 64);
   });
 }

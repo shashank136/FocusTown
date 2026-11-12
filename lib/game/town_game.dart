@@ -132,7 +132,6 @@ class TownGame extends FlameGame
     final old = _town;
     _town = focus.town;
     if (old == null ||
-        old.plotsUnlocked != focus.town.plotsUnlocked ||
         !listEquals(old.parcels, focus.town.parcels) ||
         !listEquals(old.buildings, focus.town.buildings)) {
       setTown(focus.town);
@@ -267,10 +266,10 @@ class TownGame extends FlameGame
     renderer.camera?.zoomAt(pos, 1.5);
   }
 
-  /// Outlines the [free] plots and fills [selected] (choose-a-plot mode); an
-  /// empty set turns the outlines off.
-  void setPlacement(Set<int> free, int? selected) {
-    renderer.setPlotOverlay(free, selected);
+  /// Outlines the [free] plots and fills [selected] (choose-a-plot mode), over
+  /// [span] x [span] plots for a castle; an empty set turns the outlines off.
+  void setPlacement(Set<int> free, int? selected, {int span = 1}) {
+    renderer.setPlotOverlay(free, selected, span: span);
     _redraw = true;
   }
 

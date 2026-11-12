@@ -55,14 +55,14 @@ double _bar(WidgetTester tester) => tester
     .value!;
 
 void main() {
-  testWidgets('the starting town: streak 0, Camp, 3 workers, 1/6 plots', (
+  testWidgets('the starting town: streak 0, Camp, 3 workers, 1/64 plots', (
     tester,
   ) async {
     await _pump(tester, TownState.initial());
     expect(_text(tester, 'hud-streak'), '0');
     expect(_text(tester, 'hud-level'), 'Camp');
     expect(_text(tester, 'hud-workers'), '3');
-    expect(_text(tester, 'hud-plots'), '1/6');
+    expect(_text(tester, 'hud-plots'), '1/64');
     expect(find.byKey(const ValueKey('hud-queue')), findsNothing);
   });
 
@@ -101,17 +101,20 @@ void main() {
         queue: [const QueuedBuilding(id: 'q', tier: BuildingTier.hut)],
       ),
     );
-    expect(_text(tester, 'hud-queue'), '1');
+    expect(_text(tester, 'hud-queue'), '1 waiting');
+    await tester.tap(find.byKey(const ValueKey('hud-queue')));
+    await tester.pump();
+    expect(find.text('Waiting for space'), findsOneWidget);
+    expect(find.textContaining('Extend your land'), findsOneWidget);
   });
 
-  testWidgets('plots count placed buildings over unlocked plots', (
+  testWidgets('plots count placed buildings over all the plots', (
     tester,
   ) async {
     final initial = TownState.initial();
     await _pump(
       tester,
       initial.copyWith(
-        plotsUnlocked: 7,
         buildings: [
           ...initial.buildings,
           const TownBuilding(
@@ -123,7 +126,7 @@ void main() {
         ],
       ),
     );
-    expect(_text(tester, 'hud-plots'), '2/7');
+    expect(_text(tester, 'hud-plots'), '2/64');
   });
 
   group('the hidden way to the debug screen', () {
@@ -198,6 +201,6 @@ void main() {
         ],
       ),
     );
-    expect(_text(tester, 'hud-plots'), '5/6'); // the starter house + 4
+    expect(_text(tester, 'hud-plots'), '5/64'); // the starter house + 4
   });
 }

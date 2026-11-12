@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
@@ -32,54 +34,97 @@ class Hud extends ConsumerWidget {
           ),
           child: IconTheme.merge(
             data: const IconThemeData(color: Colors.white),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // The streak opens "Your focus".
-                _OpenFocus(
-                  label: 'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
-                  child: Text('$streak', key: const ValueKey('hud-streak')),
-                ),
-                const SizedBox(width: 12),
-                _LevelBadge(
-                  level: '${level[0].toUpperCase()}${level.substring(1)}',
-                  progress: Progression.progressToNext(town.xp),
-                ),
-                const SizedBox(width: 12),
-                _Stat(
-                  Icons.engineering,
-                  'Workers, ${town.workers}',
-                  Text('${town.workers}', key: const ValueKey('hud-workers')),
-                ),
-                const SizedBox(width: 12),
-                _Stat(
-                  Icons.grid_view,
-                  'Plots, $placed of ${town.plotsUnlocked} used',
-                  Text(
-                    '$placed/${town.plotsUnlocked}',
-                    key: const ValueKey('hud-plots'),
+            // Large text shrinks the bar instead of overflowing it.
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // The streak opens "Your focus".
+                  _OpenFocus(
+                    label: 'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
+                    child: Text('$streak', key: const ValueKey('hud-streak')),
                   ),
-                ),
-                if (town.queue.isNotEmpty) ...[
+                  const SizedBox(width: 12),
+                  _LevelBadge(
+                    level: '${level[0].toUpperCase()}${level.substring(1)}',
+                    progress: Progression.progressToNext(town.xp),
+                  ),
                   const SizedBox(width: 12),
                   _Stat(
-                    Icons.hourglass_bottom,
-                    '${town.queue.length} '
-                    '${town.queue.length == 1 ? 'building' : 'buildings'} '
-                    'waiting for a plot',
+                    Icons.engineering,
+                    'Workers, ${town.workers}',
+                    Text('${town.workers}', key: const ValueKey('hud-workers')),
+                  ),
+                  const SizedBox(width: 12),
+                  _Stat(
+                    Icons.grid_view,
+                    'Plots, $placed of ${TownRules.plotCountOf(town)} used',
                     Text(
-                      '${town.queue.length}',
-                      key: const ValueKey('hud-queue'),
+                      '$placed/${TownRules.plotCountOf(town)}',
+                      key: const ValueKey('hud-plots'),
                     ),
                   ),
+                  if (town.queue.isNotEmpty) ...[
+                    const SizedBox(width: 12),
+                    _QueueNote(town.queue.length),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),
       ),
     );
   }
+}
+
+/// "N waiting": finished buildings that have no free space yet. Tapping it
+/// says why and what to do.
+class _QueueNote extends StatelessWidget {
+  const new(this.count);
+
+  final int count;
+
+  void _explain(BuildContext context) => unawaited(
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Waiting for space'),
+        content: Text(
+          '$count finished ${count == 1 ? 'building has' : 'buildings have'} '
+          'no free space yet. Extend your land (Start focus, then Extend '
+          'land) or repair a ruin, and ${count == 1 ? 'it is' : 'they are'} '
+          'placed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: '$count ${count == 1 ? 'building' : 'buildings'} waiting for space',
+    onTap: () => _explain(context),
+    excludeSemantics: true,
+    child: InkWell(
+      onTap: () => _explain(context),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.hourglass_bottom, size: 18),
+          const SizedBox(width: 4),
+          Text('$count waiting', key: const ValueKey('hud-queue')),
+        ],
+      ),
+    ),
+  );
 }
 
 /// The streak flame and number as a button that opens "Your focus".

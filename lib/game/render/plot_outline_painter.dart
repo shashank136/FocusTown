@@ -13,9 +13,11 @@ void paintPlotOutlines(
   int? selected, {
   required double tile,
   required Vec2 origin,
+  int selectedSpan = 1,
   List<Parcel> parcels = const [],
 }) {
-  Path diamond(Plot p) {
+  Path diamond(Plot p, [int span = 1]) {
+    final side = kPlotSize * span;
     Offset at(int dx, int dy) {
       final v = project(
         (p.originX + dx).toDouble(),
@@ -29,9 +31,9 @@ void paintPlotOutlines(
 
     return Path()
       ..moveTo(at(0, 0).dx, at(0, 0).dy)
-      ..lineTo(at(kPlotSize, 0).dx, at(kPlotSize, 0).dy)
-      ..lineTo(at(kPlotSize, kPlotSize).dx, at(kPlotSize, kPlotSize).dy)
-      ..lineTo(at(0, kPlotSize).dx, at(0, kPlotSize).dy)
+      ..lineTo(at(side, 0).dx, at(side, 0).dy)
+      ..lineTo(at(side, side).dx, at(side, side).dy)
+      ..lineTo(at(0, side).dx, at(0, side).dy)
       ..close();
   }
 
@@ -43,7 +45,7 @@ void paintPlotOutlines(
     canvas.drawPath(diamond(plotFor(i, parcels)), stroke);
   }
   if (selected != null) {
-    final path = diamond(plotFor(selected, parcels));
+    final path = diamond(plotFor(selected, parcels), selectedSpan);
     canvas
       ..drawPath(path, Paint()..color = const Color(0x6643A047))
       ..drawPath(

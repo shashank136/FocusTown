@@ -97,7 +97,10 @@ class _FocusDebugPanelState extends ConsumerState<FocusDebugPanel> {
           '${(Progression.progressToNext(town.xp) * 100).round()}%',
         ),
         Text('Workers: ${town.workers}'),
-        Text('Plots: ${TownRules.occupied(town).length}/${town.plotsUnlocked}'),
+        Text(
+          'Plots: ${TownRules.occupied(town).length}/'
+          '${TownRules.plotCountOf(town)}',
+        ),
         Text('Queue: ${town.queue.length}'),
         Text('Recovery: ${town.inRecoveryMode}'),
         for (final b in town.buildings)

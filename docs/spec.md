@@ -20,7 +20,7 @@ Sample of the target look, taken from the [interactive block-style town prototyp
 
 ## Requirements summary
 
-The app is a block-style isometric town built by small workers during focus sessions, with a daily streak, town levels, and a new plot each focus day. IDs below are for tickets and test cases.
+The app is a block-style isometric town built by small workers during focus sessions, with a daily streak, town levels, and an island that grows when you claim land. IDs below are for tickets and test cases.
 
 **Functional**
 
@@ -32,7 +32,7 @@ The app is a block-style isometric town built by small workers during focus sess
 | FR-4 | Switching apps starts a 10s warning, then 1 free 60s pass, then failure | Leaving the app |
 | FR-5 | On failure, assigned workers die and the plot becomes a permanent ruin | Leaving the app, Town |
 | FR-6 | On success, the building joins the town; huts and houses add workers | Building tiers |
-| FR-7 | Town starts with 3 workers, 1 house, and 6 plots; +1 plot per focus day; overflow buildings queue | Town |
+| FR-7 | Town starts with 3 workers, 1 house, and an island of 64 plots, all open for building; the player extends the island by claiming land; buildings queue only when there is no free space | Town |
 | FR-8 | At 0 workers, Last Builder recovery mode starts; it ends at 3 workers | Town |
 | FR-9 | Daily streak and town level (XP = focus minutes) are always visible | Game layer |
 | FR-10 | Three-screen onboarding; first session is a preselected 10-min hut | Onboarding |
@@ -183,9 +183,9 @@ The town is the scoreboard. Completed buildings and ruins both stay on the map p
 **Town**
 
 - **Starting land:** 6 plots along the first road, with the starter house on one of them.
-- **Daily land:** each day with at least 1 completed session unlocks 1 new plot (the same rule as the daily streak). Opening the app alone earns nothing.
+- **Plots (changed 2026-11-12):** every plot of the island is open for building from the start; there is no daily plot unlock. Space is the only limit. To get more space the player claims land (a land session, see Growing island).
 - **Placement:** new buildings take the next free plot nearest the town center, on predefined plots along fixed roads. No manual placement in the MVP.
-- **Queue when full:** if no plot is free, the session still runs normally. The finished building goes into a "ready to place" queue and is placed automatically when the next plot unlocks.
+- **Queue when full:** if no plot is free, the session still runs normally. The finished building goes into a "ready to place" queue and is placed automatically as soon as there is room (land claimed or a ruin repaired).
 - **Camera:** the user can pan and zoom across the whole town.
 
 **Ruins**
@@ -372,7 +372,7 @@ Game rules are tested in pure Dart with a fake clock; leave detection is tested 
 - [ ] Change device time forward 2 hours mid-session: session does not complete early
 - [ ] Deny notifications: one-time note shown, rules still apply
 - [ ] Complete sessions on 2 different days: streak 2, plots 8
-- [ ] Fill all plots, complete another session: building queued, placed when next plot unlocks
+- [ ] Fill all plots, complete another session: building queued, placed when land is claimed or a ruin is repaired
 - [ ] Lose all workers: recovery mode starts; 3 huts later it ends
 - [ ] Low Power Mode / Battery Saver on: frame rate drops, no effects
 
@@ -419,7 +419,7 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 
 - The island is the starting 8 x 8 square of plots plus claimed land. Land comes in parcels, one plot-sized square (7 x 7 tiles) each; claimed parcels are stored in claim order and parcel `i` is plot `64 + i`.
 - Claimable parcels are the unclaimed parcels that touch the island on a side. The world has an edge (parcel columns and rows -18 to 16, from the 8-bit voxel coordinates).
-- Space limits buildings: the daily plot unlock stops when every plot of the island is unlocked, until land is claimed.
+- Space limits buildings (there is no daily plot unlock): when every plot is used, the player claims land to make room, or claims it earlier to keep space between buildings or to make a garden.
 - A land session claims one parcel when it completes. It costs no workers and leaves no ruin if it fails. Its length is 25 minutes for the first parcel, 5 more for every 4 parcels claimed, at most 90.
 - Not in this version: gardens as buildable things, the globe, the showcase, a low-detail island view.
 
@@ -427,7 +427,7 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 
 - A castle (91 to 120 minutes) is twice as wide as other buildings: it stands on a 2 x 2 block of four plots (14 x 14 tiles) instead of one. Every other tier still takes one plot. The pyramid, the castle tier's second look, takes the same block.
 - The block must be four plots that touch in the plot grid, none of them used, and it may not cross the road (columns 3|4 or rows 3|4 of the starting island). Claimed non-garden parcels count as plots; gardens do not. A block is named by its top-left plot (the lowest column and row), which is where the building is stored and what the user taps.
-- Plots unlocked are a quota of plots: a castle uses 4 of them, so it needs 4 unused unlocked plots. The HUD counts plots used, not buildings.
+- A castle needs four unused plots in a block. The HUD counts plots used out of all plots of the island, not buildings.
 - A castle that has no free block (or not enough quota) waits in the queue like any building and is placed on the first free block, lowest top-left plot first.
 - A failed castle leaves one ruin that covers the whole block. Tapping any of its four plots offers the repair, and a completed repair clears all four.
 - Existing castles are not migrated: a castle saved before this change now covers the plots to its east and south, and may overlap a neighbour. (The only town affected was a test town.)
