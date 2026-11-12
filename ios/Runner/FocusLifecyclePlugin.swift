@@ -88,7 +88,28 @@ final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     emit("locked")
   }
 
+  /// The screen-lock signal arrives the moment the phone locks, while the app
+  /// is still running. The protected-data notification comes too late: by
+  /// then the app is suspended and never sees it (the lock looked like an
+  /// app switch). Many apps listen to this Darwin notification.
+  private func observeScreenLock() {
+    CFNotificationCenterAddObserver(
+      CFNotificationCenterGetDarwinNotifyCenter(),
+      Unmanaged.passUnretained(self).toOpaque(),
+      { _, observer, _, _, _ in
+        guard let observer else { return }
+        let plugin = Unmanaged<FocusLifecyclePlugin>
+          .fromOpaque(observer).takeUnretainedValue()
+        DispatchQueue.main.async { plugin.emitLocked() }
+      },
+      "com.apple.springboard.lockcomplete" as CFString,
+      nil,
+      .deliverImmediately
+    )
+  }
+
   private func observeApplication() {
+    observeScreenLock()
     let center = NotificationCenter.default
     let app = UIApplication.self
     observers = [
@@ -113,6 +134,12 @@ final class FocusLifecyclePlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
         self?.emit("backgrounded")
       },
+      // Back in the app: the next lock is a new lock (the protected-data
+      // notifications that used to reset this may never arrive).
+      center.addObserver(
+        forName: app.didBecomeActiveNotification,
+        object: nil, queue: .main
+      ) { [weak self] _ in self?.isLocked = false },
       center.addObserver(
         forName: app.willEnterForegroundNotification,
         object: nil, queue: .main
