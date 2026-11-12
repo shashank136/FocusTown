@@ -1,3 +1,4 @@
+import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
@@ -52,6 +53,7 @@ VoxelWorld buildTownWorld(
               active.tier,
               stageForProgress(active.tier, progress),
               plotIndex: active.plotIndex,
+              look: lookIndex(active.id),
             ));
   final sitePlot = building == null
       ? null
@@ -68,7 +70,14 @@ VoxelWorld buildTownWorld(
   for (final b in town.buildings) {
     final p = kPlots[b.plotIndex];
     if (b.status == BuildingStatus.complete) {
-      buildTier(w, b.tier, p.originX, p.originY, stage: maxStage(b.tier));
+      buildTier(
+        w,
+        b.tier,
+        p.originX,
+        p.originY,
+        stage: maxStage(b.tier),
+        look: lookIndex(b.id),
+      );
     } else {
       buildRuin(w, p.originX, p.originY);
     }
@@ -82,6 +91,7 @@ VoxelWorld buildTownWorld(
       plot.originY,
       stage: building.stage,
       scaffold: building.stage < maxStage(building.tier),
+      look: building.look,
     );
   }
   return w;

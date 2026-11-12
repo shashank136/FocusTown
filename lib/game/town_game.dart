@@ -5,6 +5,7 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/session_engine.dart';
@@ -93,6 +94,7 @@ class TownGame extends FlameGame
   Plot? _smokeAt;
   Plot? _readyPlot;
   BuildingTier? _readyTier;
+  int _readyLook = 0;
   final ParticleSystem _particles = ParticleSystem(1);
 
   /// Shows [town]; call on every change of the stored town.
@@ -114,7 +116,10 @@ class TownGame extends FlameGame
       if (result.outcome == SessionOutcome.failed && !result.repair) {
         _fail(plot);
       }
-      if (result.outcome == SessionOutcome.queued) _queue(plot, result.tier);
+      if (result.outcome == SessionOutcome.queued) {
+        final queue = focus.town.queue;
+        _queue(plot, result.tier, queue.isEmpty ? 0 : lookIndex(queue.last.id));
+      }
     }
     final active = focus.active;
     if (active != null) {
@@ -144,10 +149,11 @@ class TownGame extends FlameGame
     }
   }
 
-  void _queue(Plot plot, BuildingTier tier) {
+  void _queue(Plot plot, BuildingTier tier, int look) {
     _show = SiteTransition.ready();
     _readyPlot = plot;
     _readyTier = tier;
+    _readyLook = look;
     _leaving = _lastSiteWorkers;
   }
 
@@ -165,7 +171,9 @@ class TownGame extends FlameGame
       readyLabel.value = null;
       return;
     }
-    renderer.setPreview(ReadyPreview(tier, plot, 0.4 * show!.fade));
+    renderer.setPreview(
+      ReadyPreview(tier, plot, 0.4 * show!.fade, look: _readyLook),
+    );
     final top = maxStage(tier) + 4.0;
     final at = project(plot.center.x, plot.center.y, top, cam.tile, cam.origin);
     readyLabel.value = at;
@@ -343,6 +351,7 @@ class TownGame extends FlameGame
         active.tier,
         stageForProgress(active.tier, progress),
         plotIndex: active.plotIndex,
+        look: lookIndex(active.id),
       ),
     );
   }

@@ -22,13 +22,16 @@ import 'package:focus_town/game/world/voxel_world.dart';
 /// A finished building drawn as a see-through floating copy.
 class ReadyPreview {
   /// Creates a preview of [tier] above [plot] at opacity [alpha].
-  const new(this.tier, this.plot, this.alpha);
+  const new(this.tier, this.plot, this.alpha, {this.look = 0});
 
   /// Which building.
   final BuildingTier tier;
 
   /// Where it floats.
   final Plot plot;
+
+  /// Which look of the tier.
+  final int look;
 
   /// 0 to 1.
   final double alpha;
@@ -47,7 +50,7 @@ class TownRenderer {
   Set<int> _outlines = const {};
   int? _selected;
   List<VisibleBlock> _previewBlocks = const [];
-  (BuildingTier, int)? _previewKey;
+  (BuildingTier, int, int)? _previewKey;
   int _worldVersion = 0;
   TownState? _town;
   ActiveSite? _site;
@@ -137,7 +140,7 @@ class TownRenderer {
   void setPreview(ReadyPreview? preview) {
     _preview = preview;
     if (preview == null) return;
-    final key = (preview.tier, preview.plot.index);
+    final key = (preview.tier, preview.plot.index, preview.look);
     if (key == _previewKey) return;
     _previewKey = key;
     final w = VoxelWorld();
@@ -147,6 +150,7 @@ class TownRenderer {
       preview.plot.originX,
       preview.plot.originY,
       stage: maxStage(preview.tier),
+      look: preview.look,
     );
     _previewBlocks = w.sortedVisible();
   }

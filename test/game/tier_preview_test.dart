@@ -76,9 +76,11 @@ void main() {
     expect(n[BuildingTier.hut], lessThan(n[BuildingTier.house]!));
     expect(
       n[BuildingTier.castle],
-      greaterThan(n.values.where((v) => v != n[BuildingTier.castle]).reduce(
-        (a, b) => a > b ? a : b,
-      )),
+      greaterThan(
+        n.values
+            .where((v) => v != n[BuildingTier.castle])
+            .reduce((a, b) => a > b ? a : b),
+      ),
     );
   });
 
@@ -90,6 +92,41 @@ void main() {
       () => renderTierPreview(BuildingTier.castle),
     ))!;
     expect(await _rgba(tester, castle), isNot(await _rgba(tester, hut)));
+  });
+
+  testWidgets('a second look draws differently from the classic look', (
+    tester,
+  ) async {
+    for (final tier in BuildingTier.values) {
+      final a = (await tester.runAsync(() => renderTierPreview(tier)))!;
+      final b = (await tester.runAsync(
+        () => renderTierPreview(tier, look: 1),
+      ))!;
+      expect(
+        await _rgba(tester, b),
+        isNot(await _rgba(tester, a)),
+        reason: tier.name,
+      );
+    }
+  });
+
+  testWidgets('golden: the five second looks side by side', (tester) async {
+    final images = <ui.Image>[];
+    for (final tier in BuildingTier.values) {
+      images.add(
+        (await tester.runAsync(() => renderTierPreview(tier, look: 1)))!,
+      );
+    }
+    final strip = await tester.runAsync(() {
+      final recorder = ui.PictureRecorder();
+      final canvas = ui.Canvas(recorder)
+        ..drawColor(const ui.Color(0xFFCDEAF7), ui.BlendMode.src);
+      for (var i = 0; i < images.length; i++) {
+        canvas.drawImage(images[i], ui.Offset(i * 96.0, 0), ui.Paint());
+      }
+      return recorder.endRecording().toImage(96 * images.length, 96);
+    });
+    await expectLater(strip, matchesGoldenFile('goldens/tier_looks.png'));
   });
 
   testWidgets('golden: all five tiers side by side', (tester) async {

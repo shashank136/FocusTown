@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -113,8 +114,35 @@ void main() {
       kPlots[1].originX,
       kPlots[1].originY,
       stage: 12,
+      look: lookIndex('b1'),
     );
     expect(_above(w, kPlots[1]), direct.blockCount);
+  });
+
+  test('a building is drawn with the look its id gives', () {
+    String idWith(int look) =>
+        [for (var i = 0; i < 20; i++) 'b$i']
+            .firstWhere((id) => lookIndex(id) == look);
+    TownBuilding at(String id) => TownBuilding(
+      id: id,
+      tier: BuildingTier.castle,
+      status: BuildingStatus.complete,
+      plotIndex: 1,
+    );
+    int count(String id) =>
+        _above(buildTownWorld(_town(buildings: [at(id)])), kPlots[1]);
+    for (final look in [0, 1]) {
+      final direct = VoxelWorld();
+      buildTier(
+        direct,
+        BuildingTier.castle,
+        kPlots[1].originX,
+        kPlots[1].originY,
+        stage: 12,
+        look: look,
+      );
+      expect(count(idWith(look)), direct.blockCount, reason: 'look $look');
+    }
   });
 
   test('a ruin draws ruin blocks with char', () {

@@ -1909,7 +1909,8 @@ Open questions (assumed answers):
 - Looks per tier: hut: cabin, tent, windmill; house: cottage, townhouse; workshop: bakery, smithy; tower: apartments, lighthouse; castle: castle, pyramid. (Assumed.)
 - Landmarks (Eiffel Tower, bridge, big pyramid) span 2 x 2 plots and take several sessions. (Assumed; needs multi-plot placement.)
 
-### T-V3.1 [ ] Look rule and storage
+### T-V3.1 [x] Look rule and storage (simplified: no storage)
+- Done 2026-11-12 differently from the plan below: the look comes from the building's id (`lib/domain/building_look.dart`, `lookIndex`, FNV-1a), so nothing is stored and no migration was needed. Two looks per tier, not three. The user does not pick the look (that was only an assumed answer).
 - Depends on: MVP done (T-22.15)
 - Goal: a building has a look within its tier.
 - Files: `lib/domain/building_look.dart`, `lib/domain/session.dart`, `lib/domain/town.dart`, `lib/data/database.dart` (next schema version and a migration), tests.
@@ -1917,19 +1918,20 @@ Open questions (assumed answers):
 - Tests first: every tier has at least one look; a mismatched look is refused; migration keeps old buildings; the look survives a restart.
 - Commit: `T-V3.1: building looks`
 
-### T-V3.2 [ ] Look layouts and previews
+### T-V3.2 [x] Look layouts and previews
+- Done: `building_defs.dart` has `_tent`, `_townhouse`, `_smithy`, `_lighthouse`, `_pyramid` (`look: 1`); `renderTierPreview(look:)`; golden `tier_looks.png`; the world, the build site and the ready preview follow `lookIndex`.
 - Depends on: T-V3.1
 - Do: block layouts and build stages per look in `lib/game/world/building_defs.dart`; the tier preview takes a look; a golden of all looks on one scale.
 - Tests first: each look builds inside its plot, finishes at its last stage and differs from the others in its tier; goldens.
 - Commit: `T-V3.2: building look layouts`
 
-### T-V3.3 [ ] Pick a look in the setup sheet
+### T-V3.3 [!] Pick a look in the setup sheet (skipped: looks are by id; add a stored choice later if wanted)
 - Depends on: T-V3.2
 - Do: a small look picker under the dial (random by default); the preview and the town show the chosen look.
 - Tests first: widget tests for picking, the default, and a start that stores the look.
 - Commit: `T-V3.3: look picker`
 
-### T-V3.4 [ ] Landmarks (multi-plot, multi-session)
+### T-V3.4 [!] Landmarks (multi-plot, multi-session) (deferred: needs multi-plot placement, which Phase V6's parcel model replaces)
 - Depends on: T-V3.3, multi-plot placement
 - Do: a landmark takes 2 x 2 plots and several sessions, with damage on failure; start with the pyramid; write the rules into `docs/spec.md` first.
 - Tests first: footprint and placement rules, progress across sessions, failure damage.

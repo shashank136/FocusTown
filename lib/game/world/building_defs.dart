@@ -21,7 +21,8 @@ int stageForProgress(BuildingTier t, double progress) {
 }
 
 /// Builds [t] on the plot whose corner is ([plotOriginX], [plotOriginY]) up to
-/// [stage]; [scaffold] adds the builders' posts and rails around it.
+/// [stage]; [scaffold] adds the builders' posts and rails around it. [look] 0
+/// is the classic building, 1 the second look of the tier.
 void buildTier(
   VoxelWorld w,
   BuildingTier t,
@@ -29,25 +30,27 @@ void buildTier(
   int plotOriginY, {
   required int stage,
   bool scaffold = false,
+  int look = 0,
 }) {
   final ox = plotOriginX + 1;
   final oy = plotOriginY + 1;
+  final second = look == 1;
   if (t == BuildingTier.castle) {
-    _castle(w, plotOriginX, plotOriginY, stage);
+    (second ? _pyramid : _castle)(w, plotOriginX, plotOriginY, stage);
     return;
   }
   switch (t) {
     case BuildingTier.hut:
-      _hut(w, ox, oy, stage);
+      (second ? _tent : _hut)(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 3, 3, 4);
     case BuildingTier.house:
-      _house(w, ox, oy, stage);
+      (second ? _townhouse : _house)(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 5, 5, 6);
     case BuildingTier.workshop:
-      _workshop(w, ox, oy, stage);
+      (second ? _smithy : _workshop)(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 5, 5, 4);
     case BuildingTier.tower:
-      _tower(w, ox, oy, stage);
+      (second ? _lighthouse : _tower)(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 3, 3, 9);
     case BuildingTier.castle:
       break; // handled above
@@ -146,6 +149,123 @@ void _tower(VoxelWorld w, int ox, int oy, int stage) {
   }
   if (stage >= 7) w.fill(ox + 1, oy + 1, 10, ox + 1, oy + 1, 12, Blocks.log);
   if (stage >= 8) w.fill(ox + 2, oy + 1, 11, ox + 3, oy + 1, 12, Blocks.wool);
+}
+
+// Second looks. Each keeps the footprint and the stage count of its tier.
+
+// A wool tent with a pole and a pennant.
+void _tent(VoxelWorld w, int ox, int oy, int stage) {
+  w.fill(ox, oy, 1, ox + 2, oy + 2, 1, Blocks.wool);
+  if (stage >= 2) w.fill(ox, oy, 2, ox + 2, oy + 2, 2, Blocks.wool);
+  if (stage >= 3) {
+    w
+      ..fill(ox + 1, oy, 3, ox + 1, oy + 2, 3, Blocks.wool)
+      ..fill(ox, oy + 1, 3, ox + 2, oy + 1, 3, Blocks.wool);
+  }
+  if (stage >= 4) {
+    w
+      ..fill(ox + 1, oy + 1, 4, ox + 1, oy + 1, 5, Blocks.log)
+      ..set(ox + 2, oy + 1, 5, Blocks.wool);
+  }
+  w.remove(ox + 1, oy + 2, 1); // door
+}
+
+// A tall plank house with a flat roof and a chimney.
+void _townhouse(VoxelWorld w, int ox, int oy, int stage) {
+  w.ring(ox, oy, 5, 5, 1, Blocks.cobble);
+  for (var z = 2; z <= math.min(stage, 4); z++) {
+    w.ring(ox, oy, 5, 5, z, Blocks.plank, corner: Blocks.log);
+    if (z >= 3) {
+      w
+        ..set(ox + 4, oy + 2, z, Blocks.glass)
+        ..set(ox, oy + 2, z, Blocks.glass);
+    }
+  }
+  w
+    ..remove(ox + 2, oy + 4, 1)
+    ..remove(ox + 2, oy + 4, 2);
+  if (stage >= 5) w.fill(ox - 1, oy - 1, 5, ox + 5, oy + 5, 5, Blocks.slate);
+  if (stage >= 6) w.ring(ox - 1, oy - 1, 7, 7, 6, Blocks.cobble);
+  if (stage >= 7) w.fill(ox + 3, oy + 1, 6, ox + 3, oy + 1, 8, Blocks.cobble);
+}
+
+// A stone smithy with a red roof and a tall chimney.
+void _smithy(VoxelWorld w, int ox, int oy, int stage) {
+  for (var z = 1; z <= math.min(stage, 3); z++) {
+    w.ring(ox, oy, 5, 5, z, Blocks.stone, corner: Blocks.cobble);
+    if (z <= 2) {
+      w
+        ..remove(ox + 1, oy + 4, z)
+        ..remove(ox + 2, oy + 4, z);
+    }
+  }
+  if (stage >= 4) w.set(ox + 4, oy + 2, 2, Blocks.glass);
+  if (stage >= 5) w.fill(ox, oy, 4, ox + 4, oy + 4, 4, Blocks.roof);
+  if (stage >= 6) {
+    w
+      ..fill(ox + 3, oy + 1, 5, ox + 3, oy + 1, 7, Blocks.cobble)
+      ..set(ox + 3, oy + 1, 8, Blocks.char);
+  }
+}
+
+// A striped lighthouse with a glass lantern.
+void _lighthouse(VoxelWorld w, int ox, int oy, int stage) {
+  const layers = [2, 4, 6, 8, 9];
+  for (var s = 1; s <= math.min(stage, 5); s++) {
+    final top = layers[s - 1];
+    final bottom = s == 1 ? 1 : layers[s - 2] + 1;
+    w.fill(
+      ox,
+      oy,
+      bottom,
+      ox + 2,
+      oy + 2,
+      top,
+      s.isEven ? Blocks.wool : Blocks.stone,
+    );
+  }
+  w
+    ..remove(ox + 1, oy + 2, 1)
+    ..remove(ox + 1, oy + 2, 2);
+  if (stage >= 6) w.ring(ox, oy, 3, 3, 10, Blocks.glass);
+  if (stage >= 7) w.fill(ox, oy, 11, ox + 2, oy + 2, 11, Blocks.slate);
+  if (stage >= 8) w.fill(ox + 1, oy + 1, 12, ox + 1, oy + 1, 13, Blocks.log);
+}
+
+// A stepped pyramid on the whole 7x7 plot, with pillars and a flag.
+void _pyramid(VoxelWorld w, int ox, int oy, int stage) {
+  void layer(int z, int inset, {required bool full}) {
+    final size = 7 - 2 * inset;
+    final o = (x: ox + inset, y: oy + inset);
+    if (full) {
+      w.fill(o.x, o.y, z, o.x + size - 1, o.y + size - 1, z, Blocks.plank);
+    } else {
+      w.ring(o.x, o.y, size, size, z, Blocks.plank);
+    }
+  }
+
+  layer(1, 0, full: stage >= 2);
+  // The entrance is open from the start.
+  w
+    ..remove(ox + 3, oy + 6, 1)
+    ..remove(ox + 3, oy + 5, 1);
+  if (stage >= 3) layer(2, 1, full: stage >= 4);
+  if (stage >= 5) layer(3, 2, full: stage >= 6);
+  if (stage >= 7) w.set(ox + 3, oy + 3, 4, Blocks.plank);
+  if (stage >= 8) w.set(ox + 3, oy + 3, 5, Blocks.slate);
+  const corners = [(0, 0), (6, 0), (0, 6), (6, 6)];
+  if (stage >= 9) {
+    for (final (dx, dy) in corners) {
+      w.fill(ox + dx, oy + dy, 2, ox + dx, oy + dy, 3, Blocks.stone);
+    }
+  }
+  if (stage >= 10) {
+    for (final (dx, dy) in corners) {
+      w.set(ox + dx, oy + dy, 4, Blocks.wool);
+    }
+  }
+  if (stage >= 11) w.set(ox + 3, oy + 6, 2, Blocks.wool); // entrance banner
+  if (stage >= 12) _flag(w, ox + 3, oy + 3, 6);
 }
 
 /// The castle. The prototype castle is 9x9; this one is shrunk to fit one 7x7

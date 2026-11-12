@@ -11,14 +11,19 @@ import 'package:focus_town/game/world/voxel_world.dart';
 
 /// A small picture of [tier]'s finished building on a patch of grass, drawn
 /// with the town's own painter on a transparent background. The building's
-/// outline fills about 80% of the [size] x [size] picture.
-Future<Image> renderTierPreview(BuildingTier tier, {int size = 96}) {
+/// outline fills about 80% of the [size] x [size] picture. [look] picks the
+/// classic (0) or the second look.
+Future<Image> renderTierPreview(
+  BuildingTier tier, {
+  int size = 96,
+  int look = 0,
+}) {
   // One scale for every tier, set by the biggest, so a bigger building
   // draws bigger.
   final biggest = BuildingTier.values
-      .map((t) => _outline(t).$2)
+      .map((t) => _outline(t, look).$2)
       .reduce(math.max);
-  final (blocks, _, box) = _outline(tier);
+  final (blocks, _, box) = _outline(tier, look);
   final tile = 0.8 * size / biggest;
   final origin = Vec2(
     size / 2 - (box.$1 + box.$2) / 2 * tile,
@@ -40,10 +45,11 @@ Future<Image> renderTierPreview(BuildingTier tier, {int size = 96}) {
 // its outline as (minX, maxX, minY, maxY).
 (List<VisibleBlock>, double, (double, double, double, double)) _outline(
   BuildingTier tier,
+  int look,
 ) {
   final world = VoxelWorld()
     ..fill(0, 0, 0, kPlotSize - 1, kPlotSize - 1, 0, Blocks.grass);
-  buildTier(world, tier, 0, 0, stage: maxStage(tier));
+  buildTier(world, tier, 0, 0, stage: maxStage(tier), look: look);
   final blocks = world.sortedVisible();
   var minX = double.infinity;
   var maxX = -double.infinity;
