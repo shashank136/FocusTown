@@ -70,6 +70,7 @@ class Sessions extends Table {
   TextColumn get outcomeReason => text().nullable()();
   IntColumn get resolvedAt => integer().nullable()();
   IntColumn get plotIndex => integer().nullable()();
+  IntColumn get repairPlotIndex => integer().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -80,7 +81,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 4;
+  static const currentSchemaVersion = 5;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -99,6 +100,8 @@ class AppDatabase extends _$AppDatabase {
         await m.addColumn(towns, towns.tipRecoveryShown);
         await m.addColumn(towns, towns.notificationNoteShown);
       }
+      // v5: the ruin a repair session clears.
+      if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
     },
   );
 }

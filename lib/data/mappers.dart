@@ -107,6 +107,7 @@ Session sessionFromRow(SessionRow row) {
     passUsed: row.passUsed,
     outcomeReason: reason == null ? null : OutcomeReason.values.byName(reason),
     plotIndex: row.plotIndex,
+    repairPlot: row.repairPlotIndex,
   );
 }
 
@@ -127,6 +128,7 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     passUsed: session.passUsed,
     outcomeReason: Value(session.outcomeReason?.name),
     plotIndex: Value(session.plotIndex),
+    repairPlotIndex: Value(session.repairPlot),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),
   );
 }

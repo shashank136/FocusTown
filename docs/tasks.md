@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-22.15 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: Launch is iPhone only (user decision 2026-11-11); Android (T-11.x, T-22.14 and the Android parts of T-21.4/T-21.7, Play Store, Android signing key) comes after launch. Step 22 is done except T-22.15 TestFlight (needs the user's Apple account; bundle id com.shashank.focusTown is set). Order from here: T-22.15 beta, then Phase V2 repair, then Phase L (App Store submission), then V3/V4/V6.
+- Current task: T-V2.2 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-V2.1 done: Session.repairPlot/isRepair, SessionEngine.startRepair (10 min, 0 workers), TownRules.canRepair/applyRepairCompleted (clears the ruin, places a queued building; XP and streak go through Progression.onSessionCompleted like any session), schema v5 (sessions.repair_plot_index, migration + generated tests). Decided: a repair counts for XP, streak and the day's plot; a failed repair changes nothing. Next: T-V2.2 controller startRepair, result text, site worker, tap a ruin.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.shashank.focusTown` (decided 2026-11-11).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-22.13 done)
+- Last updated: 2026-11-09 (T-V2.1 done)
 
 ## Status of steps
 
@@ -1849,7 +1849,7 @@ Open questions (assumed answers):
 - A failed repair costs nothing more: the ruin stays, no workers die, no streak change. (Assumed.)
 - Emergency pause: 1 per week, extends the away window to 10 minutes once, chosen by pressing a button before leaving. (Assumed.)
 
-### T-V2.1 [ ] Repair rule (pure)
+### T-V2.1 [x] Repair rule (pure)
 - Depends on: MVP done (T-22.15), T-18A.4
 - Goal: a ruin can be cleared by a short session.
 - Files: `lib/domain/town_rules.dart`, `lib/domain/session.dart`, tests.

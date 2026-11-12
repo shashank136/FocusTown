@@ -51,6 +51,22 @@ class SessionEngine {
     );
   }
 
+  /// A 10-minute session that clears the ruin on [plot]. Nothing is at risk:
+  /// no workers are assigned, so a failed repair costs nothing.
+  static Session startRepair({
+    required String id,
+    required int plot,
+    required TimeStamp now,
+  }) => Session(
+    id: id,
+    plannedMinutes: 10,
+    tier: BuildingTier.hut,
+    workersAssigned: 0,
+    state: SessionState.running,
+    startedAt: now,
+    repairPlot: plot,
+  );
+
   /// Screen lock is harmless: [session] is returned unchanged.
   static Session onLocked(Session session, TimeStamp now) => session;
 

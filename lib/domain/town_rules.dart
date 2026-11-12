@@ -92,6 +92,27 @@ class TownRules {
     return _updateRecovery(placed);
   }
 
+  /// Whether plot [plot] holds a ruin that a repair could clear.
+  static bool canRepair(TownState town, int plot) => town.buildings.any(
+    (b) => b.plotIndex == plot && b.status == BuildingStatus.ruin,
+  );
+
+  /// Applies a completed repair [session]: the ruin on its plot is cleared
+  /// and a waiting building may take the freed plot. Workers and recovery
+  /// mode are untouched. A plot that no longer holds a ruin changes nothing.
+  static TownState applyRepairCompleted(TownState town, Session session) {
+    final plot = session.repairPlot;
+    if (plot == null || !canRepair(town, plot)) return town;
+    return placeQueued(
+      town.copyWith(
+        buildings: [
+          for (final b in town.buildings)
+            if (b.plotIndex != plot) b,
+        ],
+      ),
+    );
+  }
+
   /// Moves queued buildings onto free plots, oldest first.
   static TownState placeQueued(TownState town) {
     var t = town;

@@ -1484,6 +1484,17 @@ class $SessionsTable extends Sessions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _repairPlotIndexMeta = const VerificationMeta(
+    'repairPlotIndex',
+  );
+  @override
+  late final GeneratedColumn<int> repairPlotIndex = GeneratedColumn<int>(
+    'repair_plot_index',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1500,6 +1511,7 @@ class $SessionsTable extends Sessions
     outcomeReason,
     resolvedAt,
     plotIndex,
+    repairPlotIndex,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1636,6 +1648,15 @@ class $SessionsTable extends Sessions
         plotIndex.isAcceptableOrUnknown(data['plot_index']!, _plotIndexMeta),
       );
     }
+    if (data.containsKey('repair_plot_index')) {
+      context.handle(
+        _repairPlotIndexMeta,
+        repairPlotIndex.isAcceptableOrUnknown(
+          data['repair_plot_index']!,
+          _repairPlotIndexMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1701,6 +1722,10 @@ class $SessionsTable extends Sessions
         DriftSqlType.int,
         data['${effectivePrefix}plot_index'],
       ),
+      repairPlotIndex: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}repair_plot_index'],
+      ),
     );
   }
 
@@ -1725,6 +1750,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final String? outcomeReason;
   final int? resolvedAt;
   final int? plotIndex;
+  final int? repairPlotIndex;
   const SessionRow({
     required this.id,
     required this.plannedMinutes,
@@ -1740,6 +1766,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     this.outcomeReason,
     this.resolvedAt,
     this.plotIndex,
+    this.repairPlotIndex,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1767,6 +1794,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     }
     if (!nullToAbsent || plotIndex != null) {
       map['plot_index'] = Variable<int>(plotIndex);
+    }
+    if (!nullToAbsent || repairPlotIndex != null) {
+      map['repair_plot_index'] = Variable<int>(repairPlotIndex);
     }
     return map;
   }
@@ -1797,6 +1827,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       plotIndex: plotIndex == null && nullToAbsent
           ? const Value.absent()
           : Value(plotIndex),
+      repairPlotIndex: repairPlotIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(repairPlotIndex),
     );
   }
 
@@ -1820,6 +1853,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       outcomeReason: serializer.fromJson<String?>(json['outcomeReason']),
       resolvedAt: serializer.fromJson<int?>(json['resolvedAt']),
       plotIndex: serializer.fromJson<int?>(json['plotIndex']),
+      repairPlotIndex: serializer.fromJson<int?>(json['repairPlotIndex']),
     );
   }
   @override
@@ -1840,6 +1874,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'outcomeReason': serializer.toJson<String?>(outcomeReason),
       'resolvedAt': serializer.toJson<int?>(resolvedAt),
       'plotIndex': serializer.toJson<int?>(plotIndex),
+      'repairPlotIndex': serializer.toJson<int?>(repairPlotIndex),
     };
   }
 
@@ -1858,6 +1893,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     Value<String?> outcomeReason = const Value.absent(),
     Value<int?> resolvedAt = const Value.absent(),
     Value<int?> plotIndex = const Value.absent(),
+    Value<int?> repairPlotIndex = const Value.absent(),
   }) => SessionRow(
     id: id ?? this.id,
     plannedMinutes: plannedMinutes ?? this.plannedMinutes,
@@ -1877,6 +1913,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
         : this.outcomeReason,
     resolvedAt: resolvedAt.present ? resolvedAt.value : this.resolvedAt,
     plotIndex: plotIndex.present ? plotIndex.value : this.plotIndex,
+    repairPlotIndex: repairPlotIndex.present
+        ? repairPlotIndex.value
+        : this.repairPlotIndex,
   );
   SessionRow copyWithCompanion(SessionsCompanion data) {
     return SessionRow(
@@ -1912,6 +1951,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ? data.resolvedAt.value
           : this.resolvedAt,
       plotIndex: data.plotIndex.present ? data.plotIndex.value : this.plotIndex,
+      repairPlotIndex: data.repairPlotIndex.present
+          ? data.repairPlotIndex.value
+          : this.repairPlotIndex,
     );
   }
 
@@ -1931,7 +1973,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('passUsed: $passUsed, ')
           ..write('outcomeReason: $outcomeReason, ')
           ..write('resolvedAt: $resolvedAt, ')
-          ..write('plotIndex: $plotIndex')
+          ..write('plotIndex: $plotIndex, ')
+          ..write('repairPlotIndex: $repairPlotIndex')
           ..write(')'))
         .toString();
   }
@@ -1952,6 +1995,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     outcomeReason,
     resolvedAt,
     plotIndex,
+    repairPlotIndex,
   );
   @override
   bool operator ==(Object other) =>
@@ -1970,7 +2014,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.passUsed == this.passUsed &&
           other.outcomeReason == this.outcomeReason &&
           other.resolvedAt == this.resolvedAt &&
-          other.plotIndex == this.plotIndex);
+          other.plotIndex == this.plotIndex &&
+          other.repairPlotIndex == this.repairPlotIndex);
 }
 
 class SessionsCompanion extends UpdateCompanion<SessionRow> {
@@ -1988,6 +2033,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<String?> outcomeReason;
   final Value<int?> resolvedAt;
   final Value<int?> plotIndex;
+  final Value<int?> repairPlotIndex;
   final Value<int> rowid;
   const SessionsCompanion({
     this.id = const Value.absent(),
@@ -2004,6 +2050,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.outcomeReason = const Value.absent(),
     this.resolvedAt = const Value.absent(),
     this.plotIndex = const Value.absent(),
+    this.repairPlotIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SessionsCompanion.insert({
@@ -2021,6 +2068,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.outcomeReason = const Value.absent(),
     this.resolvedAt = const Value.absent(),
     this.plotIndex = const Value.absent(),
+    this.repairPlotIndex = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        plannedMinutes = Value(plannedMinutes),
@@ -2046,6 +2094,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<String>? outcomeReason,
     Expression<int>? resolvedAt,
     Expression<int>? plotIndex,
+    Expression<int>? repairPlotIndex,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2063,6 +2112,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (outcomeReason != null) 'outcome_reason': outcomeReason,
       if (resolvedAt != null) 'resolved_at': resolvedAt,
       if (plotIndex != null) 'plot_index': plotIndex,
+      if (repairPlotIndex != null) 'repair_plot_index': repairPlotIndex,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2082,6 +2132,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<String?>? outcomeReason,
     Value<int?>? resolvedAt,
     Value<int?>? plotIndex,
+    Value<int?>? repairPlotIndex,
     Value<int>? rowid,
   }) {
     return SessionsCompanion(
@@ -2099,6 +2150,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       outcomeReason: outcomeReason ?? this.outcomeReason,
       resolvedAt: resolvedAt ?? this.resolvedAt,
       plotIndex: plotIndex ?? this.plotIndex,
+      repairPlotIndex: repairPlotIndex ?? this.repairPlotIndex,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2148,6 +2200,9 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (plotIndex.present) {
       map['plot_index'] = Variable<int>(plotIndex.value);
     }
+    if (repairPlotIndex.present) {
+      map['repair_plot_index'] = Variable<int>(repairPlotIndex.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2171,6 +2226,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('outcomeReason: $outcomeReason, ')
           ..write('resolvedAt: $resolvedAt, ')
           ..write('plotIndex: $plotIndex, ')
+          ..write('repairPlotIndex: $repairPlotIndex, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2845,6 +2901,7 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<String?> outcomeReason,
   Value<int?> resolvedAt,
   Value<int?> plotIndex,
+  Value<int?> repairPlotIndex,
   Value<int> rowid,
 });
 typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
@@ -2862,6 +2919,7 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<String?> outcomeReason,
   Value<int?> resolvedAt,
   Value<int?> plotIndex,
+  Value<int?> repairPlotIndex,
   Value<int> rowid,
 });
 
@@ -2941,6 +2999,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<int> get plotIndex => $composableBuilder(
     column: $table.plotIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get repairPlotIndex => $composableBuilder(
+    column: $table.repairPlotIndex,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3023,6 +3086,11 @@ class $$SessionsTableOrderingComposer
     column: $table.plotIndex,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get repairPlotIndex => $composableBuilder(
+    column: $table.repairPlotIndex,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SessionsTableAnnotationComposer
@@ -3093,6 +3161,11 @@ class $$SessionsTableAnnotationComposer
 
   GeneratedColumn<int> get plotIndex =>
       $composableBuilder(column: $table.plotIndex, builder: (column) => column);
+
+  GeneratedColumn<int> get repairPlotIndex => $composableBuilder(
+    column: $table.repairPlotIndex,
+    builder: (column) => column,
+  );
 }
 
 class $$SessionsTableTableManager
@@ -3140,6 +3213,7 @@ class $$SessionsTableTableManager
                 Value<String?> outcomeReason = const Value.absent(),
                 Value<int?> resolvedAt = const Value.absent(),
                 Value<int?> plotIndex = const Value.absent(),
+                Value<int?> repairPlotIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion(
                 id: id,
@@ -3156,6 +3230,7 @@ class $$SessionsTableTableManager
                 outcomeReason: outcomeReason,
                 resolvedAt: resolvedAt,
                 plotIndex: plotIndex,
+                repairPlotIndex: repairPlotIndex,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3174,6 +3249,7 @@ class $$SessionsTableTableManager
                 Value<String?> outcomeReason = const Value.absent(),
                 Value<int?> resolvedAt = const Value.absent(),
                 Value<int?> plotIndex = const Value.absent(),
+                Value<int?> repairPlotIndex = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion.insert(
                 id: id,
@@ -3190,6 +3266,7 @@ class $$SessionsTableTableManager
                 outcomeReason: outcomeReason,
                 resolvedAt: resolvedAt,
                 plotIndex: plotIndex,
+                repairPlotIndex: repairPlotIndex,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

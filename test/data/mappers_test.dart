@@ -55,6 +55,7 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   outcomeReason: c.outcomeReason.value,
   resolvedAt: c.resolvedAt.value,
   plotIndex: c.plotIndex.value,
+  repairPlotIndex: c.repairPlotIndex.value,
 );
 
 void main() {
@@ -190,6 +191,21 @@ void main() {
         expect(sessionFromRow(_sessionRowFrom(sessionToRow(s))), s);
       });
     }
+
+    test('a repair keeps its ruin plot', () {
+      final s = Session(
+        id: 'r',
+        plannedMinutes: 10,
+        tier: BuildingTier.hut,
+        workersAssigned: 0,
+        state: SessionState.running,
+        startedAt: started,
+        repairPlot: 2,
+      );
+      final back = sessionFromRow(_sessionRowFrom(sessionToRow(s)));
+      expect(back.repairPlot, 2);
+      expect(back, s);
+    });
 
     test('stores epoch ms and resolvedAt', () {
       final s = Session(

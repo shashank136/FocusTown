@@ -46,6 +46,7 @@ class Session {
     this.passUsed = false,
     this.outcomeReason,
     this.plotIndex,
+    this.repairPlot,
   });
 
   /// Unique id.
@@ -81,6 +82,13 @@ class Session {
   /// The plot the user chose to build on, or null for the automatic one.
   final int? plotIndex;
 
+  /// The plot of the ruin this session repairs, or null for an ordinary
+  /// build. A repair is 10 minutes with nothing at risk.
+  final int? repairPlot;
+
+  /// Whether this session clears a ruin instead of building something.
+  bool get isRepair => repairPlot != null;
+
   /// Planned length as a [Duration].
   Duration get planned => Duration(minutes: plannedMinutes);
 
@@ -112,6 +120,7 @@ class Session {
     passUsed: passUsed ?? this.passUsed,
     outcomeReason: outcomeReason ?? this.outcomeReason,
     plotIndex: plotIndex,
+    repairPlot: repairPlot,
   );
 
   @override
@@ -127,7 +136,8 @@ class Session {
       other.awayTotal == awayTotal &&
       other.passUsed == passUsed &&
       other.outcomeReason == outcomeReason &&
-      other.plotIndex == plotIndex;
+      other.plotIndex == plotIndex &&
+      other.repairPlot == repairPlot;
 
   @override
   int get hashCode => Object.hash(
@@ -142,5 +152,6 @@ class Session {
     passUsed,
     outcomeReason,
     plotIndex,
+    repairPlot,
   );
 }
