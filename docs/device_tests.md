@@ -98,4 +98,14 @@ Release build on the iPhone 15 Pro Max, found by the user while testing a fresh 
 - [x] Opening the debug screen no longer turns the town into a still picture (render guard ignores a covered town). The two `render degraded` lines in the log are from before that fix.
 - [ ] Not yet confirmed: the odd bursts of `callStarted`/`callEnded` pairs in the event log at app resume (21:52:29 on the first test).
 
+## Lock screen status on the iPhone (T-LA.3, 2026-11-12)
+
+Release build on the iPhone 15 Pro Max, in-place install, user-reported.
+
+- [x] The card appears on the lock screen when a session starts.
+- [x] The countdown matches the app's timer.
+- [x] The Dynamic Island shows the icon and time.
+- [x] Away shows the "Away" text and returns to "Builders working" on coming back.
+- [ ] Not yet reported: it disappears on give up / finish, and what happens when the app is swiped away.
+
 ## Android
