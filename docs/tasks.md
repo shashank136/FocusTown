@@ -1888,7 +1888,7 @@ Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Towe
 - `SessionEngine.startLandmark`, `FocusController.startLandmark`, results, failure damage.
 - Commit: `T-V8.3: landmark sessions`
 
-### T-V8.4 [ ] Eiffel Tower layout and drawing
+### T-V8.4 [x] Eiffel Tower layout and drawing
 - 12 stages on the 12 x 12 inset block; the world draws a landmark in progress, live during a session.
 - Commit: `T-V8.4: eiffel tower`
 

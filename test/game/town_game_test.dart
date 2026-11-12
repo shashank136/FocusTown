@@ -5,7 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
@@ -264,6 +266,45 @@ void main() {
       expect(cam.tile, lessThan(zoomed));
       expect(cam.tile, closeTo(cam.fitMapTile, 1e-6));
     });
+
+    test(
+      'a landmark session draws the landmark at the stage it has reached',
+      () {
+        final g = _game();
+        final block = plotAtCell(0, 0, const [])!;
+        final project = TownBuilding(
+          id: 'landmark-eiffel',
+          tier: BuildingTier.castle,
+          status: BuildingStatus.building,
+          plotIndex: block,
+          landmark: Landmark.eiffel,
+          progress: 20,
+        );
+        final session = Session(
+          id: 'm',
+          plannedMinutes: 60,
+          tier: BuildingTier.hut,
+          workersAssigned: 0,
+          state: SessionState.running,
+          startedAt: TimeStamp(DateTime(2026), Duration.zero),
+          landmark: Landmark.eiffel,
+          plotIndex: block,
+        );
+        g.setFocus(
+          FocusState(
+            town: TownState.initial().copyWith(
+              buildings: [...TownState.initial().buildings, project],
+            ),
+            active: session,
+          ),
+        );
+        _drawn(g);
+        final site = g.renderer.site!;
+        expect(site.landmark, Landmark.eiffel);
+        // The session has not run yet: the project's 20 minutes, stage 1.
+        expect(site.stage, 1);
+      },
+    );
 
     test('claimed land redraws the town', () {
       final g = _game();

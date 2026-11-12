@@ -384,6 +384,22 @@ class TownGame extends FlameGame
       return;
     }
     final progress = SessionEngine.progress(active, TimeStamp.now(_clock));
+    if (active.isLandmark) {
+      // The landmark is drawn at the stage its project plus this session has
+      // reached; before the first stage there is nothing to show yet.
+      final stage = landmarkLiveStage(_focus!.town, active, progress);
+      renderer.setSite(
+        stage < 1
+            ? null
+            : ActiveSite(
+                BuildingTier.castle,
+                stage,
+                plotIndex: active.plotIndex,
+                landmark: active.landmark,
+              ),
+      );
+      return;
+    }
     renderer.setSite(
       ActiveSite(
         active.tier,
@@ -398,7 +414,8 @@ class TownGame extends FlameGame
   List<List<(int, int)>> _routes(FocusState focus) {
     final town = focus.town;
     final active = focus.active;
-    final site = active == null || active.isRepair || active.isLand
+    final site =
+        active == null || active.isRepair || active.isLand || active.isLandmark
         ? null
         : sessionSitePlot(town, active);
     if (_routeSite != site?.index ||
@@ -427,6 +444,9 @@ class TownGame extends FlameGame
         onSite = 1;
       } else if (active.isLand) {
         onSite = 0; // surveying, not building
+      } else if (active.isLandmark) {
+        // A crew of up to four raises the landmark; nobody is at risk.
+        onSite = math.min(4, focus.town.workers);
       } else if (onSite == 0 && focus.town.inRecoveryMode) {
         // The Last Builder works the site alone instead of walking the road.
         onSite = 1;

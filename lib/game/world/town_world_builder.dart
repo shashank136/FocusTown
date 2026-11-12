@@ -9,6 +9,7 @@ import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/forest.dart';
 import 'package:focus_town/game/world/garden.dart';
+import 'package:focus_town/game/world/landmark_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/road_network.dart';
 import 'package:focus_town/game/world/scenery.dart';
@@ -42,7 +43,31 @@ Plot sessionSitePlot(TownState town, Session session) {
   if (land != null) {
     return Plot(-1, parcelOrigin(land.gx), parcelOrigin(land.gy));
   }
+  if (session.isLandmark) {
+    return plotForTier(session.plotIndex!, BuildingTier.castle, town.parcels);
+  }
   return activeSitePlot(town, session.plotIndex, session.tier);
+}
+
+ActiveSite? _landmarkSite(TownState town, Session active, double progress) {
+  final stage = landmarkLiveStage(town, active, progress);
+  return stage < 1
+      ? null
+      : ActiveSite(
+          BuildingTier.castle,
+          stage,
+          plotIndex: active.plotIndex,
+          landmark: active.landmark,
+        );
+}
+
+/// The stage a landmark session has reached at [progress] (0 to 1): the
+/// stages its project has plus what the session has done so far.
+int landmarkLiveStage(TownState town, Session session, double progress) {
+  final l = session.landmark!;
+  final project = TownRules.landmarkProject(town, l);
+  final now = (project?.progress ?? 0) + progress * session.plannedMinutes;
+  return (now ~/ l.minutesPerStage).clamp(0, l.stages);
 }
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
@@ -68,6 +93,8 @@ VoxelWorld buildTownWorld(
       site ??
       (active == null
           ? null
+          : active.isLandmark
+          ? _landmarkSite(town, active, progress)
           : ActiveSite(
               active.tier,
               stageForProgress(active.tier, progress),
@@ -76,6 +103,8 @@ VoxelWorld buildTownWorld(
             ));
   final sitePlot = building == null
       ? null
+      : building.landmark != null
+      ? plotForTier(building.plotIndex!, BuildingTier.castle, town.parcels)
       : activeSitePlot(town, building.plotIndex, building.tier);
   // Plots in use (a building, a ruin or the site) are cleared and bordered;
   // all others stay forest.
@@ -117,7 +146,10 @@ VoxelWorld buildTownWorld(
   }
   for (final b in town.buildings) {
     final p = plotFor(b.plotIndex, town.parcels);
-    if (b.status == BuildingStatus.complete) {
+    final landmark = b.landmark;
+    if (landmark != null) {
+      buildLandmark(w, landmark, p.originX + 1, p.originY + 1, b.stage);
+    } else if (b.status == BuildingStatus.complete) {
       buildTier(
         w,
         b.tier,
@@ -137,15 +169,26 @@ VoxelWorld buildTownWorld(
   }
   if (building != null && sitePlot != null) {
     final plot = sitePlot;
-    buildTier(
-      w,
-      building.tier,
-      plot.originX,
-      plot.originY,
-      stage: building.stage,
-      scaffold: building.stage < maxStage(building.tier),
-      look: building.look,
-    );
+    final landmark = building.landmark;
+    if (landmark != null) {
+      buildLandmark(
+        w,
+        landmark,
+        plot.originX + 1,
+        plot.originY + 1,
+        building.stage,
+      );
+    } else {
+      buildTier(
+        w,
+        building.tier,
+        plot.originX,
+        plot.originY,
+        stage: building.stage,
+        scaffold: building.stage < maxStage(building.tier),
+        look: building.look,
+      );
+    }
   }
   return w;
 }
