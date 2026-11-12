@@ -32,5 +32,5 @@ No. Everything is stored on the phone only.
 
 ## Contact
 
-<contact email>
+shashank136.sk@gmail.com
 Please say which iPhone and iOS version you use, and what you did before the problem.

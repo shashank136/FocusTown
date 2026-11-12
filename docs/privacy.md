@@ -33,4 +33,4 @@ Delete the app and all its data is removed from your phone.
 ## Changes and contact
 
 If this policy changes, the date above changes with it.
-Questions: <contact email>
+Questions: shashank136.sk@gmail.com

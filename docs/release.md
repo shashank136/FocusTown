@@ -112,7 +112,7 @@ App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focu
   - Works fully offline. No account, no ads, no tracking
 
 - Screenshots (6.9-inch and 6.5-inch iPhone): onboarding page 2, a running build, the finished town, the setup dial, the lock screen card. Capture on the iPhone or the simulator; the user reviews them.
-- URLs: privacy policy `docs/privacy.md`, support `docs/support.md`; host them (for example GitHub Pages) and record the URLs here. Fill in `<contact email>` in both first.
+- URLs (GitHub Pages from `/docs`, live 2026-11-12): privacy policy `https://shashank136.github.io/FocusTown/privacy`, support `https://shashank136.github.io/FocusTown/support`. The contact email on both pages is the user's main Gmail (chosen by the user, 2026-11-12).
 - Copyright: the user's name and year.
 
 ## App Review notes (draft 2026-11-12)
