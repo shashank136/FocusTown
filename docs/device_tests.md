@@ -60,4 +60,24 @@ Debug build over `flutter run` (user-reported: "everything works as expected").
 - [x] Forest island: roads and paths visible through the forest; the ruin fix and the plot choice anywhere on the island.
 - [ ] Still unverified: Android phone-state prompt (Android deferred), notification banners with a real lock or call, pinch and double-tap feel (T-16.4), frame rate and battery (T-17.7).
 
+## Final checklist: iPhone (T-22.13, 2026-11-11)
+
+Profile build (`flutter run --profile`) on the iPhone 15 Pro Max. User-reported: "these all check looks good." Recorded as a pass for all 15 items; the user gave no per-item detail.
+
+- [x] 1 Lock 5 minutes: session continues.
+- [x] 2 App switch under 5 seconds: no penalty.
+- [x] 3 Away 30 seconds: pass spent, session continues.
+- [x] 4 Away 90 seconds: workers die, ruin appears.
+- [x] 5 Phone call: no penalty, no pass.
+- [x] 6 Control Center: no penalty.
+- [x] 7 Force-quit and reopen: outcome resolved correctly.
+- [x] 8 Reboot mid-session: resolved on launch.
+- [x] 9 Clock forward 2 hours: no early completion (log line not separately confirmed).
+- [x] 10 Notifications denied: one-time note, rules still apply.
+- [x] 11 Two different days: streak 2, plots 8.
+- [x] 12 Full town: building queued, placed when a plot unlocks.
+- [x] 13 Recovery mode starts and ends.
+- [x] 14 Low Power Mode: frame rate drops, no effects.
+- [x] 15 Persistence, cold start, battery, smoothness.
+
 ## Android
