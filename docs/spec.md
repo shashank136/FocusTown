@@ -431,3 +431,10 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - A castle that has no free block (or not enough quota) waits in the queue like any building and is placed on the first free block, lowest top-left plot first.
 - A failed castle leaves one ruin that covers the whole block. Tapping any of its four plots offers the repair, and a completed repair clears all four.
 - Existing castles are not migrated: a castle saved before this change now covers the plots to its east and south, and may overlap a neighbour. (The only town affected was a test town.)
+
+## Road network (Phase V7, decided 2026-11-12)
+
+- Every building stands inside its plot (or its 2 x 2 block) with a road along the outer tile ring of that plot or block. A castle or pyramid is 12 x 12 tiles inside its 14 x 14 block, so the ring is free.
+- Each ring road is connected to the two main roads. Where a block does not touch a main road or another ring, a connector road runs along the plot edges (the shortest way) to a road that is already connected. The player never places roads.
+- Ruins and the building site get the same roads. Gardens and unclaimed forest do not.
+- Spare workers walk the whole network, not only the two main roads: each walks a route between two places on the network and back. Up to 8 walk at once.

@@ -1853,6 +1853,25 @@ Rules are in `docs/spec.md` ("Multi-plot buildings"). Built in this order, each 
 ### T-M.4 [ ] [device] Castle on the iPhone
 - Commit: `T-M.4: record castle device check`
 
+## Phase V7: road network (decided 2026-11-12, before launch)
+
+Rules are in `docs/spec.md` ("Road network"). Built in this order, each with its tests first:
+
+### T-V7.1 [ ] Castle and pyramid inset by one tile
+- The castle and pyramid shrink to 12 x 12 inside their 14 x 14 block so the outer ring is free for the road. Tests, preview and site workers follow.
+- Commit: `T-V7.1: inset castle`
+
+### T-V7.2 [ ] Road network (pure geometry)
+- `lib/game/world/road_network.dart`: the road tiles (main roads, rings of used blocks, connectors) and walking routes.
+- Commit: `T-V7.2: road network`
+
+### T-V7.3 [ ] World draws the roads, workers walk them
+- The world builder draws the network; `spareWalkers` follows routes; up to 8 walkers.
+- Commit: `T-V7.3: roads and walkers`
+
+### T-V7.4 [ ] [device] Roads on the iPhone
+- Commit: `T-V7.4: record road device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.
