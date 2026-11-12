@@ -152,6 +152,17 @@ class TownRepository {
     )..addColumns([count])).map((row) => row.read(count)!).getSingle();
   }
 
+  /// Every completed or failed session, oldest first.
+  Future<List<Session>> resolvedSessions() async {
+    final finished = [SessionState.completed.name, SessionState.failed.name];
+    final rows =
+        await (_db.select(_db.sessions)
+              ..where((s) => s.state.isIn(finished))
+              ..orderBy([(s) => OrderingTerm.asc(s.startedAtWall)]))
+            .get();
+    return rows.map(sessionFromRow).toList();
+  }
+
   /// The session that is running or away, if any.
   Future<Session?> activeSession() async {
     final active = [SessionState.running.name, SessionState.away.name];

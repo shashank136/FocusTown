@@ -1952,7 +1952,7 @@ Open questions (assumed answers):
 - Shown: minutes per day for the last 7 days and per week for the last 8 weeks, current and longest streak, completion rate, average and longest session, and one plain sentence on the trend ("12% more than last week"). (Assumed.)
 - Days and weeks use the local date from the injected clock (Monday starts a week). (Assumed.)
 
-### T-V4.1 [ ] Stats rule (pure)
+### T-V4.1 [x] Stats rule (pure)
 - Depends on: MVP done (T-22.15)
 - Goal: turn stored sessions into the numbers the screen shows.
 - Files: `lib/domain/focus_stats.dart`, `test/domain/focus_stats_test.dart`.
@@ -1960,7 +1960,7 @@ Open questions (assumed answers):
 - Tests first: empty history; one day; a week boundary on a Monday; failed sessions add 0 minutes and lower the rate; the change is null with no previous week and signed otherwise; a clock set backwards never counts future days.
 - Commit: `T-V4.1: focus stats rule`
 
-### T-V4.2 [ ] Read sessions
+### T-V4.2 [x] Read sessions
 - Depends on: T-V4.1
 - Do: `TownRepository.resolvedSessions({DateTime? since})` and a `focusStatsProvider` that recomputes when a session ends.
 - Tests first: only resolved sessions are returned, in time order; the provider updates after a completed and a failed session.

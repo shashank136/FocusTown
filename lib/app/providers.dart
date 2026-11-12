@@ -12,6 +12,8 @@ import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/beta_stats.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/focus_stats.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/render/tier_preview.dart';
@@ -48,6 +50,17 @@ final localLogProvider = Provider<LocalLog>(
 final FutureProvider<BetaStats> betaStatsProvider = FutureProvider.autoDispose(
   (ref) => ref.watch(townRepositoryProvider).betaStats(),
 );
+
+/// The numbers of the "Your focus" screen; read again when a session ends.
+final FutureProvider<FocusStats> focusStatsProvider =
+    FutureProvider.autoDispose((ref) async {
+      ref.watch(focusControllerProvider.select((s) => s.value?.lastResult));
+      final sessions = await ref
+          .watch(townRepositoryProvider)
+          .resolvedSessions();
+      final today = LocalDate.fromDateTime(ref.watch(clockProvider).nowWall());
+      return FocusStats.from(sessions, today);
+    });
 
 /// A one-time message for the home screen, set when the saved town could not
 /// be opened and a new one was started. Null on a normal start.
