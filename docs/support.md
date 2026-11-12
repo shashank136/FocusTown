@@ -1,3 +1,8 @@
+---
+layout: default
+title: Support
+---
+
 # Focus Town support
 
 Focus Town is an offline focus timer: you start a session, builders build, and you leave your phone alone.

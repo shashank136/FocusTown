@@ -1,0 +1,12 @@
+title: Focus Town
+theme: jekyll-theme-minimal
+# Only the privacy and support pages are published; the rest are internal.
+exclude:
+  - device_tests.md
+  - images
+  - prompt_plan.md
+  - reference
+  - release.md
+  - spec.md
+  - tasks.md
+  - todo.md

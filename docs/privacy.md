@@ -1,3 +1,8 @@
+---
+layout: default
+title: Privacy policy
+---
+
 # Focus Town privacy policy
 
 Last updated: 2026-11-12
