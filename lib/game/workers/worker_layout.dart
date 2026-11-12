@@ -23,10 +23,10 @@ class PlacedWorker {
 const kMaxSiteWorkers = 8;
 
 /// At most this many spare workers walk the roads.
-const kMaxSpareWalkers = 4;
+const kMaxSpareWalkers = 8;
 
 /// How many workers are not on the building site and walk the roads: at most
-/// four. In recovery mode with no workers, one (the Last Builder) wanders.
+/// eight. In recovery mode with no workers, one (the Last Builder) wanders.
 int spareWorkerCount(TownState town, Session? active) {
   final spare = math.max(
     0,
@@ -90,28 +90,34 @@ List<PlacedWorker> siteWorkers(
   return out;
 }
 
-/// [count] workers walking up and down the two roads (no path finding).
+/// One spare worker for each of [routes] (road tiles one step apart), walking
+/// to the end of its route and back (no path finding: the routes come from the
+/// road network). Later workers start further along, so they are spread out.
 List<PlacedWorker> spareWalkers(
-  int count,
+  List<List<(int, int)>> routes,
   double seconds, {
   bool reducedMotion = false,
 }) {
-  const length = 56.0;
   const speed = 1.5; // tiles per second
   final t = reducedMotion ? 0.0 : seconds;
   final out = <PlacedWorker>[];
-  for (var i = 0; i < count; i++) {
-    final vertical = i.isEven;
-    final p = (t * speed + i * 14) % (2 * length);
-    final forward = p < length;
-    final along = forward ? 3 + p : 3 + (2 * length - p);
-    final facing = vertical
-        ? (forward ? (0, 1) : (0, -1))
-        : (forward ? (1, 0) : (-1, 0));
+  for (var i = 0; i < routes.length; i++) {
+    final route = routes[i];
+    if (route.length < 2) continue;
+    final steps = route.length - 1;
+    final p = (t * speed + i * 7) % (2 * steps);
+    final forward = p < steps;
+    final along = forward ? p : 2 * steps - p;
+    final k = along.floor().clamp(0, steps - 1);
+    final from = route[k];
+    final to = route[k + 1];
+    final f = along - k;
+    final dx = to.$1 - from.$1;
+    final dy = to.$2 - from.$2;
     final worker = Worker(
-      x: vertical ? 31.6 : along,
-      y: vertical ? along : 32.4,
-      facing: facing,
+      x: from.$1 + dx * f + 0.5,
+      y: from.$2 + dy * f + 0.5,
+      facing: forward ? (dx, dy) : (-dx, -dy),
       shirt: _shirt,
     );
     final stepOne = (seconds * 4).floor().isEven;

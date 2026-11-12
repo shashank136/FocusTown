@@ -122,4 +122,11 @@ Install the release build in place (`xcrun devicectl device install app ...`), t
 - [ ] V6: abandon a land session: nothing is lost and no land is added.
 - [ ] V6: the camera can zoom out over the grown island and pan to the new land.
 
+## Road network on the iPhone (T-V7.4, to do, built 2026-11-12)
+
+- [ ] Every building has a road around its plot (a castle or pyramid around its whole 2 x 2 block), and those roads join the two main roads, along plot edges where needed.
+- [ ] Up to 8 spare workers walk the whole network, not only the two main roads, and keep to roads.
+- [ ] Workers walking past a castle or tower hide behind its walls and show again after (no see-through, no flicker).
+- [ ] The castle and pyramid are 12 x 12 inside their block, leaving the road tile free.
+
 ## Android

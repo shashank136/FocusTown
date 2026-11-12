@@ -8,6 +8,7 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
@@ -23,6 +24,7 @@ import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
+import 'package:focus_town/game/world/road_network.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
@@ -89,6 +91,12 @@ class TownGame extends FlameGame
   // the next free plot the moment a session ends.
   Plot? _lastPlot;
   List<PlacedWorker> _lastSiteWorkers = const [];
+  // The walking routes, rebuilt only when the buildings, the land or the
+  // building site change.
+  List<TownBuilding> _routeBuildings = const [];
+  List<Parcel> _routeParcels = const [];
+  int? _routeSite;
+  List<List<(int, int)>> _routeCache = const [];
   SiteTransition? _show;
   List<PlacedWorker> _leaving = const [];
   Plot? _smokeAt;
@@ -386,6 +394,24 @@ class TownGame extends FlameGame
     );
   }
 
+  // The routes the spare workers walk, over the whole road network.
+  List<List<(int, int)>> _routes(FocusState focus) {
+    final town = focus.town;
+    final active = focus.active;
+    final site = active == null || active.isRepair || active.isLand
+        ? null
+        : sessionSitePlot(town, active);
+    if (_routeSite != site?.index ||
+        !listEquals(_routeBuildings, town.buildings) ||
+        !listEquals(_routeParcels, town.parcels)) {
+      _routeBuildings = town.buildings;
+      _routeParcels = town.parcels;
+      _routeSite = site?.index;
+      _routeCache = RoadNetwork(town, site: site).routes(kMaxSpareWalkers);
+    }
+    return _routeCache;
+  }
+
   // Where every worker is at the current game time.
   void _simulateWorkers() {
     final focus = _focus;
@@ -427,7 +453,11 @@ class TownGame extends FlameGame
     }
     renderer.setWorkers([
       ...site,
-      ...spareWalkers(spare, seconds, reducedMotion: reducedMotion),
+      ...spareWalkers(
+        _routes(focus).take(spare).toList(),
+        seconds,
+        reducedMotion: reducedMotion,
+      ),
     ]);
   }
 

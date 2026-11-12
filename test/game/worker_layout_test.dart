@@ -29,8 +29,8 @@ void main() {
       expect(spareWorkerCount(_town(10), _session(BuildingTier.castle, 8)), 2);
     });
 
-    test('at most 4 are shown', () {
-      expect(spareWorkerCount(_town(30), null), 4);
+    test('at most 8 are shown', () {
+      expect(spareWorkerCount(_town(30), null), 8);
     });
 
     test('never negative', () {
@@ -130,58 +130,68 @@ void main() {
   });
 
   group('spareWalkers', () {
-    test('they stay on the roads between 3 and 59 over time', () {
+    // One straight route of 11 tiles, going south.
+    final route = [for (var y = 5; y <= 15; y++) (5, y)];
+
+    test('they stay on their route over time', () {
+      final tiles = route.toSet();
       for (var t = 0.0; t < 200; t += 0.7) {
-        for (final w in spareWalkers(4, t)) {
-          expect(w.worker.x, inInclusiveRange(3, 59));
-          expect(w.worker.y, inInclusiveRange(3, 59));
-          final onVertical = (w.worker.x - 31.6).abs() < 1e-9;
-          final onHorizontal = (w.worker.y - 32.4).abs() < 1e-9;
-          expect(onVertical || onHorizontal, isTrue);
+        for (final w in spareWalkers([route, route.reversed.toList()], t)) {
+          expect(
+            tiles.contains((w.worker.x.floor(), w.worker.y.floor())),
+            isTrue,
+            reason: 't=$t (${w.worker.x}, ${w.worker.y})',
+          );
         }
       }
     });
 
-    test('worker 0 walks the vertical road forward then back', () {
-      double y(double t) => spareWalkers(1, t)[0].worker.y;
-      expect(y(0), closeTo(3, 1e-9));
-      expect(y(10), closeTo(3 + 15, 1e-9)); // 1.5 tiles per second
-      expect(y(56 / 1.5), closeTo(59, 1e-6)); // far end
-      expect(y(56 / 1.5 + 10), closeTo(59 - 15, 1e-6)); // coming back
-      expect(spareWalkers(1, 10)[0].worker.facing, (0, 1));
-      expect(spareWalkers(1, 56 / 1.5 + 10)[0].worker.facing, (0, -1));
+    test('worker 0 walks its route forward then back', () {
+      double y(double t) => spareWalkers([route], t)[0].worker.y;
+      expect(y(0), closeTo(5.5, 1e-9));
+      expect(y(2), closeTo(5.5 + 3, 1e-9)); // 1.5 tiles per second
+      expect(y(10 / 1.5), closeTo(15.5, 1e-6)); // far end
+      expect(y(10 / 1.5 + 2), closeTo(15.5 - 3, 1e-6)); // coming back
+      expect(spareWalkers([route], 2)[0].worker.facing, (0, 1));
+      expect(spareWalkers([route], 10 / 1.5 + 2)[0].worker.facing, (0, -1));
     });
 
-    test('odd workers use the horizontal road', () {
-      final w = spareWalkers(2, 0)[1].worker;
-      expect(w.y, closeTo(32.4, 1e-9));
-      expect(w.x, closeTo(3 + 14, 1e-9)); // phase 14 tiles
+    test('later workers start further along', () {
+      final w = spareWalkers([route, route], 0);
+      expect(w[0].worker.y, closeTo(5.5, 1e-9));
+      expect(w[1].worker.y, isNot(closeTo(5.5, 1e-9)));
     });
 
-    test('they loop after a full ping-pong (112 tiles)', () {
-      final a = spareWalkers(1, 5)[0].worker.y;
-      final b = spareWalkers(1, 5 + 112 / 1.5)[0].worker.y;
+    test('they loop after a full ping-pong', () {
+      final a = spareWalkers([route], 5)[0].worker.y;
+      final b = spareWalkers([route], 5 + 20 / 1.5)[0].worker.y;
       expect(b, closeTo(a, 1e-6));
     });
 
+    test('a turn faces the new way', () {
+      final bend = [(5, 5), (5, 6), (6, 6), (7, 6)];
+      expect(spareWalkers([bend], 0.1)[0].worker.facing, (0, 1));
+      expect(spareWalkers([bend], 1)[0].worker.facing, (1, 0));
+    });
+
     test('walk poses alternate every quarter second', () {
-      Pose pose(double t) => spareWalkers(1, t)[0].pose;
+      Pose pose(double t) => spareWalkers([route], t)[0].pose;
       expect(pose(0), Pose.walk1);
       expect(pose(0.25), Pose.walk2);
       expect(pose(0.5), Pose.walk1);
     });
 
     test('reduced motion: idle and fixed positions', () {
-      final a = spareWalkers(3, 0, reducedMotion: true);
-      final b = spareWalkers(3, 50, reducedMotion: true);
+      final a = spareWalkers([route, route, route], 0, reducedMotion: true);
+      final b = spareWalkers([route, route, route], 50, reducedMotion: true);
       for (var i = 0; i < 3; i++) {
         expect(a[i].pose, Pose.idle);
         expect((a[i].worker.x, a[i].worker.y), (b[i].worker.x, b[i].worker.y));
       }
     });
 
-    test('count 0 gives nobody', () {
-      expect(spareWalkers(0, 3), isEmpty);
+    test('no routes gives nobody', () {
+      expect(spareWalkers(const [], 3), isEmpty);
     });
   });
 

@@ -1865,7 +1865,7 @@ Rules are in `docs/spec.md` ("Road network"). Built in this order, each with its
 - `lib/game/world/road_network.dart`: the road tiles (main roads, rings of used blocks, connectors) and walking routes.
 - Commit: `T-V7.2: road network`
 
-### T-V7.3 [ ] World draws the roads, workers walk them
+### T-V7.3 [x] World draws the roads, workers walk them
 - The world builder draws the network; `spareWalkers` follows routes; up to 8 walkers.
 - Commit: `T-V7.3: roads and walkers`
 
