@@ -97,6 +97,17 @@ void main() {
       expect(guard.degraded, isTrue);
     });
 
+    test('a game nobody paints (a page on top of it) never degrades', () {
+      final r = _Exploding();
+      final g = game(r);
+      tick(g);
+      // Updates go on while a full-screen page hides the town: no render().
+      for (var i = 0; i < 60 * 12; i++) {
+        g.update(1 / 60);
+      }
+      expect(guard.degraded, isFalse);
+    });
+
     test('a degraded game stops moving workers', () {
       final r = _Exploding();
       final g = game(r);

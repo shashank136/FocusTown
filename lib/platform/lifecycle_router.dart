@@ -25,6 +25,10 @@ class LifecycleRouter {
   Future<void> _queue = Future<void>.value();
   bool _inCall = false;
   BackgroundedEvent? _pending;
+  // The last lock. On the iPhone the lock comes just BEFORE the background
+  // (the screen locks, then the app is sent away), so a background right after
+  // a lock is part of that lock.
+  LockedEvent? _lockedAt;
 
   /// Completes when every event received so far has been handled.
   Future<void> get idle => _queue;
@@ -86,6 +90,7 @@ class LifecycleRouter {
     }
     switch (e) {
       case LockedEvent():
+        _lockedAt = e;
         await _controller.onLocked(at: e.timestamp);
       case CallStartedEvent():
         _inCall = true;
@@ -93,11 +98,14 @@ class LifecycleRouter {
       case CallEndedEvent():
         _inCall = false;
       case BackgroundedEvent():
-        if (!_inCall) _pending = e;
+        final lock = _lockedAt;
+        final partOfLock = lock != null && _withinWindow(lock, e);
+        if (!_inCall && !partOfLock) _pending = e;
       case ForegroundedEvent():
+        _lockedAt = null;
         await _controller.onForegrounded(at: e.timestamp);
       case UnlockedEvent():
-        break;
+        _lockedAt = null;
     }
   }
 

@@ -77,6 +77,7 @@ class TownGame extends FlameGame
   bool _lowPower = false;
   Duration _fpsWindowStart = Duration.zero;
   int _fpsWindowFrames = 0;
+  int _fpsWindowRenders = 0;
 
   double _lastScale = 1;
   Vec2? _doubleTapAt;
@@ -425,6 +426,7 @@ class TownGame extends FlameGame
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    _fpsWindowRenders++;
     // A fresh frame only when the limiter allowed one (or the user moved the
     // view); otherwise the last frame is replayed without re-drawing blocks.
     if ((_redraw || _lastFrame == null) && !guard.degraded) {
@@ -455,9 +457,15 @@ class TownGame extends FlameGame
     if (window >= const Duration(seconds: 1)) {
       final fps = _fpsWindowFrames * 1e6 / window.inMicroseconds;
       _fps?.value = fps;
-      guard.recordFps(fps, _elapsed);
+      // No paint at all in the window means a page is covering the town.
+      if (_fpsWindowRenders == 0) {
+        guard.recordHidden();
+      } else {
+        guard.recordFps(fps, _elapsed);
+      }
       _fpsWindowStart = _elapsed;
       _fpsWindowFrames = 0;
+      _fpsWindowRenders = 0;
     }
   }
 }

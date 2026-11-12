@@ -27,6 +27,10 @@ class RenderGuard {
     if (at - since >= _window) _degrade('$fps fps for 5 seconds');
   }
 
+  /// Reports a second in which the town was not painted at all (another page
+  /// covers it): that says nothing about speed, so the slow streak restarts.
+  void recordHidden() => _slowSince = null;
+
   /// Reports that drawing failed with [error].
   void recordError(Object error) {
     if (!degraded) _degrade('error: $error');

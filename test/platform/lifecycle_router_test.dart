@@ -216,6 +216,40 @@ void main() {
       },
     );
 
+    test(
+      'locked just BEFORE backgrounded (the real iPhone order) is a lock',
+      () async {
+        await controller.start(25);
+        final t = now();
+        await send(LockedEvent(t));
+        await send(LockedEvent(after(t, 63)));
+        await send(BackgroundedEvent(after(t, 76)));
+        // Three minutes later the user unlocks into the app.
+        clock.advance(const Duration(minutes: 3));
+        await send(ForegroundedEvent(after(t, 188000)));
+        await send(UnlockedEvent(after(t, 188003)));
+        final s = active()!;
+        expect(s.state, SessionState.running);
+        expect(s.passUsed, isFalse);
+        expect(s.awayTotal, Duration.zero);
+      },
+    );
+
+    test(
+      'a background long after a lock and unlock is a real switch',
+      () async {
+        await controller.start(25);
+        final t = now();
+        await send(LockedEvent(t));
+        await send(UnlockedEvent(after(t, 5000)));
+        await send(BackgroundedEvent(after(t, 10000)));
+        clock.advance(const Duration(seconds: 11));
+        await router.flushExpired();
+        await router.idle;
+        expect(active()!.state, SessionState.away);
+      },
+    );
+
     test('callStarted drops the pending event', () async {
       await controller.start(25);
       final t = now();
