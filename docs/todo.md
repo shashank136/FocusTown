@@ -354,10 +354,18 @@ Build toward this look. Interactive prototype: https://claude.ai/artifact/Ee7RdR
 - [x] App icon (block house) and splash screen
 - [ ] Bundle id, version, and build number set (version 1.0.0+1 done; final id still a placeholder, see docs/release.md)
 - [ ] iOS release signing configured (steps in docs/release.md; needs the user's team)
-- [ ] (deferred, Android skipped) Android release keystore created and backed up safely (not in git) (Gradle config done; user creates the key)
+- [ ] (after launch: Android is not in the iPhone launch) Android release keystore created and backed up safely (not in git) (Gradle config done; user creates the key)
 - [x] iOS `PrivacyInfo.xcprivacy` declares no tracking and no data collected
 - [x] Final integration test (full flow with fast fake clock) passing
 - [ ] Committed: `step 22`
+
+### App Store submission (iPhone first launch, Phase L)
+- [ ] TestFlight beta (T-22.15), then Phase V2 repair
+- [ ] Privacy policy and support pages published (T-L.1)
+- [ ] Store listing text and screenshots (T-L.2)
+- [ ] App Review notes (T-L.3)
+- [ ] Submitted and result recorded (T-L.4)
+- [ ] After launch: Android, V3, V4, V6, payments (StoreKit)
 
 ---
 

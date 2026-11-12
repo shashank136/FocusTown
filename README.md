@@ -2,7 +2,7 @@
 
 Focus Town is a mobile app where you build a small block-style island town by staying off your phone. Start a focus session, and little blocky workers build a hut, a house, a tower or even a castle while you focus. Leave the app before the time is up and the builders stop, and the site becomes a ruin. Finish, and your town grows.
 
-It is built with Flutter, works fully offline, and has no accounts, ads or analytics. iOS comes first; Android is planned.
+It is built with Flutter, works fully offline, and has no accounts, ads or analytics. The first release is iPhone only; Android comes after launch.
 
 ![Block-style town overview](docs/images/block-town-overview.png)
 
@@ -33,7 +33,7 @@ Planned after the first release (see `docs/tasks.md`):
 - More kinds of building (apartments, pyramids, gardens) and landmarks.
 - A focus trends screen: how your focus time is improving.
 - A world that grows: extend the island where you want, view it on a rotatable globe, and show it off.
-- Android.
+- Android (after the iPhone launch).
 
 ## Run it
 

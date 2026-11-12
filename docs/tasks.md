@@ -14,7 +14,7 @@ Single source of truth for coding work. Each task is one focused change (about 3
 Each session updates this section before stopping.
 
 - Current task: T-22.15 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-22.13 done: iPhone checklist recorded as all pass in docs/device_tests.md. T-22.14 (Android) deferred by the user. Next: T-22.15 TestFlight: needs the final bundle id, team and Apple Developer account; 
+- What's left on it: Launch is iPhone only (user decision 2026-11-11); Android (T-11.x, T-22.14 and the Android parts of T-21.4/T-21.7, Play Store, Android signing key) comes after launch. Step 22 is done except T-22.15 TestFlight (needs the user's Apple account; bundle id com.shashank.focusTown is set). Order from here: T-22.15 beta, then Phase V2 repair, then Phase L (App Store submission), then V3/V4/V6.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.shashank.focusTown` (decided 2026-11-11).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -32,7 +32,7 @@ Each session updates this section before stopping.
 
 ## Status of steps
 
-Total: 124 tasks (T-01.1 to T-22.15). Tasks tagged `[device]` need the user's physical phone.
+Total: 128 tasks (T-01.1 to T-22.15, plus T-L.1 to T-L.4). Tasks tagged `[device]` need the user's physical phone.
 
 - T-01 (step 1): [x] done (T-01.1–T-01.3).
 
@@ -1780,7 +1780,7 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Done when: results recorded; every failure filed as a new task or fixed; flutter analyze clean; flutter test green.
 - Commit: `T-22.13: record iphone final checklist`
 
-### T-22.14 [ ] [device] (deferred: Android skipped by the user) Full manual checklist on an Android phone
+### T-22.14 [!] [device] (after launch: Android is not part of the iPhone launch) Full manual checklist on an Android phone
 - Step: 22 (docs/prompt_plan.md, Prompt 22)
 - Depends on: T-22.13
 - Goal: the same checklist on a physical Android phone (Samsung or Xiaomi ideally).
@@ -1805,7 +1805,40 @@ Revision after the first iPhone test (user): the whole island is forest, any of 
 - Done when: build visible in TestFlight and testers invited; results recorded; flutter analyze clean; flutter test green. The queue is complete.
 - Commit: `T-22.15: record testflight upload`
 
-## Phase V2: forgiveness and return (after the MVP ships)
+## Launch order (iPhone first, decided 2026-11-11)
+
+1. T-22.15 TestFlight beta (2 weeks, exit criteria in T-22.15).
+2. Phase V2 repair (a full town is a dead end today: abandoned builds leave permanent ruins).
+3. Phase L below: App Store submission.
+4. After launch: V3 building looks, V4 focus trends, V6 growing world, payments (StoreKit; needs the user's approval of `in_app_purchase`), Android.
+5. Phase V5 (focus shield with the Screen Time API) is undecided. It needs an Apple Family Controls entitlement application, which can take weeks. If wanted for 1.1, apply during the TestFlight beta; the user decides.
+
+## Phase L: App Store submission (after V2)
+
+Everything outside the code that Apple asks for. None of these tasks needs new packages.
+
+### T-L.1 [ ] [device] Privacy policy and support pages
+- Depends on: T-22.15
+- Goal: public URLs Apple requires, even for an app that collects nothing.
+- Do: write `docs/privacy.md` (no data collected, nothing leaves the device, no accounts, no analytics, contact email) and `docs/support.md`; the user chooses where to host them (for example GitHub Pages) and gives the URLs. Record the URLs in `docs/release.md`.
+- Commit: `T-L.1: privacy policy and support pages`
+
+### T-L.2 [ ] [device] Store listing text and screenshots
+- Depends on: T-L.1
+- Do: write the name, subtitle, description, keywords, category (Productivity or Lifestyle) and age rating answers in `docs/release.md`. Capture screenshots at the sizes App Store Connect asks for (6.9-inch and 6.5-inch iPhone) from the simulator or phone: onboarding, a running build, the finished town, the setup dial. The user reviews them.
+- Commit: `T-L.2: store listing`
+
+### T-L.3 [ ] App Review notes
+- Depends on: T-L.2
+- Do: add to `docs/release.md` the notes for the reviewer: no account or login needed; notifications warn the user before builders stop; the app works offline; how to start a 10-minute session; why the app is useful with the screen locked.
+- Commit: `T-L.3: review notes`
+
+### T-L.4 [ ] [device] Submit for App Review
+- Depends on: T-L.3
+- Do: the user selects the TestFlight build, fills the App Store Connect fields from `docs/release.md`, answers the privacy label (Data Not Collected) and submits. Record the date and result under `## App Store` in `docs/release.md`; any rejection reason becomes a new task.
+- Commit: `T-L.4: record app review result`
+
+## Phase V2: forgiveness and return (before the App Store submission)
 
 Decided with the user: the MVP comes first; these two items come right after it and are already v2 in `docs/spec.md` ("cleanup sessions" and "earned passes"). Payments (a small paid pass pack, building styles and landmarks as one-time purchases) are deferred: they need the `in_app_purchase` package, which needs the user's approval, and belong near step 22. When work starts, update `docs/spec.md` (FR-5 says ruins are permanent; the rules for passes) first.
 
