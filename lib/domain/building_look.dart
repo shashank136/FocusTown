@@ -1,5 +1,5 @@
-/// Every tier has this many looks (the second ones: tent, townhouse, smithy,
-/// lighthouse, pyramid).
+/// Every tier has this many looks (the second ones: cabin, townhouse,
+/// smithy, lighthouse, pyramid).
 const kLooksPerTier = 2;
 
 /// Which look the building (or session) with [id] has. The id is stable, so

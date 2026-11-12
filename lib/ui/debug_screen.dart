@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/ui/debug_log_view.dart';
@@ -76,6 +77,17 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             Text('Uptime: ${_hms(clock.uptime())}'),
             Text('Elapsed since start: ${_ms(elapsedBetween(_start, now))}'),
             Text('Clock tampered: ${tampered ? 'yes' : 'no'}'),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Short test sessions (1 minute)'),
+              subtitle: const Text(
+                'Every new session lasts 1 minute. Off again when the app '
+                'restarts.',
+              ),
+              value: ref.watch(shortSessionsProvider),
+              onChanged: (_) =>
+                  ref.read(shortSessionsProvider.notifier).toggle(),
+            ),
             const FocusDebugPanel(),
             const WorldStatsCard(),
             ValueListenableBuilder<double>(

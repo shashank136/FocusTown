@@ -119,6 +119,7 @@ class Session {
 
   /// Copy with changed fields; [clearLeftAt] sets [leftAt] to null.
   Session copyWith({
+    int? plannedMinutes,
     SessionState? state,
     TimeStamp? leftAt,
     bool clearLeftAt = false,
@@ -129,7 +130,7 @@ class Session {
     bool? emergencyUsed,
   }) => Session(
     id: id,
-    plannedMinutes: plannedMinutes,
+    plannedMinutes: plannedMinutes ?? this.plannedMinutes,
     tier: tier,
     workersAssigned: workersAssigned,
     state: state ?? this.state,

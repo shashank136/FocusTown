@@ -41,7 +41,7 @@ void buildTier(
   }
   switch (t) {
     case BuildingTier.hut:
-      (second ? _tent : _hut)(w, ox, oy, stage);
+      (second ? _cabin : _hut)(w, ox, oy, stage);
       if (scaffold) _scaffold(w, ox, oy, 3, 3, 4);
     case BuildingTier.house:
       (second ? _townhouse : _house)(w, ox, oy, stage);
@@ -153,16 +153,19 @@ void _tower(VoxelWorld w, int ox, int oy, int stage) {
 
 // Second looks. Each keeps the footprint and the stage count of its tier.
 
-// An A-frame wool tent: two walls and a ridge over an open floor, with a pole
-// and a pennant at the front.
-void _tent(VoxelWorld w, int ox, int oy, int stage) {
-  w.fill(ox, oy, 1, ox, oy + 2, 1, Blocks.wool);
-  if (stage >= 2) w.fill(ox + 2, oy, 1, ox + 2, oy + 2, 1, Blocks.wool);
-  if (stage >= 3) w.fill(ox + 1, oy, 2, ox + 1, oy + 2, 2, Blocks.wool);
+// A log cabin: dark log walls, a slate roof and a stone chimney.
+void _cabin(VoxelWorld w, int ox, int oy, int stage) {
+  for (var z = 1; z <= math.min(stage, 2); z++) {
+    w.ring(ox, oy, 3, 3, z, Blocks.log);
+  }
+  w
+    ..remove(ox + 1, oy + 2, 1) // door
+    ..remove(ox + 1, oy + 2, 2);
+  if (stage >= 3) w.fill(ox - 1, oy - 1, 3, ox + 3, oy + 3, 3, Blocks.slate);
   if (stage >= 4) {
     w
-      ..fill(ox + 1, oy + 2, 3, ox + 1, oy + 2, 4, Blocks.log)
-      ..set(ox + 2, oy + 2, 4, Blocks.wool);
+      ..fill(ox, oy, 4, ox + 2, oy + 2, 4, Blocks.slate)
+      ..fill(ox + 2, oy, 5, ox + 2, oy, 6, Blocks.cobble);
   }
 }
 

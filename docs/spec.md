@@ -91,7 +91,7 @@ Four layers in one Flutter app: UI, game rendering, domain logic, and platform s
 | Game (Flame) | `town_renderer` | Isometric block rendering, cached static layer, camera pan/zoom, worker animation |
 | Domain (pure Dart) | `session_engine` | Session state machine; resolves outcomes from timestamps |
 | Domain | `town_rules` | Tiers, workers, plots, queue, recovery mode, streak, XP |
-| Domain | `building_defs` | Block lists per tier and construction stage; each tier has a classic and a second look (tent, townhouse, smithy, lighthouse, pyramid), chosen by the building's id (`lookIndex`), never by the user |
+| Domain | `building_defs` | Block lists per tier and construction stage; each tier has a classic and a second look (cabin, townhouse, smithy, lighthouse, pyramid), chosen by the building's id (`lookIndex`), never by the user |
 | Data | `repository` | Drift (SQLite) persistence and migrations |
 | Platform | `lifecycle_bridge` | Platform channel reporting lock / unlock / background / foreground / call events |
 | Platform | `notifier` | Schedules and cancels local notifications |

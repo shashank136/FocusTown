@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
+import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/local_date.dart';
@@ -82,7 +83,7 @@ class FocusController extends AsyncNotifier<FocusState> {
       throw StateError('Plot $plotIndex is not free');
     }
     final now = TimeStamp.now(ref.read(clockProvider));
-    final session = SessionEngine.start(
+    final built = SessionEngine.start(
       id: 's${now.wall.microsecondsSinceEpoch}',
       minutes: minutes,
       workersAvailable: current.town.workers,
@@ -90,12 +91,17 @@ class FocusController extends AsyncNotifier<FocusState> {
       now: now,
       plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town),
     );
+    final session = _testLength(built);
     // The first session of a new week brings the emergency pause back.
     final town = _refilled(current.town, now);
     // Save first: a session that was not saved never starts.
     await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
     state = AsyncData(current.copyWith(town: town, active: session));
   });
+
+  // Testing aid: new sessions last 1 minute while the switch is on.
+  Session _testLength(Session s) =>
+      ref.read(shortSessionsProvider) ? s.copyWith(plannedMinutes: 1) : s;
 
   TownState _refilled(TownState town, TimeStamp now) =>
       TownRules.refillEmergency(town, LocalDate.fromDateTime(now.wall));
@@ -128,11 +134,12 @@ class FocusController extends AsyncNotifier<FocusState> {
       throw StateError('Plot $plot has no ruin to repair');
     }
     final now = TimeStamp.now(ref.read(clockProvider));
-    final session = SessionEngine.startRepair(
+    final built = SessionEngine.startRepair(
       id: 's${now.wall.microsecondsSinceEpoch}',
       plot: plot,
       now: now,
     );
+    final session = _testLength(built);
     final town = _refilled(current.town, now);
     await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
     state = AsyncData(current.copyWith(town: town, active: session));
@@ -149,12 +156,13 @@ class FocusController extends AsyncNotifier<FocusState> {
       throw StateError('$parcel cannot be claimed');
     }
     final now = TimeStamp.now(ref.read(clockProvider));
-    final session = SessionEngine.startLand(
+    final built = SessionEngine.startLand(
       id: 's${now.wall.microsecondsSinceEpoch}',
       parcel: parcel,
       minutes: TownRules.landMinutes(current.town.parcels.length),
       now: now,
     );
+    final session = _testLength(built);
     final town = _refilled(current.town, now);
     await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
     state = AsyncData(current.copyWith(town: town, active: session));
