@@ -1872,6 +1872,32 @@ Rules are in `docs/spec.md` ("Road network"). Built in this order, each with its
 ### T-V7.4 [x] [device] Roads on the iPhone
 - Commit: `T-V7.4: record road device check`
 
+## Phase V8: landmarks (decided 2026-11-12)
+
+Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Tower. Built in this order, each with its tests first:
+
+### T-V8.1 [ ] Landmark and building progress (pure)
+- `Landmark`, `TownBuilding.landmark/progress`, `BuildingStatus.building`, rules for starting, adding progress and damage.
+- Commit: `T-V8.1: landmark rules`
+
+### T-V8.2 [ ] Storage (schema v9)
+- `buildings.landmark/progress`, `sessions.landmark`, mappers, migration.
+- Commit: `T-V8.2: landmark storage`
+
+### T-V8.3 [ ] Landmark sessions
+- `SessionEngine.startLandmark`, `FocusController.startLandmark`, results, failure damage.
+- Commit: `T-V8.3: landmark sessions`
+
+### T-V8.4 [ ] Eiffel Tower layout and drawing
+- 12 stages on the 12 x 12 inset block; the world draws a landmark in progress, live during a session.
+- Commit: `T-V8.4: eiffel tower`
+
+### T-V8.5 [ ] Setup sheet, panel and dialogs
+- Commit: `T-V8.5: landmark screens`
+
+### T-V8.6 [ ] [device] Landmark on the iPhone
+- Commit: `T-V8.6: record landmark device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.

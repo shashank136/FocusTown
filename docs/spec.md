@@ -438,3 +438,11 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - Each ring road is connected to the two main roads. Where a block does not touch a main road or another ring, a connector road runs along the plot edges (the shortest way) to a road that is already connected. The player never places roads.
 - Ruins and the building site get the same roads. Gardens and unclaimed forest do not.
 - Spare workers walk the whole network, not only the two main roads: each walks a route between two places on the network and back. Up to 8 walk at once.
+
+## Landmarks (Phase V8, decided 2026-11-12)
+
+- A landmark is a big building that takes several sessions. The first one is the Eiffel Tower (12 stages, 20 minutes of finished sessions per stage, so 240 minutes in all). Only one landmark can be in progress, and each can be built once.
+- It stands on a 2 x 2 block of plots, like a castle, and is a building in progress while it is built: it takes its block from the first session on, has roads around it, and is drawn at the stage its progress has reached.
+- A landmark session can be any length from 10 to 120 minutes. It risks no workers. When it finishes, its minutes are added to the landmark's progress (and count for XP and the streak as usual). The landmark is done at 240 minutes.
+- A session that fails (abandoned or left too long) damages the landmark: it loses one stage (20 minutes of progress, never below 0). Nothing else is lost.
+- It is not queued and leaves no ruin.
