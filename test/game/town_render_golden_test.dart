@@ -1,3 +1,7 @@
+// Golden images are made on macOS; CI skips this file (--exclude-tags golden).
+@Tags(['golden'])
+library;
+
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
