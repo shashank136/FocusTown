@@ -10,6 +10,7 @@ import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/forest.dart';
 import 'package:focus_town/game/world/garden.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
+import 'package:focus_town/game/world/road_network.dart';
 import 'package:focus_town/game/world/scenery.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
@@ -92,12 +93,6 @@ VoxelWorld buildTownWorld(
       }
     }
   }
-  // A castle clears and borders its whole block of plots.
-  final blocks = [
-    for (final b in town.buildings)
-      plotForTier(b.plotIndex, b.tier, town.parcels),
-    ?sitePlot,
-  ];
   final inUse = {...TownRules.occupied(town)};
   if (sitePlot != null) {
     inUse.addAll(
@@ -105,8 +100,10 @@ VoxelWorld buildTownWorld(
           [sitePlot.index],
     );
   }
-  for (final p in blocks) {
-    w.ring(p.originX, p.originY, p.size, p.size, 0, Blocks.path);
+  // Roads: the main ones, a ring around every used plot or block, and the
+  // connectors that join them up.
+  for (final (x, y) in RoadNetwork(town, site: sitePlot).tiles) {
+    if (w.has(x, y, 0)) w.set(x, y, 0, Blocks.path);
   }
   buildScenery(w);
   buildForest(w, cleared: inUse, parcels: town.parcels);

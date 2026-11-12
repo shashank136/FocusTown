@@ -340,4 +340,14 @@ void main() {
     );
     expect(_above(w, p, 2), direct.blockCount);
   });
+
+  test('a building has a road ring, joined to the main roads', () {
+    final far = plotAtCell(0, 0, const [])!;
+    final w = buildTownWorld(_town(buildings: [_b(far, BuildingTier.hut)]));
+    final p = kPlots[far];
+    expect(w.get(p.originX, p.originY, 0), Blocks.path);
+    expect(w.get(p.originX + 6, p.originY + 3, 0), Blocks.path);
+    // The building's own tiles stay grass.
+    expect(w.get(p.originX + 3, p.originY + 3, 0), Blocks.grass);
+  });
 }

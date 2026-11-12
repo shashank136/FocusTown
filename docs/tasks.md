@@ -1861,7 +1861,7 @@ Rules are in `docs/spec.md` ("Road network"). Built in this order, each with its
 - The castle and pyramid shrink to 12 x 12 inside their 14 x 14 block so the outer ring is free for the road. Tests, preview and site workers follow.
 - Commit: `T-V7.1: inset castle`
 
-### T-V7.2 [ ] Road network (pure geometry)
+### T-V7.2 [x] Road network (pure geometry)
 - `lib/game/world/road_network.dart`: the road tiles (main roads, rings of used blocks, connectors) and walking routes.
 - Commit: `T-V7.2: road network`
 
