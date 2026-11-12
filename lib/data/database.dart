@@ -77,6 +77,8 @@ class Sessions extends Table {
   IntColumn get resolvedAt => integer().nullable()();
   IntColumn get plotIndex => integer().nullable()();
   IntColumn get repairPlotIndex => integer().nullable()();
+  // the parcel a land session claims, as gx:gy or gx:gy:g (garden)
+  TextColumn get land => text().nullable()();
   BoolColumn get emergencyArmed =>
       boolean().withDefault(const Constant(false))();
   BoolColumn get emergencyUsed =>
@@ -113,7 +115,10 @@ class AppDatabase extends _$AppDatabase {
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
       // v7: land claimed beyond the starting island.
-      if (from < 7) await m.addColumn(towns, towns.parcels);
+      if (from < 7) {
+        await m.addColumn(towns, towns.parcels);
+        await m.addColumn(sessions, sessions.land);
+      }
       // v6: the weekly emergency pause.
       if (from < 6) {
         await m.addColumn(towns, towns.emergencyPauses);

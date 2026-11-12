@@ -8,6 +8,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -254,6 +255,18 @@ void main() {
       );
       expect(button.onPressed, isNull);
       expect(find.text('Next pause on Mon 5 Jan'), findsOneWidget);
+    });
+
+    testWidgets('a land session has no pause button', (tester) async {
+      final c = await _pump(tester);
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startLand(const Parcel(-1, 3));
+      });
+      await _settle(tester);
+      expect(find.text('Emergency pause'), findsNothing);
     });
 
     testWidgets('a repair has no pause button', (tester) async {

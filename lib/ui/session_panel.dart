@@ -75,7 +75,7 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
               const SizedBox(height: 8),
               const Text('Lock your phone and put it face down.'),
             ],
-            if (!session.isRepair && !session.emergencyUsed)
+            if (!session.isRepair && !session.isLand && !session.emergencyUsed)
               _pauseControl(session),
             const SizedBox(height: 8),
             TextButton(

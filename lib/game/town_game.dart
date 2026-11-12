@@ -113,7 +113,9 @@ class TownGame extends FlameGame
         plot != null) {
       if (result.outcome == SessionOutcome.completed) _celebrate(plot);
       // A lost repair loses nothing: no smoke, no fallen workers.
-      if (result.outcome == SessionOutcome.failed && !result.repair) {
+      if (result.outcome == SessionOutcome.failed &&
+          !result.repair &&
+          !result.land) {
         _fail(plot);
       }
       if (result.outcome == SessionOutcome.queued) {
@@ -341,7 +343,7 @@ class TownGame extends FlameGame
   void _updateSite() {
     final active = _focus?.active;
     // A repair builds nothing: the ruin stays until the repair is done.
-    if (active == null || active.isRepair) {
+    if (active == null || active.isRepair || active.isLand) {
       renderer.setSite(null);
       return;
     }
@@ -369,6 +371,8 @@ class TownGame extends FlameGame
       if (active.isRepair) {
         // One repairer at the ruin; the other workers keep walking.
         onSite = 1;
+      } else if (active.isLand) {
+        onSite = 0; // surveying, not building
       } else if (onSite == 0 && focus.town.inRecoveryMode) {
         // The Last Builder works the site alone instead of walking the road.
         onSite = 1;

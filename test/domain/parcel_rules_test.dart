@@ -62,4 +62,9 @@ void main() {
     );
     expect(room.plotsUnlocked, 65);
   });
+
+  test('a garden adds land but no plot', () {
+    final town = _town(parcels: const [Parcel(-1, 3, garden: true)]);
+    expect(TownRules.plotCountOf(town), 64);
+  });
 }

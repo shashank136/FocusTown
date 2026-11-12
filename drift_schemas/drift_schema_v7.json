@@ -468,6 +468,16 @@
             "dsl_features": []
           },
           {
+            "name": "land",
+            "getter_name": "land",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
             "name": "emergency_armed",
             "getter_name": "emergencyArmed",
             "moor_type": "bool",
@@ -529,7 +539,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"sessions\" (\"id\" TEXT NOT NULL, \"planned_minutes\" INTEGER NOT NULL, \"tier\" TEXT NOT NULL, \"workers_assigned\" INTEGER NOT NULL, \"state\" TEXT NOT NULL, \"started_at_wall\" INTEGER NOT NULL, \"started_at_uptime_ms\" INTEGER NOT NULL, \"left_at_wall\" INTEGER NULL, \"left_at_uptime_ms\" INTEGER NULL, \"away_total_ms\" INTEGER NOT NULL, \"pass_used\" INTEGER NOT NULL CHECK (\"pass_used\" IN (0, 1)), \"outcome_reason\" TEXT NULL, \"resolved_at\" INTEGER NULL, \"plot_index\" INTEGER NULL, \"repair_plot_index\" INTEGER NULL, \"emergency_armed\" INTEGER NOT NULL DEFAULT 0 CHECK (\"emergency_armed\" IN (0, 1)), \"emergency_used\" INTEGER NOT NULL DEFAULT 0 CHECK (\"emergency_used\" IN (0, 1)), PRIMARY KEY (\"id\"));"
+          "sql": "CREATE TABLE IF NOT EXISTS \"sessions\" (\"id\" TEXT NOT NULL, \"planned_minutes\" INTEGER NOT NULL, \"tier\" TEXT NOT NULL, \"workers_assigned\" INTEGER NOT NULL, \"state\" TEXT NOT NULL, \"started_at_wall\" INTEGER NOT NULL, \"started_at_uptime_ms\" INTEGER NOT NULL, \"left_at_wall\" INTEGER NULL, \"left_at_uptime_ms\" INTEGER NULL, \"away_total_ms\" INTEGER NOT NULL, \"pass_used\" INTEGER NOT NULL CHECK (\"pass_used\" IN (0, 1)), \"outcome_reason\" TEXT NULL, \"resolved_at\" INTEGER NULL, \"plot_index\" INTEGER NULL, \"repair_plot_index\" INTEGER NULL, \"land\" TEXT NULL, \"emergency_armed\" INTEGER NOT NULL DEFAULT 0 CHECK (\"emergency_armed\" IN (0, 1)), \"emergency_used\" INTEGER NOT NULL DEFAULT 0 CHECK (\"emergency_used\" IN (0, 1)), PRIMARY KEY (\"id\"));"
         }
       ]
     }

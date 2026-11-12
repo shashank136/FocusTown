@@ -6,6 +6,7 @@ import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/forest.dart';
+import 'package:focus_town/game/world/garden.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/scenery.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
@@ -22,9 +23,14 @@ Plot activeSitePlot(TownState town, [int? chosen]) {
 }
 
 /// Where [session] works: the ruin of a repair, else its building site.
-Plot sessionSitePlot(TownState town, Session session) => session.isRepair
-    ? plotFor(session.repairPlot!, town.parcels)
-    : activeSitePlot(town, session.plotIndex);
+Plot sessionSitePlot(TownState town, Session session) {
+  if (session.isRepair) return plotFor(session.repairPlot!, town.parcels);
+  final land = session.land;
+  if (land != null) {
+    return Plot(-1, parcelOrigin(land.gx), parcelOrigin(land.gy));
+  }
+  return activeSitePlot(town, session.plotIndex);
+}
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
 /// buildings and ruins, and the building under construction.
@@ -60,11 +66,14 @@ VoxelWorld buildTownWorld(
       : activeSitePlot(town, building.plotIndex);
   // Plots in use (a building, a ruin or the site) are cleared and bordered;
   // all others stay forest.
-  // Claimed land is ground too, and starts as forest.
-  for (final p in town.parcels) {
-    final plot = plotFor(kPlots.length + town.parcels.indexOf(p), town.parcels);
-    for (var x = plot.originX; x < plot.originX + kPlotSize; x++) {
-      for (var y = plot.originY; y < plot.originY + kPlotSize; y++) {
+  // Claimed land is ground too: forest, or a garden. A land session shows
+  // its parcel while it runs.
+  final land = [...town.parcels, ?active?.land];
+  for (final p in land) {
+    final ox = parcelOrigin(p.gx);
+    final oy = parcelOrigin(p.gy);
+    for (var x = ox; x < ox + kPlotSize; x++) {
+      for (var y = oy; y < oy + kPlotSize; y++) {
         w
           ..set(x, y, -1, Blocks.dirt)
           ..set(x, y, 0, Blocks.grass);
@@ -78,6 +87,14 @@ VoxelWorld buildTownWorld(
   }
   buildScenery(w);
   buildForest(w, cleared: inUse, parcels: town.parcels);
+  for (final p in town.parcels.where((p) => p.garden)) {
+    buildGarden(
+      w,
+      parcelOrigin(p.gx),
+      parcelOrigin(p.gy),
+      (p.gx + 2 * p.gy).abs(),
+    );
+  }
   for (final b in town.buildings) {
     final p = plotFor(b.plotIndex, town.parcels);
     if (b.status == BuildingStatus.complete) {

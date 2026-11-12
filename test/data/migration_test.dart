@@ -56,6 +56,7 @@ void main() {
       expect(session.plannedMinutes, 10);
       expect(session.plotIndex, isNull);
       expect(session.repairPlotIndex, isNull);
+      expect(session.land, isNull);
       expect(session.emergencyArmed, isFalse);
       expect(session.emergencyUsed, isFalse);
     });

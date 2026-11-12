@@ -1648,6 +1648,15 @@ class $SessionsTable extends Sessions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _landMeta = const VerificationMeta('land');
+  @override
+  late final GeneratedColumn<String> land = GeneratedColumn<String>(
+    'land',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _emergencyArmedMeta = const VerificationMeta(
     'emergencyArmed',
   );
@@ -1695,6 +1704,7 @@ class $SessionsTable extends Sessions
     resolvedAt,
     plotIndex,
     repairPlotIndex,
+    land,
     emergencyArmed,
     emergencyUsed,
   ];
@@ -1842,6 +1852,12 @@ class $SessionsTable extends Sessions
         ),
       );
     }
+    if (data.containsKey('land')) {
+      context.handle(
+        _landMeta,
+        land.isAcceptableOrUnknown(data['land']!, _landMeta),
+      );
+    }
     if (data.containsKey('emergency_armed')) {
       context.handle(
         _emergencyArmedMeta,
@@ -1929,6 +1945,10 @@ class $SessionsTable extends Sessions
         DriftSqlType.int,
         data['${effectivePrefix}repair_plot_index'],
       ),
+      land: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}land'],
+      ),
       emergencyArmed: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}emergency_armed'],
@@ -1962,6 +1982,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final int? resolvedAt;
   final int? plotIndex;
   final int? repairPlotIndex;
+  final String? land;
   final bool emergencyArmed;
   final bool emergencyUsed;
   const SessionRow({
@@ -1980,6 +2001,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     this.resolvedAt,
     this.plotIndex,
     this.repairPlotIndex,
+    this.land,
     required this.emergencyArmed,
     required this.emergencyUsed,
   });
@@ -2012,6 +2034,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     }
     if (!nullToAbsent || repairPlotIndex != null) {
       map['repair_plot_index'] = Variable<int>(repairPlotIndex);
+    }
+    if (!nullToAbsent || land != null) {
+      map['land'] = Variable<String>(land);
     }
     map['emergency_armed'] = Variable<bool>(emergencyArmed);
     map['emergency_used'] = Variable<bool>(emergencyUsed);
@@ -2047,6 +2072,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       repairPlotIndex: repairPlotIndex == null && nullToAbsent
           ? const Value.absent()
           : Value(repairPlotIndex),
+      land: land == null && nullToAbsent ? const Value.absent() : Value(land),
       emergencyArmed: Value(emergencyArmed),
       emergencyUsed: Value(emergencyUsed),
     );
@@ -2073,6 +2099,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       resolvedAt: serializer.fromJson<int?>(json['resolvedAt']),
       plotIndex: serializer.fromJson<int?>(json['plotIndex']),
       repairPlotIndex: serializer.fromJson<int?>(json['repairPlotIndex']),
+      land: serializer.fromJson<String?>(json['land']),
       emergencyArmed: serializer.fromJson<bool>(json['emergencyArmed']),
       emergencyUsed: serializer.fromJson<bool>(json['emergencyUsed']),
     );
@@ -2096,6 +2123,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'resolvedAt': serializer.toJson<int?>(resolvedAt),
       'plotIndex': serializer.toJson<int?>(plotIndex),
       'repairPlotIndex': serializer.toJson<int?>(repairPlotIndex),
+      'land': serializer.toJson<String?>(land),
       'emergencyArmed': serializer.toJson<bool>(emergencyArmed),
       'emergencyUsed': serializer.toJson<bool>(emergencyUsed),
     };
@@ -2117,6 +2145,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     Value<int?> resolvedAt = const Value.absent(),
     Value<int?> plotIndex = const Value.absent(),
     Value<int?> repairPlotIndex = const Value.absent(),
+    Value<String?> land = const Value.absent(),
     bool? emergencyArmed,
     bool? emergencyUsed,
   }) => SessionRow(
@@ -2141,6 +2170,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     repairPlotIndex: repairPlotIndex.present
         ? repairPlotIndex.value
         : this.repairPlotIndex,
+    land: land.present ? land.value : this.land,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -2181,6 +2211,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       repairPlotIndex: data.repairPlotIndex.present
           ? data.repairPlotIndex.value
           : this.repairPlotIndex,
+      land: data.land.present ? data.land.value : this.land,
       emergencyArmed: data.emergencyArmed.present
           ? data.emergencyArmed.value
           : this.emergencyArmed,
@@ -2208,6 +2239,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('plotIndex: $plotIndex, ')
           ..write('repairPlotIndex: $repairPlotIndex, ')
+          ..write('land: $land, ')
           ..write('emergencyArmed: $emergencyArmed, ')
           ..write('emergencyUsed: $emergencyUsed')
           ..write(')'))
@@ -2231,6 +2263,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     resolvedAt,
     plotIndex,
     repairPlotIndex,
+    land,
     emergencyArmed,
     emergencyUsed,
   );
@@ -2253,6 +2286,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.resolvedAt == this.resolvedAt &&
           other.plotIndex == this.plotIndex &&
           other.repairPlotIndex == this.repairPlotIndex &&
+          other.land == this.land &&
           other.emergencyArmed == this.emergencyArmed &&
           other.emergencyUsed == this.emergencyUsed);
 }
@@ -2273,6 +2307,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<int?> resolvedAt;
   final Value<int?> plotIndex;
   final Value<int?> repairPlotIndex;
+  final Value<String?> land;
   final Value<bool> emergencyArmed;
   final Value<bool> emergencyUsed;
   final Value<int> rowid;
@@ -2292,6 +2327,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.resolvedAt = const Value.absent(),
     this.plotIndex = const Value.absent(),
     this.repairPlotIndex = const Value.absent(),
+    this.land = const Value.absent(),
     this.emergencyArmed = const Value.absent(),
     this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2312,6 +2348,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.resolvedAt = const Value.absent(),
     this.plotIndex = const Value.absent(),
     this.repairPlotIndex = const Value.absent(),
+    this.land = const Value.absent(),
     this.emergencyArmed = const Value.absent(),
     this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2340,6 +2377,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<int>? resolvedAt,
     Expression<int>? plotIndex,
     Expression<int>? repairPlotIndex,
+    Expression<String>? land,
     Expression<bool>? emergencyArmed,
     Expression<bool>? emergencyUsed,
     Expression<int>? rowid,
@@ -2360,6 +2398,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (resolvedAt != null) 'resolved_at': resolvedAt,
       if (plotIndex != null) 'plot_index': plotIndex,
       if (repairPlotIndex != null) 'repair_plot_index': repairPlotIndex,
+      if (land != null) 'land': land,
       if (emergencyArmed != null) 'emergency_armed': emergencyArmed,
       if (emergencyUsed != null) 'emergency_used': emergencyUsed,
       if (rowid != null) 'rowid': rowid,
@@ -2382,6 +2421,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<int?>? resolvedAt,
     Value<int?>? plotIndex,
     Value<int?>? repairPlotIndex,
+    Value<String?>? land,
     Value<bool>? emergencyArmed,
     Value<bool>? emergencyUsed,
     Value<int>? rowid,
@@ -2402,6 +2442,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       resolvedAt: resolvedAt ?? this.resolvedAt,
       plotIndex: plotIndex ?? this.plotIndex,
       repairPlotIndex: repairPlotIndex ?? this.repairPlotIndex,
+      land: land ?? this.land,
       emergencyArmed: emergencyArmed ?? this.emergencyArmed,
       emergencyUsed: emergencyUsed ?? this.emergencyUsed,
       rowid: rowid ?? this.rowid,
@@ -2456,6 +2497,9 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (repairPlotIndex.present) {
       map['repair_plot_index'] = Variable<int>(repairPlotIndex.value);
     }
+    if (land.present) {
+      map['land'] = Variable<String>(land.value);
+    }
     if (emergencyArmed.present) {
       map['emergency_armed'] = Variable<bool>(emergencyArmed.value);
     }
@@ -2486,6 +2530,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('plotIndex: $plotIndex, ')
           ..write('repairPlotIndex: $repairPlotIndex, ')
+          ..write('land: $land, ')
           ..write('emergencyArmed: $emergencyArmed, ')
           ..write('emergencyUsed: $emergencyUsed, ')
           ..write('rowid: $rowid')
@@ -3224,6 +3269,7 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<int?> resolvedAt,
   Value<int?> plotIndex,
   Value<int?> repairPlotIndex,
+  Value<String?> land,
   Value<bool> emergencyArmed,
   Value<bool> emergencyUsed,
   Value<int> rowid,
@@ -3244,6 +3290,7 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<int?> resolvedAt,
   Value<int?> plotIndex,
   Value<int?> repairPlotIndex,
+  Value<String?> land,
   Value<bool> emergencyArmed,
   Value<bool> emergencyUsed,
   Value<int> rowid,
@@ -3330,6 +3377,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<int> get repairPlotIndex => $composableBuilder(
     column: $table.repairPlotIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get land => $composableBuilder(
+    column: $table.land,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3428,6 +3480,11 @@ class $$SessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get land => $composableBuilder(
+    column: $table.land,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get emergencyArmed => $composableBuilder(
     column: $table.emergencyArmed,
     builder: (column) => ColumnOrderings(column),
@@ -3513,6 +3570,9 @@ class $$SessionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<String> get land =>
+      $composableBuilder(column: $table.land, builder: (column) => column);
+
   GeneratedColumn<bool> get emergencyArmed => $composableBuilder(
     column: $table.emergencyArmed,
     builder: (column) => column,
@@ -3570,6 +3630,7 @@ class $$SessionsTableTableManager
                 Value<int?> resolvedAt = const Value.absent(),
                 Value<int?> plotIndex = const Value.absent(),
                 Value<int?> repairPlotIndex = const Value.absent(),
+                Value<String?> land = const Value.absent(),
                 Value<bool> emergencyArmed = const Value.absent(),
                 Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3589,6 +3650,7 @@ class $$SessionsTableTableManager
                 resolvedAt: resolvedAt,
                 plotIndex: plotIndex,
                 repairPlotIndex: repairPlotIndex,
+                land: land,
                 emergencyArmed: emergencyArmed,
                 emergencyUsed: emergencyUsed,
                 rowid: rowid,
@@ -3610,6 +3672,7 @@ class $$SessionsTableTableManager
                 Value<int?> resolvedAt = const Value.absent(),
                 Value<int?> plotIndex = const Value.absent(),
                 Value<int?> repairPlotIndex = const Value.absent(),
+                Value<String?> land = const Value.absent(),
                 Value<bool> emergencyArmed = const Value.absent(),
                 Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3629,6 +3692,7 @@ class $$SessionsTableTableManager
                 resolvedAt: resolvedAt,
                 plotIndex: plotIndex,
                 repairPlotIndex: repairPlotIndex,
+                land: land,
                 emergencyArmed: emergencyArmed,
                 emergencyUsed: emergencyUsed,
                 rowid: rowid,

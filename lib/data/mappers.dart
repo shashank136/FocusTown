@@ -116,6 +116,7 @@ Session sessionFromRow(SessionRow row) {
     outcomeReason: reason == null ? null : OutcomeReason.values.byName(reason),
     plotIndex: row.plotIndex,
     repairPlot: row.repairPlotIndex,
+    land: row.land == null ? null : Parcel.decode(row.land!),
     emergencyArmed: row.emergencyArmed,
     emergencyUsed: row.emergencyUsed,
   );
@@ -139,6 +140,7 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     outcomeReason: Value(session.outcomeReason?.name),
     plotIndex: Value(session.plotIndex),
     repairPlotIndex: Value(session.repairPlot),
+    land: Value(session.land?.encode()),
     emergencyArmed: Value(session.emergencyArmed),
     emergencyUsed: Value(session.emergencyUsed),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),

@@ -418,6 +418,14 @@ class Sessions extends Table with TableInfo {
     requiredDuringInsert: false,
     $customConstraints: 'NULL',
   );
+  late final GeneratedColumn<String> land = GeneratedColumn<String>(
+    'land',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
   late final GeneratedColumn<int> emergencyArmed = GeneratedColumn<int>(
     'emergency_armed',
     aliasedName,
@@ -453,6 +461,7 @@ class Sessions extends Table with TableInfo {
     resolvedAt,
     plotIndex,
     repairPlotIndex,
+    land,
     emergencyArmed,
     emergencyUsed,
   ];

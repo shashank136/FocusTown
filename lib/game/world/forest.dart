@@ -18,7 +18,7 @@ void buildForest(
 }) {
   final plots = [
     ...kPlots,
-    for (var i = 0; i < parcels.length; i++)
+    for (var i = 0; i < parcels.where((p) => !p.garden).length; i++)
       plotFor(kPlots.length + i, parcels),
   ];
   for (final plot in plots) {

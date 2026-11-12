@@ -6,6 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
@@ -137,6 +138,28 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(town: town, active: session));
   });
 
+  /// Starts a land session that claims [parcel] when it completes. Nothing is
+  /// at risk: if it fails, nothing changes.
+  Future<void> startLand(Parcel parcel) => _once(() async {
+    final current = await future;
+    if (current.active != null) {
+      throw StateError('A session is already active');
+    }
+    if (!TownRules.canClaim(current.town, parcel)) {
+      throw StateError('$parcel cannot be claimed');
+    }
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final session = SessionEngine.startLand(
+      id: 's${now.wall.microsecondsSinceEpoch}',
+      parcel: parcel,
+      minutes: TownRules.landMinutes(current.town.parcels.length),
+      now: now,
+    );
+    final town = _refilled(current.town, now);
+    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
+  });
+
   /// Resolves the active session from the clock; finishes it if due.
   Future<void> tick() async {
     final current = await future;
@@ -241,7 +264,11 @@ class FocusController extends AsyncNotifier<FocusState> {
     }
     final status = LiveStatus(
       endsAt: active.startedAt.wall.add(active.planned),
-      title: active.isRepair ? 'repair' : active.tier.name,
+      title: active.isRepair
+          ? 'repair'
+          : active.isLand
+          ? 'land'
+          : active.tier.name,
       away: active.state == SessionState.away,
     );
     if (status == _live) return;
@@ -283,6 +310,7 @@ class FocusController extends AsyncNotifier<FocusState> {
       _log('clock tamper detected');
     }
     final repair = finished.isRepair;
+    final land = finished.isLand;
     // The day counts from when the session ended, not from when the app
     // noticed (it may have been closed past midnight).
     final plannedEnd = finished.startedAt.wall.add(finished.planned);
@@ -290,6 +318,14 @@ class FocusController extends AsyncNotifier<FocusState> {
         ? plannedEnd
         : now.wall;
     final settled = switch ((repair, completed)) {
+      // Land: the claim comes first, so the day's plot has room to arrive.
+      _ when land && completed => Progression.onSessionCompleted(
+        TownRules.applyLandCompleted(base.town, finished),
+        finished,
+        doneAt,
+      ),
+      // A lost land session costs nothing.
+      _ when land => base.town,
       (true, true) => Progression.onSessionCompleted(
         TownRules.applyRepairCompleted(base.town, finished),
         finished,
@@ -325,7 +361,7 @@ class FocusController extends AsyncNotifier<FocusState> {
           : SessionOutcome.completed,
       tier: finished.tier,
       workersLost: completed ? 0 : finished.workersAssigned,
-      workersGained: completed && !repair
+      workersGained: completed && !repair && !land
           ? finished.tier.workersAddedOnSuccess
           : 0,
       newStreak: Progression.currentStreak(
@@ -343,6 +379,7 @@ class FocusController extends AsyncNotifier<FocusState> {
       recoveryStarted: !base.town.inRecoveryMode && town.inRecoveryMode,
       recoveryEnded: base.town.inRecoveryMode && !town.inRecoveryMode,
       repair: repair,
+      land: land,
     );
     return FocusState(town: town, lastResult: result);
   }

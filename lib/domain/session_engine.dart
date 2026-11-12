@@ -1,5 +1,6 @@
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 
@@ -68,6 +69,23 @@ class SessionEngine {
     state: SessionState.running,
     startedAt: now,
     repairPlot: plot,
+  );
+
+  /// A session of [minutes] that claims [parcel] when it completes. Nothing is
+  /// at risk: no workers are assigned, so a failed one costs nothing.
+  static Session startLand({
+    required String id,
+    required Parcel parcel,
+    required int minutes,
+    required TimeStamp now,
+  }) => Session(
+    id: id,
+    plannedMinutes: minutes,
+    tier: BuildingTier.hut,
+    workersAssigned: 0,
+    state: SessionState.running,
+    startedAt: now,
+    land: parcel,
   );
 
   /// Screen lock is harmless: [session] is returned unchanged.

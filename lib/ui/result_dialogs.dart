@@ -22,6 +22,7 @@ Future<void> showResultDialog(
   builder: (context) {
     final (title, lines) = switch (r.outcome) {
       _ when r.repair => _repair(r),
+      _ when r.land => _land(r),
       SessionOutcome.completed => _completed(r, growthTip),
       SessionOutcome.queued => _queued(r),
       SessionOutcome.failed => _failed(r, recoveryFull),
@@ -94,6 +95,32 @@ TextStyle? _heading(BuildContext context) =>
         'Repair stopped',
         [
           ('The ruin is still there. Nothing was lost.', false),
+          if (r.reason == OutcomeReason.leftTooLong)
+            ('You were away for ${_awayText(r.awaySeconds)}', false),
+        ],
+      );
+
+(String, List<(String, bool)>) _land(SessionResult r) =>
+    r.outcome == SessionOutcome.completed
+    ? (
+        'Land claimed',
+        [
+          ('Your island has grown.', true),
+          if (r.xpGained > 0) ('+${r.xpGained} XP', false),
+          if (r.newStreak > 0)
+            (
+              'Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}',
+              false,
+            ),
+          if (r.plotGranted) ('New plot unlocked', false),
+          if (r.leveledUpTo != null)
+            ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
+        ],
+      )
+    : (
+        'Land session stopped',
+        [
+          ('The land is still free. Nothing was lost.', false),
           if (r.reason == OutcomeReason.leftTooLong)
             ('You were away for ${_awayText(r.awaySeconds)}', false),
         ],

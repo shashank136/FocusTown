@@ -69,11 +69,25 @@ int parcelOrigin(int g) => g < 0
     ? _origins[g]
     : _origins.last + kPlotSize * (g - _origins.length + 1);
 
+/// Plot indexes from here up stand for the parcels that can be claimed (index
+/// `kLandBase + k` is the k-th of [claimableParcels]); they exist only while
+/// the user chooses land.
+const kLandBase = 1000;
+
 /// Plot [index] of a town with the claimed [parcels]: the classic plots come
-/// first (0..63), then one plot per claimed parcel in claim order.
+/// first (0..63), then one plot per claimed non-garden parcel in claim order.
 Plot plotFor(int index, List<Parcel> parcels) {
-  if (index < kPlots.length) return kPlots[index];
-  final p = parcels[index - kPlots.length];
+  final Parcel p;
+  if (index < kPlots.length) {
+    return kPlots[index];
+  } else if (index >= kLandBase) {
+    p = claimableParcels(parcels)[index - kLandBase];
+  } else {
+    p = [
+      for (final q in parcels)
+        if (!q.garden) q,
+    ][index - kPlots.length];
+  }
   return Plot(index, parcelOrigin(p.gx), parcelOrigin(p.gy));
 }
 
@@ -82,7 +96,7 @@ Plot plotFor(int index, List<Parcel> parcels) {
 Plot? plotAtWith(List<Parcel> parcels, int x, int y) {
   final base = plotAt(x, y);
   if (base != null) return base;
-  for (var i = 0; i < parcels.length; i++) {
+  for (var i = 0; i < parcels.where((p) => !p.garden).length; i++) {
     final p = plotFor(kPlots.length + i, parcels);
     if (x >= p.originX &&
         x < p.originX + kPlotSize &&

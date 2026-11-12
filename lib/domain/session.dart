@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 
 /// Lifecycle state of a focus session.
@@ -47,6 +48,7 @@ class Session {
     this.outcomeReason,
     this.plotIndex,
     this.repairPlot,
+    this.land,
     this.emergencyArmed = false,
     this.emergencyUsed = false,
   });
@@ -88,6 +90,9 @@ class Session {
   /// build. A repair is 10 minutes with nothing at risk.
   final int? repairPlot;
 
+  /// The parcel this session claims when it completes, for a land session.
+  final Parcel? land;
+
   /// The weekly emergency pause is switched on: the next absence may last up
   /// to 10 minutes.
   final bool emergencyArmed;
@@ -97,6 +102,9 @@ class Session {
 
   /// Whether this session clears a ruin instead of building something.
   bool get isRepair => repairPlot != null;
+
+  /// Whether this session claims [land] instead of building.
+  bool get isLand => land != null;
 
   /// Planned length as a [Duration].
   Duration get planned => Duration(minutes: plannedMinutes);
@@ -132,6 +140,7 @@ class Session {
     outcomeReason: outcomeReason ?? this.outcomeReason,
     plotIndex: plotIndex,
     repairPlot: repairPlot,
+    land: land,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -151,6 +160,7 @@ class Session {
       other.outcomeReason == outcomeReason &&
       other.plotIndex == plotIndex &&
       other.repairPlot == repairPlot &&
+      other.land == land &&
       other.emergencyArmed == emergencyArmed &&
       other.emergencyUsed == emergencyUsed;
 
@@ -168,6 +178,7 @@ class Session {
     outcomeReason,
     plotIndex,
     repairPlot,
+    land,
     emergencyArmed,
     emergencyUsed,
   );

@@ -60,6 +60,7 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   resolvedAt: c.resolvedAt.value,
   plotIndex: c.plotIndex.value,
   repairPlotIndex: c.repairPlotIndex.value,
+  land: c.land.value,
   emergencyArmed: c.emergencyArmed.value,
   emergencyUsed: c.emergencyUsed.value,
 );
@@ -215,6 +216,21 @@ void main() {
       final back = sessionFromRow(_sessionRowFrom(sessionToRow(s)));
       expect(back.emergencyArmed, isTrue);
       expect(back.emergencyUsed, isTrue);
+    });
+
+    test('a land session keeps its parcel, garden or not', () {
+      for (final parcel in const [Parcel(-1, 3), Parcel(8, 0, garden: true)]) {
+        final s = Session(
+          id: 'l',
+          plannedMinutes: 25,
+          tier: BuildingTier.hut,
+          workersAssigned: 0,
+          state: SessionState.running,
+          startedAt: started,
+          land: parcel,
+        );
+        expect(sessionFromRow(_sessionRowFrom(sessionToRow(s))).land, parcel);
+      }
     });
 
     test('a repair keeps its ruin plot', () {

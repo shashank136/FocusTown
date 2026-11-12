@@ -29,4 +29,17 @@ void main() {
       expect(plot.originY, inInclusiveRange(-128, 120));
     }
   });
+
+  test('a garden is land but not a plot: later parcels take its number', () {
+    const parcels = [Parcel(-1, 3, garden: true), Parcel(8, 0)];
+    final first = plotFor(64, parcels);
+    expect((first.originX, first.originY), (61, 3));
+  });
+
+  test('a virtual index stands for a parcel that can be claimed', () {
+    final claimable = claimableParcels(const []);
+    final plot = plotFor(kLandBase + 2, const []);
+    expect(plot.originX, parcelOrigin(claimable[2].gx));
+    expect(plot.originY, parcelOrigin(claimable[2].gy));
+  });
 }

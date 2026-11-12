@@ -119,6 +119,40 @@ void main() {
     });
   });
 
+  group('land', () {
+    SessionResult land({SessionOutcome outcome = SessionOutcome.completed}) =>
+        SessionResult(
+          outcome: outcome,
+          tier: BuildingTier.hut,
+          workersLost: 0,
+          workersGained: 0,
+          newStreak: 2,
+          plotGranted: outcome == SessionOutcome.completed,
+          xpGained: outcome == SessionOutcome.completed ? 25 : 0,
+          land: true,
+        );
+
+    testWidgets('claimed land says the island grew, with xp and no workers', (
+      tester,
+    ) async {
+      await _show(tester, land());
+      expect(find.text('Land claimed'), findsOneWidget);
+      expect(find.text('Your island has grown.'), findsOneWidget);
+      expect(find.text('+25 XP'), findsOneWidget);
+      expect(find.text('New plot unlocked'), findsOneWidget);
+      expect(find.textContaining('worker'), findsNothing);
+    });
+
+    testWidgets('a lost land session says nothing was lost', (tester) async {
+      await _show(tester, land(outcome: SessionOutcome.failed));
+      expect(find.text('Land session stopped'), findsOneWidget);
+      expect(
+        find.text('The land is still free. Nothing was lost.'),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('completed', () {
     testWidgets('title, gains, xp and streak', (tester) async {
       await _show(tester, _completed());

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
@@ -14,7 +15,8 @@ class TownRules {
 
   /// How many plots [town]'s island has: the starting ones plus one per
   /// claimed parcel.
-  static int plotCountOf(TownState town) => plotCount + town.parcels.length;
+  static int plotCountOf(TownState town) =>
+      plotCount + town.parcels.where((p) => !p.garden).length;
 
   /// Whether the town may still take a building: the buildings and ruins on
   /// the island are fewer than the plots unlocked. Which plots they stand on
@@ -121,6 +123,7 @@ class TownRules {
     if (town.emergencyPauses < 1 ||
         session.state != SessionState.running ||
         session.isRepair ||
+        session.isLand ||
         session.emergencyArmed ||
         session.emergencyUsed) {
       return null;
@@ -162,6 +165,23 @@ class TownRules {
         ],
       ),
     );
+  }
+
+  /// Minutes of a land session when [claimed] parcels are already claimed: 25
+  /// for the first, 5 more for every 4, at most 90.
+  static int landMinutes(int claimed) => min(90, 25 + 5 * (claimed ~/ 4));
+
+  /// Whether [parcel] touches the island and nobody has claimed it.
+  static bool canClaim(TownState town, Parcel parcel) =>
+      claimableParcels(town.parcels)
+          .any((p) => p.gx == parcel.gx && p.gy == parcel.gy);
+
+  /// Applies a completed land [session]: its parcel becomes part of the island.
+  /// A parcel that cannot be claimed any more changes nothing.
+  static TownState applyLandCompleted(TownState town, Session session) {
+    final parcel = session.land;
+    if (parcel == null || !canClaim(town, parcel)) return town;
+    return town.copyWith(parcels: [...town.parcels, parcel]);
   }
 
   /// Moves queued buildings onto free plots, oldest first.
