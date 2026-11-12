@@ -28,12 +28,12 @@ void main() {
       ''');
     final db = AppDatabase(schema.newConnection());
     addTearDown(db.close);
-    await verifier.migrateAndValidate(db, 5);
+    await verifier.migrateAndValidate(db, 6);
     return db;
   }
 
-  for (final from in [1, 2, 3, 4]) {
-    test('v$from to v5 keeps the town, building and session', () async {
+  for (final from in [1, 2, 3, 4, 5]) {
+    test('v$from to v6 keeps the town, building and session', () async {
       final db = await migrate(from);
       final town = await db.select(db.towns).getSingle();
       expect(town.workerCount, 4);
@@ -45,6 +45,8 @@ void main() {
       expect(town.tipGrowthShown, isFalse);
       expect(town.tipRecoveryShown, isFalse);
       expect(town.notificationNoteShown, isFalse);
+      expect(town.emergencyPauses, 1);
+      expect(town.emergencyWeek, isNull);
       final building = await db.select(db.buildings).getSingle();
       expect(building.id, 'b1');
       expect(building.completedAt, 6000);
@@ -53,6 +55,8 @@ void main() {
       expect(session.plannedMinutes, 10);
       expect(session.plotIndex, isNull);
       expect(session.repairPlotIndex, isNull);
+      expect(session.emergencyArmed, isFalse);
+      expect(session.emergencyUsed, isFalse);
     });
   }
 }

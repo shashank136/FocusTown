@@ -133,15 +133,15 @@ class TownRepository {
   /// Remembers that [tip] was shown.
   Future<void> markTipShown(Tip tip) => _write(
     () => (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
-        switch (tip) {
-          Tip.pass => const TownsCompanion(tipPassShown: Value(true)),
-          Tip.growth => const TownsCompanion(tipGrowthShown: Value(true)),
-          Tip.recovery => const TownsCompanion(tipRecoveryShown: Value(true)),
-          Tip.notificationNote => const TownsCompanion(
-            notificationNoteShown: Value(true),
-          ),
-        },
-      ),
+      switch (tip) {
+        Tip.pass => const TownsCompanion(tipPassShown: Value(true)),
+        Tip.growth => const TownsCompanion(tipGrowthShown: Value(true)),
+        Tip.recovery => const TownsCompanion(tipRecoveryShown: Value(true)),
+        Tip.notificationNote => const TownsCompanion(
+          notificationNoteShown: Value(true),
+        ),
+      },
+    ),
   );
 
   /// How many sessions were ever stored, the active one included.
@@ -167,6 +167,17 @@ class TownRepository {
   Future<void> saveSessionStarted(TownState town, Session session) => _write(
     () => _db.transaction(() async {
       await _db.into(_db.sessions).insert(sessionToRow(session));
+      await _writeTown(town);
+    }),
+  );
+
+  /// Stores that the emergency pause was armed: the session's flag and the
+  /// town's remaining pauses, together.
+  Future<void> saveEmergencyArmed(TownState town, Session session) => _write(
+    () => _db.transaction(() async {
+      await (_db.update(
+        _db.sessions,
+      )..where((s) => s.id.equals(session.id))).write(sessionToRow(session));
       await _writeTown(town);
     }),
   );

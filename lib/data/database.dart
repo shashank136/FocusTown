@@ -30,6 +30,10 @@ class Towns extends Table {
       boolean().withDefault(const Constant(false))();
   BoolColumn get tipRecoveryShown =>
       boolean().withDefault(const Constant(false))();
+  // weekly emergency pause: how many are left and the Monday they were set
+  IntColumn get emergencyPauses =>
+      integer().withDefault(const Constant(1))();
+  TextColumn get emergencyWeek => text().nullable()();
   BoolColumn get notificationNoteShown =>
       boolean().withDefault(const Constant(false))();
 
@@ -71,6 +75,10 @@ class Sessions extends Table {
   IntColumn get resolvedAt => integer().nullable()();
   IntColumn get plotIndex => integer().nullable()();
   IntColumn get repairPlotIndex => integer().nullable()();
+  BoolColumn get emergencyArmed =>
+      boolean().withDefault(const Constant(false))();
+  BoolColumn get emergencyUsed =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -81,7 +89,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 5;
+  static const currentSchemaVersion = 6;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -102,6 +110,13 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v6: the weekly emergency pause.
+      if (from < 6) {
+        await m.addColumn(towns, towns.emergencyPauses);
+        await m.addColumn(towns, towns.emergencyWeek);
+        await m.addColumn(sessions, sessions.emergencyArmed);
+        await m.addColumn(sessions, sessions.emergencyUsed);
+      }
     },
   );
 }

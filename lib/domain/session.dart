@@ -47,6 +47,8 @@ class Session {
     this.outcomeReason,
     this.plotIndex,
     this.repairPlot,
+    this.emergencyArmed = false,
+    this.emergencyUsed = false,
   });
 
   /// Unique id.
@@ -86,6 +88,13 @@ class Session {
   /// build. A repair is 10 minutes with nothing at risk.
   final int? repairPlot;
 
+  /// The weekly emergency pause is switched on: the next absence may last up
+  /// to 10 minutes.
+  final bool emergencyArmed;
+
+  /// The emergency pause was spent on an absence in this session.
+  final bool emergencyUsed;
+
   /// Whether this session clears a ruin instead of building something.
   bool get isRepair => repairPlot != null;
 
@@ -108,6 +117,8 @@ class Session {
     Duration? awayTotal,
     bool? passUsed,
     OutcomeReason? outcomeReason,
+    bool? emergencyArmed,
+    bool? emergencyUsed,
   }) => Session(
     id: id,
     plannedMinutes: plannedMinutes,
@@ -121,6 +132,8 @@ class Session {
     outcomeReason: outcomeReason ?? this.outcomeReason,
     plotIndex: plotIndex,
     repairPlot: repairPlot,
+    emergencyArmed: emergencyArmed ?? this.emergencyArmed,
+    emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
 
   @override
@@ -137,7 +150,9 @@ class Session {
       other.passUsed == passUsed &&
       other.outcomeReason == outcomeReason &&
       other.plotIndex == plotIndex &&
-      other.repairPlot == repairPlot;
+      other.repairPlot == repairPlot &&
+      other.emergencyArmed == emergencyArmed &&
+      other.emergencyUsed == emergencyUsed;
 
   @override
   int get hashCode => Object.hash(
@@ -153,5 +168,7 @@ class Session {
     outcomeReason,
     plotIndex,
     repairPlot,
+    emergencyArmed,
+    emergencyUsed,
   );
 }

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
@@ -90,6 +91,40 @@ class TownRules {
             ],
           );
     return _updateRecovery(placed);
+  }
+
+  /// The Monday of the week that [date] falls in.
+  static LocalDate weekStart(LocalDate date) {
+    final day = DateTime.utc(date.year, date.month, date.day);
+    final monday = day.subtract(Duration(days: day.weekday - 1));
+    return LocalDate(monday.year, monday.month, monday.day);
+  }
+
+  /// Gives the weekly emergency pause back on the first session of a new
+  /// week. Never more than one is kept, and a date earlier than the stored
+  /// week (the clock moved back) gives nothing.
+  static TownState refillEmergency(TownState town, LocalDate today) {
+    final week = weekStart(today);
+    final stored = town.emergencyWeek;
+    if (stored != null && stored.daysBetween(week) <= 0) return town;
+    return town.copyWith(emergencyPauses: 1, emergencyWeek: week);
+  }
+
+  /// Switches the emergency pause on for [session]: one pause is used up and
+  /// the next absence may last 10 minutes. Null when it is not allowed (none
+  /// left, already armed or spent, a repair, or the user is already away).
+  static (TownState, Session)? armEmergency(TownState town, Session session) {
+    if (town.emergencyPauses < 1 ||
+        session.state != SessionState.running ||
+        session.isRepair ||
+        session.emergencyArmed ||
+        session.emergencyUsed) {
+      return null;
+    }
+    return (
+      town.copyWith(emergencyPauses: town.emergencyPauses - 1),
+      session.copyWith(emergencyArmed: true),
+    );
   }
 
   /// Whether plot [plot] holds a ruin that a repair could clear.

@@ -178,6 +178,29 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _emergencyPausesMeta = const VerificationMeta(
+    'emergencyPauses',
+  );
+  @override
+  late final GeneratedColumn<int> emergencyPauses = GeneratedColumn<int>(
+    'emergency_pauses',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _emergencyWeekMeta = const VerificationMeta(
+    'emergencyWeek',
+  );
+  @override
+  late final GeneratedColumn<String> emergencyWeek = GeneratedColumn<String>(
+    'emergency_week',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _notificationNoteShownMeta =
       const VerificationMeta('notificationNoteShown');
   @override
@@ -209,6 +232,8 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     tipPassShown,
     tipGrowthShown,
     tipRecoveryShown,
+    emergencyPauses,
+    emergencyWeek,
     notificationNoteShown,
   ];
   @override
@@ -346,6 +371,24 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         ),
       );
     }
+    if (data.containsKey('emergency_pauses')) {
+      context.handle(
+        _emergencyPausesMeta,
+        emergencyPauses.isAcceptableOrUnknown(
+          data['emergency_pauses']!,
+          _emergencyPausesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('emergency_week')) {
+      context.handle(
+        _emergencyWeekMeta,
+        emergencyWeek.isAcceptableOrUnknown(
+          data['emergency_week']!,
+          _emergencyWeekMeta,
+        ),
+      );
+    }
     if (data.containsKey('notification_note_shown')) {
       context.handle(
         _notificationNoteShownMeta,
@@ -420,6 +463,14 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         DriftSqlType.bool,
         data['${effectivePrefix}tip_recovery_shown'],
       )!,
+      emergencyPauses: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}emergency_pauses'],
+      )!,
+      emergencyWeek: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}emergency_week'],
+      ),
       notificationNoteShown: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}notification_note_shown'],
@@ -448,6 +499,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
   final bool tipPassShown;
   final bool tipGrowthShown;
   final bool tipRecoveryShown;
+  final int emergencyPauses;
+  final String? emergencyWeek;
   final bool notificationNoteShown;
   const TownRow({
     required this.id,
@@ -464,6 +517,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     required this.tipPassShown,
     required this.tipGrowthShown,
     required this.tipRecoveryShown,
+    required this.emergencyPauses,
+    this.emergencyWeek,
     required this.notificationNoteShown,
   });
   @override
@@ -487,6 +542,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     map['tip_pass_shown'] = Variable<bool>(tipPassShown);
     map['tip_growth_shown'] = Variable<bool>(tipGrowthShown);
     map['tip_recovery_shown'] = Variable<bool>(tipRecoveryShown);
+    map['emergency_pauses'] = Variable<int>(emergencyPauses);
+    if (!nullToAbsent || emergencyWeek != null) {
+      map['emergency_week'] = Variable<String>(emergencyWeek);
+    }
     map['notification_note_shown'] = Variable<bool>(notificationNoteShown);
     return map;
   }
@@ -511,6 +570,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       tipPassShown: Value(tipPassShown),
       tipGrowthShown: Value(tipGrowthShown),
       tipRecoveryShown: Value(tipRecoveryShown),
+      emergencyPauses: Value(emergencyPauses),
+      emergencyWeek: emergencyWeek == null && nullToAbsent
+          ? const Value.absent()
+          : Value(emergencyWeek),
       notificationNoteShown: Value(notificationNoteShown),
     );
   }
@@ -539,6 +602,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       tipPassShown: serializer.fromJson<bool>(json['tipPassShown']),
       tipGrowthShown: serializer.fromJson<bool>(json['tipGrowthShown']),
       tipRecoveryShown: serializer.fromJson<bool>(json['tipRecoveryShown']),
+      emergencyPauses: serializer.fromJson<int>(json['emergencyPauses']),
+      emergencyWeek: serializer.fromJson<String?>(json['emergencyWeek']),
       notificationNoteShown: serializer.fromJson<bool>(
         json['notificationNoteShown'],
       ),
@@ -562,6 +627,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       'tipPassShown': serializer.toJson<bool>(tipPassShown),
       'tipGrowthShown': serializer.toJson<bool>(tipGrowthShown),
       'tipRecoveryShown': serializer.toJson<bool>(tipRecoveryShown),
+      'emergencyPauses': serializer.toJson<int>(emergencyPauses),
+      'emergencyWeek': serializer.toJson<String?>(emergencyWeek),
       'notificationNoteShown': serializer.toJson<bool>(notificationNoteShown),
     };
   }
@@ -581,6 +648,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     bool? tipPassShown,
     bool? tipGrowthShown,
     bool? tipRecoveryShown,
+    int? emergencyPauses,
+    Value<String?> emergencyWeek = const Value.absent(),
     bool? notificationNoteShown,
   }) => TownRow(
     id: id ?? this.id,
@@ -601,6 +670,10 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     tipPassShown: tipPassShown ?? this.tipPassShown,
     tipGrowthShown: tipGrowthShown ?? this.tipGrowthShown,
     tipRecoveryShown: tipRecoveryShown ?? this.tipRecoveryShown,
+    emergencyPauses: emergencyPauses ?? this.emergencyPauses,
+    emergencyWeek: emergencyWeek.present
+        ? emergencyWeek.value
+        : this.emergencyWeek,
     notificationNoteShown: notificationNoteShown ?? this.notificationNoteShown,
   );
   TownRow copyWithCompanion(TownsCompanion data) {
@@ -641,6 +714,12 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       tipRecoveryShown: data.tipRecoveryShown.present
           ? data.tipRecoveryShown.value
           : this.tipRecoveryShown,
+      emergencyPauses: data.emergencyPauses.present
+          ? data.emergencyPauses.value
+          : this.emergencyPauses,
+      emergencyWeek: data.emergencyWeek.present
+          ? data.emergencyWeek.value
+          : this.emergencyWeek,
       notificationNoteShown: data.notificationNoteShown.present
           ? data.notificationNoteShown.value
           : this.notificationNoteShown,
@@ -664,6 +743,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ..write('tipPassShown: $tipPassShown, ')
           ..write('tipGrowthShown: $tipGrowthShown, ')
           ..write('tipRecoveryShown: $tipRecoveryShown, ')
+          ..write('emergencyPauses: $emergencyPauses, ')
+          ..write('emergencyWeek: $emergencyWeek, ')
           ..write('notificationNoteShown: $notificationNoteShown')
           ..write(')'))
         .toString();
@@ -685,6 +766,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     tipPassShown,
     tipGrowthShown,
     tipRecoveryShown,
+    emergencyPauses,
+    emergencyWeek,
     notificationNoteShown,
   );
   @override
@@ -705,6 +788,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           other.tipPassShown == this.tipPassShown &&
           other.tipGrowthShown == this.tipGrowthShown &&
           other.tipRecoveryShown == this.tipRecoveryShown &&
+          other.emergencyPauses == this.emergencyPauses &&
+          other.emergencyWeek == this.emergencyWeek &&
           other.notificationNoteShown == this.notificationNoteShown);
 }
 
@@ -723,6 +808,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
   final Value<bool> tipPassShown;
   final Value<bool> tipGrowthShown;
   final Value<bool> tipRecoveryShown;
+  final Value<int> emergencyPauses;
+  final Value<String?> emergencyWeek;
   final Value<bool> notificationNoteShown;
   const TownsCompanion({
     this.id = const Value.absent(),
@@ -739,6 +826,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.tipPassShown = const Value.absent(),
     this.tipGrowthShown = const Value.absent(),
     this.tipRecoveryShown = const Value.absent(),
+    this.emergencyPauses = const Value.absent(),
+    this.emergencyWeek = const Value.absent(),
     this.notificationNoteShown = const Value.absent(),
   });
   TownsCompanion.insert({
@@ -756,6 +845,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.tipPassShown = const Value.absent(),
     this.tipGrowthShown = const Value.absent(),
     this.tipRecoveryShown = const Value.absent(),
+    this.emergencyPauses = const Value.absent(),
+    this.emergencyWeek = const Value.absent(),
     this.notificationNoteShown = const Value.absent(),
   }) : workerCount = Value(workerCount),
        plotsUnlocked = Value(plotsUnlocked),
@@ -778,6 +869,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Expression<bool>? tipPassShown,
     Expression<bool>? tipGrowthShown,
     Expression<bool>? tipRecoveryShown,
+    Expression<int>? emergencyPauses,
+    Expression<String>? emergencyWeek,
     Expression<bool>? notificationNoteShown,
   }) {
     return RawValuesInsertable({
@@ -796,6 +889,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       if (tipPassShown != null) 'tip_pass_shown': tipPassShown,
       if (tipGrowthShown != null) 'tip_growth_shown': tipGrowthShown,
       if (tipRecoveryShown != null) 'tip_recovery_shown': tipRecoveryShown,
+      if (emergencyPauses != null) 'emergency_pauses': emergencyPauses,
+      if (emergencyWeek != null) 'emergency_week': emergencyWeek,
       if (notificationNoteShown != null)
         'notification_note_shown': notificationNoteShown,
     });
@@ -816,6 +911,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Value<bool>? tipPassShown,
     Value<bool>? tipGrowthShown,
     Value<bool>? tipRecoveryShown,
+    Value<int>? emergencyPauses,
+    Value<String?>? emergencyWeek,
     Value<bool>? notificationNoteShown,
   }) {
     return TownsCompanion(
@@ -833,6 +930,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       tipPassShown: tipPassShown ?? this.tipPassShown,
       tipGrowthShown: tipGrowthShown ?? this.tipGrowthShown,
       tipRecoveryShown: tipRecoveryShown ?? this.tipRecoveryShown,
+      emergencyPauses: emergencyPauses ?? this.emergencyPauses,
+      emergencyWeek: emergencyWeek ?? this.emergencyWeek,
       notificationNoteShown:
           notificationNoteShown ?? this.notificationNoteShown,
     );
@@ -883,6 +982,12 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     if (tipRecoveryShown.present) {
       map['tip_recovery_shown'] = Variable<bool>(tipRecoveryShown.value);
     }
+    if (emergencyPauses.present) {
+      map['emergency_pauses'] = Variable<int>(emergencyPauses.value);
+    }
+    if (emergencyWeek.present) {
+      map['emergency_week'] = Variable<String>(emergencyWeek.value);
+    }
     if (notificationNoteShown.present) {
       map['notification_note_shown'] = Variable<bool>(
         notificationNoteShown.value,
@@ -908,6 +1013,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
           ..write('tipPassShown: $tipPassShown, ')
           ..write('tipGrowthShown: $tipGrowthShown, ')
           ..write('tipRecoveryShown: $tipRecoveryShown, ')
+          ..write('emergencyPauses: $emergencyPauses, ')
+          ..write('emergencyWeek: $emergencyWeek, ')
           ..write('notificationNoteShown: $notificationNoteShown')
           ..write(')'))
         .toString();
@@ -1495,6 +1602,36 @@ class $SessionsTable extends Sessions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _emergencyArmedMeta = const VerificationMeta(
+    'emergencyArmed',
+  );
+  @override
+  late final GeneratedColumn<bool> emergencyArmed = GeneratedColumn<bool>(
+    'emergency_armed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("emergency_armed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _emergencyUsedMeta = const VerificationMeta(
+    'emergencyUsed',
+  );
+  @override
+  late final GeneratedColumn<bool> emergencyUsed = GeneratedColumn<bool>(
+    'emergency_used',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("emergency_used" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1512,6 +1649,8 @@ class $SessionsTable extends Sessions
     resolvedAt,
     plotIndex,
     repairPlotIndex,
+    emergencyArmed,
+    emergencyUsed,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1657,6 +1796,24 @@ class $SessionsTable extends Sessions
         ),
       );
     }
+    if (data.containsKey('emergency_armed')) {
+      context.handle(
+        _emergencyArmedMeta,
+        emergencyArmed.isAcceptableOrUnknown(
+          data['emergency_armed']!,
+          _emergencyArmedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('emergency_used')) {
+      context.handle(
+        _emergencyUsedMeta,
+        emergencyUsed.isAcceptableOrUnknown(
+          data['emergency_used']!,
+          _emergencyUsedMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -1726,6 +1883,14 @@ class $SessionsTable extends Sessions
         DriftSqlType.int,
         data['${effectivePrefix}repair_plot_index'],
       ),
+      emergencyArmed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}emergency_armed'],
+      )!,
+      emergencyUsed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}emergency_used'],
+      )!,
     );
   }
 
@@ -1751,6 +1916,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final int? resolvedAt;
   final int? plotIndex;
   final int? repairPlotIndex;
+  final bool emergencyArmed;
+  final bool emergencyUsed;
   const SessionRow({
     required this.id,
     required this.plannedMinutes,
@@ -1767,6 +1934,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     this.resolvedAt,
     this.plotIndex,
     this.repairPlotIndex,
+    required this.emergencyArmed,
+    required this.emergencyUsed,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1798,6 +1967,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     if (!nullToAbsent || repairPlotIndex != null) {
       map['repair_plot_index'] = Variable<int>(repairPlotIndex);
     }
+    map['emergency_armed'] = Variable<bool>(emergencyArmed);
+    map['emergency_used'] = Variable<bool>(emergencyUsed);
     return map;
   }
 
@@ -1830,6 +2001,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       repairPlotIndex: repairPlotIndex == null && nullToAbsent
           ? const Value.absent()
           : Value(repairPlotIndex),
+      emergencyArmed: Value(emergencyArmed),
+      emergencyUsed: Value(emergencyUsed),
     );
   }
 
@@ -1854,6 +2027,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       resolvedAt: serializer.fromJson<int?>(json['resolvedAt']),
       plotIndex: serializer.fromJson<int?>(json['plotIndex']),
       repairPlotIndex: serializer.fromJson<int?>(json['repairPlotIndex']),
+      emergencyArmed: serializer.fromJson<bool>(json['emergencyArmed']),
+      emergencyUsed: serializer.fromJson<bool>(json['emergencyUsed']),
     );
   }
   @override
@@ -1875,6 +2050,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'resolvedAt': serializer.toJson<int?>(resolvedAt),
       'plotIndex': serializer.toJson<int?>(plotIndex),
       'repairPlotIndex': serializer.toJson<int?>(repairPlotIndex),
+      'emergencyArmed': serializer.toJson<bool>(emergencyArmed),
+      'emergencyUsed': serializer.toJson<bool>(emergencyUsed),
     };
   }
 
@@ -1894,6 +2071,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     Value<int?> resolvedAt = const Value.absent(),
     Value<int?> plotIndex = const Value.absent(),
     Value<int?> repairPlotIndex = const Value.absent(),
+    bool? emergencyArmed,
+    bool? emergencyUsed,
   }) => SessionRow(
     id: id ?? this.id,
     plannedMinutes: plannedMinutes ?? this.plannedMinutes,
@@ -1916,6 +2095,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     repairPlotIndex: repairPlotIndex.present
         ? repairPlotIndex.value
         : this.repairPlotIndex,
+    emergencyArmed: emergencyArmed ?? this.emergencyArmed,
+    emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
   SessionRow copyWithCompanion(SessionsCompanion data) {
     return SessionRow(
@@ -1954,6 +2135,12 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       repairPlotIndex: data.repairPlotIndex.present
           ? data.repairPlotIndex.value
           : this.repairPlotIndex,
+      emergencyArmed: data.emergencyArmed.present
+          ? data.emergencyArmed.value
+          : this.emergencyArmed,
+      emergencyUsed: data.emergencyUsed.present
+          ? data.emergencyUsed.value
+          : this.emergencyUsed,
     );
   }
 
@@ -1974,7 +2161,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('outcomeReason: $outcomeReason, ')
           ..write('resolvedAt: $resolvedAt, ')
           ..write('plotIndex: $plotIndex, ')
-          ..write('repairPlotIndex: $repairPlotIndex')
+          ..write('repairPlotIndex: $repairPlotIndex, ')
+          ..write('emergencyArmed: $emergencyArmed, ')
+          ..write('emergencyUsed: $emergencyUsed')
           ..write(')'))
         .toString();
   }
@@ -1996,6 +2185,8 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     resolvedAt,
     plotIndex,
     repairPlotIndex,
+    emergencyArmed,
+    emergencyUsed,
   );
   @override
   bool operator ==(Object other) =>
@@ -2015,7 +2206,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.outcomeReason == this.outcomeReason &&
           other.resolvedAt == this.resolvedAt &&
           other.plotIndex == this.plotIndex &&
-          other.repairPlotIndex == this.repairPlotIndex);
+          other.repairPlotIndex == this.repairPlotIndex &&
+          other.emergencyArmed == this.emergencyArmed &&
+          other.emergencyUsed == this.emergencyUsed);
 }
 
 class SessionsCompanion extends UpdateCompanion<SessionRow> {
@@ -2034,6 +2227,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<int?> resolvedAt;
   final Value<int?> plotIndex;
   final Value<int?> repairPlotIndex;
+  final Value<bool> emergencyArmed;
+  final Value<bool> emergencyUsed;
   final Value<int> rowid;
   const SessionsCompanion({
     this.id = const Value.absent(),
@@ -2051,6 +2246,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.resolvedAt = const Value.absent(),
     this.plotIndex = const Value.absent(),
     this.repairPlotIndex = const Value.absent(),
+    this.emergencyArmed = const Value.absent(),
+    this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SessionsCompanion.insert({
@@ -2069,6 +2266,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.resolvedAt = const Value.absent(),
     this.plotIndex = const Value.absent(),
     this.repairPlotIndex = const Value.absent(),
+    this.emergencyArmed = const Value.absent(),
+    this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        plannedMinutes = Value(plannedMinutes),
@@ -2095,6 +2294,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<int>? resolvedAt,
     Expression<int>? plotIndex,
     Expression<int>? repairPlotIndex,
+    Expression<bool>? emergencyArmed,
+    Expression<bool>? emergencyUsed,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2113,6 +2314,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (resolvedAt != null) 'resolved_at': resolvedAt,
       if (plotIndex != null) 'plot_index': plotIndex,
       if (repairPlotIndex != null) 'repair_plot_index': repairPlotIndex,
+      if (emergencyArmed != null) 'emergency_armed': emergencyArmed,
+      if (emergencyUsed != null) 'emergency_used': emergencyUsed,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2133,6 +2336,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<int?>? resolvedAt,
     Value<int?>? plotIndex,
     Value<int?>? repairPlotIndex,
+    Value<bool>? emergencyArmed,
+    Value<bool>? emergencyUsed,
     Value<int>? rowid,
   }) {
     return SessionsCompanion(
@@ -2151,6 +2356,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       resolvedAt: resolvedAt ?? this.resolvedAt,
       plotIndex: plotIndex ?? this.plotIndex,
       repairPlotIndex: repairPlotIndex ?? this.repairPlotIndex,
+      emergencyArmed: emergencyArmed ?? this.emergencyArmed,
+      emergencyUsed: emergencyUsed ?? this.emergencyUsed,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2203,6 +2410,12 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (repairPlotIndex.present) {
       map['repair_plot_index'] = Variable<int>(repairPlotIndex.value);
     }
+    if (emergencyArmed.present) {
+      map['emergency_armed'] = Variable<bool>(emergencyArmed.value);
+    }
+    if (emergencyUsed.present) {
+      map['emergency_used'] = Variable<bool>(emergencyUsed.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2227,6 +2440,8 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('resolvedAt: $resolvedAt, ')
           ..write('plotIndex: $plotIndex, ')
           ..write('repairPlotIndex: $repairPlotIndex, ')
+          ..write('emergencyArmed: $emergencyArmed, ')
+          ..write('emergencyUsed: $emergencyUsed, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2265,6 +2480,8 @@ typedef $$TownsTableCreateCompanionBuilder = TownsCompanion Function({
   Value<bool> tipPassShown,
   Value<bool> tipGrowthShown,
   Value<bool> tipRecoveryShown,
+  Value<int> emergencyPauses,
+  Value<String?> emergencyWeek,
   Value<bool> notificationNoteShown,
 });
 typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
@@ -2282,6 +2499,8 @@ typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<bool> tipPassShown,
   Value<bool> tipGrowthShown,
   Value<bool> tipRecoveryShown,
+  Value<int> emergencyPauses,
+  Value<String?> emergencyWeek,
   Value<bool> notificationNoteShown,
 });
 
@@ -2360,6 +2579,16 @@ class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
 
   ColumnFilters<bool> get tipRecoveryShown => $composableBuilder(
     column: $table.tipRecoveryShown,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get emergencyPauses => $composableBuilder(
+    column: $table.emergencyPauses,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get emergencyWeek => $composableBuilder(
+    column: $table.emergencyWeek,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2448,6 +2677,16 @@ class $$TownsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get emergencyPauses => $composableBuilder(
+    column: $table.emergencyPauses,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get emergencyWeek => $composableBuilder(
+    column: $table.emergencyWeek,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get notificationNoteShown => $composableBuilder(
     column: $table.notificationNoteShown,
     builder: (column) => ColumnOrderings(column),
@@ -2527,6 +2766,16 @@ class $$TownsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<int> get emergencyPauses => $composableBuilder(
+    column: $table.emergencyPauses,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get emergencyWeek => $composableBuilder(
+    column: $table.emergencyWeek,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<bool> get notificationNoteShown => $composableBuilder(
     column: $table.notificationNoteShown,
     builder: (column) => column,
@@ -2575,6 +2824,8 @@ class $$TownsTableTableManager
                 Value<bool> tipPassShown = const Value.absent(),
                 Value<bool> tipGrowthShown = const Value.absent(),
                 Value<bool> tipRecoveryShown = const Value.absent(),
+                Value<int> emergencyPauses = const Value.absent(),
+                Value<String?> emergencyWeek = const Value.absent(),
                 Value<bool> notificationNoteShown = const Value.absent(),
               }) => TownsCompanion(
                 id: id,
@@ -2591,6 +2842,8 @@ class $$TownsTableTableManager
                 tipPassShown: tipPassShown,
                 tipGrowthShown: tipGrowthShown,
                 tipRecoveryShown: tipRecoveryShown,
+                emergencyPauses: emergencyPauses,
+                emergencyWeek: emergencyWeek,
                 notificationNoteShown: notificationNoteShown,
               ),
           createCompanionCallback:
@@ -2609,6 +2862,8 @@ class $$TownsTableTableManager
                 Value<bool> tipPassShown = const Value.absent(),
                 Value<bool> tipGrowthShown = const Value.absent(),
                 Value<bool> tipRecoveryShown = const Value.absent(),
+                Value<int> emergencyPauses = const Value.absent(),
+                Value<String?> emergencyWeek = const Value.absent(),
                 Value<bool> notificationNoteShown = const Value.absent(),
               }) => TownsCompanion.insert(
                 id: id,
@@ -2625,6 +2880,8 @@ class $$TownsTableTableManager
                 tipPassShown: tipPassShown,
                 tipGrowthShown: tipGrowthShown,
                 tipRecoveryShown: tipRecoveryShown,
+                emergencyPauses: emergencyPauses,
+                emergencyWeek: emergencyWeek,
                 notificationNoteShown: notificationNoteShown,
               ),
           withReferenceMapper: (p0) => p0
@@ -2902,6 +3159,8 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<int?> resolvedAt,
   Value<int?> plotIndex,
   Value<int?> repairPlotIndex,
+  Value<bool> emergencyArmed,
+  Value<bool> emergencyUsed,
   Value<int> rowid,
 });
 typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
@@ -2920,6 +3179,8 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<int?> resolvedAt,
   Value<int?> plotIndex,
   Value<int?> repairPlotIndex,
+  Value<bool> emergencyArmed,
+  Value<bool> emergencyUsed,
   Value<int> rowid,
 });
 
@@ -3004,6 +3265,16 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<int> get repairPlotIndex => $composableBuilder(
     column: $table.repairPlotIndex,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get emergencyArmed => $composableBuilder(
+    column: $table.emergencyArmed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get emergencyUsed => $composableBuilder(
+    column: $table.emergencyUsed,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3091,6 +3362,16 @@ class $$SessionsTableOrderingComposer
     column: $table.repairPlotIndex,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get emergencyArmed => $composableBuilder(
+    column: $table.emergencyArmed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get emergencyUsed => $composableBuilder(
+    column: $table.emergencyUsed,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SessionsTableAnnotationComposer
@@ -3166,6 +3447,16 @@ class $$SessionsTableAnnotationComposer
     column: $table.repairPlotIndex,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get emergencyArmed => $composableBuilder(
+    column: $table.emergencyArmed,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get emergencyUsed => $composableBuilder(
+    column: $table.emergencyUsed,
+    builder: (column) => column,
+  );
 }
 
 class $$SessionsTableTableManager
@@ -3214,6 +3505,8 @@ class $$SessionsTableTableManager
                 Value<int?> resolvedAt = const Value.absent(),
                 Value<int?> plotIndex = const Value.absent(),
                 Value<int?> repairPlotIndex = const Value.absent(),
+                Value<bool> emergencyArmed = const Value.absent(),
+                Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion(
                 id: id,
@@ -3231,6 +3524,8 @@ class $$SessionsTableTableManager
                 resolvedAt: resolvedAt,
                 plotIndex: plotIndex,
                 repairPlotIndex: repairPlotIndex,
+                emergencyArmed: emergencyArmed,
+                emergencyUsed: emergencyUsed,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3250,6 +3545,8 @@ class $$SessionsTableTableManager
                 Value<int?> resolvedAt = const Value.absent(),
                 Value<int?> plotIndex = const Value.absent(),
                 Value<int?> repairPlotIndex = const Value.absent(),
+                Value<bool> emergencyArmed = const Value.absent(),
+                Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => SessionsCompanion.insert(
                 id: id,
@@ -3267,6 +3564,8 @@ class $$SessionsTableTableManager
                 resolvedAt: resolvedAt,
                 plotIndex: plotIndex,
                 repairPlotIndex: repairPlotIndex,
+                emergencyArmed: emergencyArmed,
+                emergencyUsed: emergencyUsed,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

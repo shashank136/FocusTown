@@ -119,8 +119,13 @@ class TownGame extends FlameGame
     if (active != null) {
       _lastPlot = sessionSitePlot(focus.town, active);
     }
-    if (focus.town != _town) {
-      _town = focus.town;
+    // The world depends only on the buildings and the unlocked plots; other
+    // changes (XP, the emergency pause) must not rebuild it.
+    final old = _town;
+    _town = focus.town;
+    if (old == null ||
+        old.plotsUnlocked != focus.town.plotsUnlocked ||
+        !listEquals(old.buildings, focus.town.buildings)) {
       setTown(focus.town);
     }
     _focus = focus;

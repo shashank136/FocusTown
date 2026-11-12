@@ -8,6 +8,7 @@ import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
 
 /// Owns the town and the live session; the UI only reads and calls this.
@@ -67,11 +68,28 @@ class FocusController extends AsyncNotifier<FocusState> {
       now: now,
       plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town),
     );
+    // The first session of a new week brings the emergency pause back.
+    final town = _refilled(current.town, now);
     // Save first: a session that was not saved never starts.
-    await ref
-        .read(townRepositoryProvider)
-        .saveSessionStarted(current.town, session);
-    state = AsyncData(current.copyWith(active: session));
+    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
+  }
+
+  TownState _refilled(TownState town, TimeStamp now) =>
+      TownRules.refillEmergency(town, LocalDate.fromDateTime(now.wall));
+
+  /// Switches on this week's emergency pause for the running session: the next
+  /// absence may last 10 minutes. False when it is not allowed.
+  Future<bool> armEmergencyPause() async {
+    final current = await future;
+    final active = current.active;
+    if (active == null) return false;
+    final armed = TownRules.armEmergency(current.town, active);
+    if (armed == null) return false;
+    final (town, session) = armed;
+    await ref.read(townRepositoryProvider).saveEmergencyArmed(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
+    return true;
   }
 
   /// Starts a 10-minute repair of the ruin on [plot]. Nothing is at risk.
@@ -89,10 +107,9 @@ class FocusController extends AsyncNotifier<FocusState> {
       plot: plot,
       now: now,
     );
-    await ref
-        .read(townRepositoryProvider)
-        .saveSessionStarted(current.town, session);
-    state = AsyncData(current.copyWith(active: session));
+    final town = _refilled(current.town, now);
+    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
   }
 
   /// Resolves the active session from the clock; finishes it if due.

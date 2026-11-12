@@ -20,6 +20,7 @@ TownState townFromRows(TownRow town, List<BuildingRow> buildings) {
     });
   final lastStreak = town.lastStreakDate;
   final lastGrant = town.lastPlotGrantDate;
+  final week = town.emergencyWeek;
   return TownState(
     workers: town.workerCount,
     plotsUnlocked: town.plotsUnlocked,
@@ -41,6 +42,8 @@ TownState townFromRows(TownRow town, List<BuildingRow> buildings) {
     streakCount: town.streakCount,
     lastStreakDate: lastStreak == null ? null : LocalDate.parse(lastStreak),
     lastPlotGrantDate: lastGrant == null ? null : LocalDate.parse(lastGrant),
+    emergencyPauses: town.emergencyPauses,
+    emergencyWeek: week == null ? null : LocalDate.parse(week),
   );
 }
 
@@ -53,6 +56,8 @@ TownsCompanion townToRow(TownState state) => TownsCompanion(
   lastStreakDate: Value(state.lastStreakDate?.toIso()),
   lastPlotGrantDate: Value(state.lastPlotGrantDate?.toIso()),
   inRecoveryMode: Value(state.inRecoveryMode),
+  emergencyPauses: Value(state.emergencyPauses),
+  emergencyWeek: Value(state.emergencyWeek?.toIso()),
 );
 
 /// One row per placed or queued building, all stamped [now].
@@ -108,6 +113,8 @@ Session sessionFromRow(SessionRow row) {
     outcomeReason: reason == null ? null : OutcomeReason.values.byName(reason),
     plotIndex: row.plotIndex,
     repairPlot: row.repairPlotIndex,
+    emergencyArmed: row.emergencyArmed,
+    emergencyUsed: row.emergencyUsed,
   );
 }
 
@@ -129,6 +136,8 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     outcomeReason: Value(session.outcomeReason?.name),
     plotIndex: Value(session.plotIndex),
     repairPlotIndex: Value(session.repairPlot),
+    emergencyArmed: Value(session.emergencyArmed),
+    emergencyUsed: Value(session.emergencyUsed),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),
   );
 }

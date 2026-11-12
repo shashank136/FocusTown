@@ -25,6 +25,8 @@ TownRow _townRowFrom(TownState s) {
     tipGrowthShown: false,
     tipRecoveryShown: false,
     notificationNoteShown: false,
+    emergencyPauses: c.emergencyPauses.value,
+    emergencyWeek: c.emergencyWeek.value,
   );
 }
 
@@ -56,6 +58,8 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   resolvedAt: c.resolvedAt.value,
   plotIndex: c.plotIndex.value,
   repairPlotIndex: c.repairPlotIndex.value,
+  emergencyArmed: c.emergencyArmed.value,
+  emergencyUsed: c.emergencyUsed.value,
 );
 
 void main() {
@@ -87,6 +91,8 @@ void main() {
     streakCount: 4,
     lastStreakDate: LocalDate.parse('2026-03-04'),
     lastPlotGrantDate: LocalDate.parse('2026-03-03'),
+    emergencyPauses: 0,
+    emergencyWeek: LocalDate.parse('2026-03-02'),
   );
 
   group('town', () {
@@ -191,6 +197,22 @@ void main() {
         expect(sessionFromRow(_sessionRowFrom(sessionToRow(s))), s);
       });
     }
+
+    test('the emergency pause flags round trip', () {
+      final s = Session(
+        id: 'e',
+        plannedMinutes: 60,
+        tier: BuildingTier.tower,
+        workersAssigned: 5,
+        state: SessionState.running,
+        startedAt: started,
+        emergencyArmed: true,
+        emergencyUsed: true,
+      );
+      final back = sessionFromRow(_sessionRowFrom(sessionToRow(s)));
+      expect(back.emergencyArmed, isTrue);
+      expect(back.emergencyUsed, isTrue);
+    });
 
     test('a repair keeps its ruin plot', () {
       final s = Session(

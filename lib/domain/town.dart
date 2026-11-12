@@ -79,6 +79,8 @@ class TownState {
     this.streakCount = 0,
     this.lastStreakDate,
     this.lastPlotGrantDate,
+    this.emergencyPauses = 1,
+    this.emergencyWeek,
   }) : buildings = List.unmodifiable(buildings),
        queue = List.unmodifiable(queue);
 
@@ -98,6 +100,12 @@ class TownState {
     queue: const [],
     inRecoveryMode: false,
   );
+
+  /// Weekly emergency pauses left (0 or 1).
+  final int emergencyPauses;
+
+  /// Monday of the week the pause count was last refilled for.
+  final LocalDate? emergencyWeek;
 
   /// Living workers.
   final int workers;
@@ -137,6 +145,8 @@ class TownState {
     int? streakCount,
     LocalDate? lastStreakDate,
     LocalDate? lastPlotGrantDate,
+    int? emergencyPauses,
+    LocalDate? emergencyWeek,
   }) => TownState(
     workers: workers ?? this.workers,
     plotsUnlocked: plotsUnlocked ?? this.plotsUnlocked,
@@ -147,6 +157,8 @@ class TownState {
     streakCount: streakCount ?? this.streakCount,
     lastStreakDate: lastStreakDate ?? this.lastStreakDate,
     lastPlotGrantDate: lastPlotGrantDate ?? this.lastPlotGrantDate,
+    emergencyPauses: emergencyPauses ?? this.emergencyPauses,
+    emergencyWeek: emergencyWeek ?? this.emergencyWeek,
   );
 
   @override
@@ -160,7 +172,9 @@ class TownState {
       other.xp == xp &&
       other.streakCount == streakCount &&
       other.lastStreakDate == lastStreakDate &&
-      other.lastPlotGrantDate == lastPlotGrantDate;
+      other.lastPlotGrantDate == lastPlotGrantDate &&
+      other.emergencyPauses == emergencyPauses &&
+      other.emergencyWeek == emergencyWeek;
 
   @override
   int get hashCode => Object.hash(
@@ -173,6 +187,8 @@ class TownState {
     streakCount,
     lastStreakDate,
     lastPlotGrantDate,
+    emergencyPauses,
+    emergencyWeek,
   );
 
   // Pure Dart: no collection package, so compare lists by hand.

@@ -9,6 +9,9 @@ const kWarningWindow = Duration(seconds: 10);
 /// Extra away time (beyond [kWarningWindow]) forgiven once per session.
 const kPassWindow = Duration(seconds: 60);
 
+/// The away time forgiven once when the weekly emergency pause is armed.
+const kEmergencyWindow = Duration(minutes: 10);
+
 /// Pure session rules: each function returns a new [Session].
 class SessionEngine {
   new _();
@@ -84,6 +87,22 @@ class SessionEngine {
     if (session.state != SessionState.away) return session;
     final away = elapsedBetween(session.leftAt!, now);
     final total = session.awayTotal + away;
+    if (session.emergencyArmed) {
+      // The pause covers this whole absence, then it is spent.
+      return away <= kEmergencyWindow
+          ? session.copyWith(
+              state: SessionState.running,
+              clearLeftAt: true,
+              awayTotal: total,
+              emergencyArmed: false,
+              emergencyUsed: true,
+            )
+          : session.copyWith(
+              state: SessionState.failed,
+              awayTotal: total,
+              outcomeReason: OutcomeReason.leftTooLong,
+            );
+    }
     if (away <= kWarningWindow) {
       return session.copyWith(
         state: SessionState.running,
@@ -118,7 +137,8 @@ class SessionEngine {
   ///
   /// Call on every tick and app launch. Finished sessions are unchanged.
   ///
-  /// Away: the limit is 10 s if the pass is spent, else 70 s. Past the limit
+  /// Away: the limit is 10 s if the pass is spent, else 70 s (10 minutes when
+  /// the emergency pause is armed). Past the limit
   /// the session completes if the planned time was reached inside the allowed
   /// window, otherwise it fails as `leftTooLong`, even if the app never came
   /// back. Within the limit it completes once the planned time passes, else
@@ -139,7 +159,9 @@ class SessionEngine {
     }
     final left = session.leftAt!;
     final away = elapsedBetween(left, now);
-    final limit = session.passUsed
+    final limit = session.emergencyArmed
+        ? kEmergencyWindow
+        : session.passUsed
         ? kWarningWindow
         : kWarningWindow + kPassWindow;
     final withAway = session.copyWith(awayTotal: session.awayTotal + away);
