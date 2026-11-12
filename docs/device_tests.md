@@ -111,4 +111,15 @@ Release build on the iPhone 15 Pro Max, in-place install, user-reported.
 - [x] The card icon is fine after adding an icon set to the extension (`ios/FocusStatus/Assets.xcassets`).
 - [x] The away warning banner still shows the Flutter icon after a fresh install, though the installed app and its icon set contain the house icon and no other Flutter app is on the phone. Treated as an iOS display issue; look again after a phone restart or a TestFlight install.
 
+## V3, V4 and V6 on the iPhone (to do, built 2026-11-12)
+
+Install the release build in place (`xcrun devicectl device install app ...`), then:
+
+- [ ] V3: finish a few sessions. Buildings show a classic or a second look (tent, townhouse, smithy, lighthouse, pyramid); the starter house stays the classic house.
+- [ ] V4: tap the flame (streak) in the HUD: "Your focus" opens. Before any session it says to finish one; afterwards the bars, streak, completion rate and the sentence match what you did.
+- [ ] V6: Start focus > "Extend land…": the camera steps back, the coast parcels are outlined, the bar says "Choose land for your 25-minute session". Tap a parcel, Confirm: a 25-minute session starts (no workers at risk). Finish it: "Land claimed", the new land appears and is forest.
+- [ ] V6: repeat with "Make it a garden" switched on: the new land is a park, pond, orchard or flower beds, and it is not a plot.
+- [ ] V6: abandon a land session: nothing is lost and no land is added.
+- [ ] V6: the camera can zoom out over the grown island and pan to the new land.
+
 ## Android
