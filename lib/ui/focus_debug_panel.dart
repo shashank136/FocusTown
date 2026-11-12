@@ -9,6 +9,7 @@ import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/domain/town_rules.dart';
 
 /// Debug panel that drives the real controller, database and clock.
 class FocusDebugPanel extends ConsumerStatefulWidget {
@@ -96,7 +97,7 @@ class _FocusDebugPanelState extends ConsumerState<FocusDebugPanel> {
           '${(Progression.progressToNext(town.xp) * 100).round()}%',
         ),
         Text('Workers: ${town.workers}'),
-        Text('Plots: ${town.buildings.length}/${town.plotsUnlocked}'),
+        Text('Plots: ${TownRules.occupied(town).length}/${town.plotsUnlocked}'),
         Text('Queue: ${town.queue.length}'),
         Text('Recovery: ${town.inRecoveryMode}'),
         for (final b in town.buildings)

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
+import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 
 /// Debug card showing how many blocks the real town is made of.
@@ -28,15 +29,19 @@ class WorldStatsCard extends ConsumerWidget {
       children: [
         Text('World: ${world.blockCount} blocks, $visible visible'),
         for (final b in focus.town.buildings)
-          Text(
-            '${b.tier.name} ${b.status.name} plot ${b.plotIndex}: '
-            '${_blocksInPlot(
-              world.blocks,
-              plotFor(b.plotIndex, focus.town.parcels),
-            )} blocks',
-          ),
+          Text(_line(b, world.blocks, focus.town)),
       ],
     );
+  }
+
+  static String _line(
+    TownBuilding b,
+    Iterable<({int x, int y, int z, Object material})> blocks,
+    TownState town,
+  ) {
+    final plot = plotForTier(b.plotIndex, b.tier, town.parcels);
+    return '${b.tier.name} ${b.status.name} plot ${b.plotIndex}: '
+        '${_blocksInPlot(blocks, plot)} blocks';
   }
 
   // Blocks above the ground inside the plot's footprint.

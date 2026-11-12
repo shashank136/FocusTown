@@ -1,4 +1,6 @@
 import 'package:focus_town/domain/building_look.dart';
+import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
@@ -11,15 +13,25 @@ import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/scenery.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
-/// The plot a running session builds on: the plot the user [chosen] while it
-/// is free, else the next free plot, or when the town has no room the first
-/// plot nothing stands on (a temporary site).
-Plot activeSitePlot(TownState town, [int? chosen]) {
-  if (chosen != null && TownRules.isPlotFree(town, chosen)) {
-    return plotFor(chosen, town.parcels);
+/// The plot a running session of [tier] builds on: the plot the user [chosen]
+/// while it is free, else the next free plot, or when the town has no room the
+/// first plot nothing stands on (a temporary site). A castle's plot spans its
+/// 2 x 2 block.
+Plot activeSitePlot(
+  TownState town, [
+  int? chosen,
+  BuildingTier tier = BuildingTier.hut,
+]) {
+  final int index;
+  if (chosen != null && TownRules.isPlotFree(town, chosen, tier)) {
+    index = chosen;
+  } else {
+    index =
+        TownRules.nextFreePlot(town, tier) ??
+        TownRules.firstUnusedPlot(town, tier) ??
+        0;
   }
-  final plot = TownRules.nextFreePlot(town) ?? TownRules.firstUnusedPlot(town);
-  return plotFor(plot ?? 0, town.parcels);
+  return plotForTier(index, tier, town.parcels);
 }
 
 /// Where [session] works: the ruin of a repair, else its building site.
@@ -29,7 +41,7 @@ Plot sessionSitePlot(TownState town, Session session) {
   if (land != null) {
     return Plot(-1, parcelOrigin(land.gx), parcelOrigin(land.gy));
   }
-  return activeSitePlot(town, session.plotIndex);
+  return activeSitePlot(town, session.plotIndex, session.tier);
 }
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
@@ -63,7 +75,7 @@ VoxelWorld buildTownWorld(
             ));
   final sitePlot = building == null
       ? null
-      : activeSitePlot(town, building.plotIndex);
+      : activeSitePlot(town, building.plotIndex, building.tier);
   // Plots in use (a building, a ruin or the site) are cleared and bordered;
   // all others stay forest.
   // Claimed land is ground too: forest, or a garden. A land session shows
@@ -80,10 +92,21 @@ VoxelWorld buildTownWorld(
       }
     }
   }
-  final inUse = {for (final b in town.buildings) b.plotIndex, ?sitePlot?.index};
-  for (final i in inUse) {
-    final p = plotFor(i, town.parcels);
-    w.ring(p.originX, p.originY, kPlotSize, kPlotSize, 0, Blocks.path);
+  // A castle clears and borders its whole block of plots.
+  final blocks = [
+    for (final b in town.buildings)
+      plotForTier(b.plotIndex, b.tier, town.parcels),
+    ?sitePlot,
+  ];
+  final inUse = {...TownRules.occupied(town)};
+  if (sitePlot != null) {
+    inUse.addAll(
+      footprintOf(building!.tier, sitePlot.index, town.parcels) ??
+          [sitePlot.index],
+    );
+  }
+  for (final p in blocks) {
+    w.ring(p.originX, p.originY, p.size, p.size, 0, Blocks.path);
   }
   buildScenery(w);
   buildForest(w, cleared: inUse, parcels: town.parcels);
@@ -107,7 +130,12 @@ VoxelWorld buildTownWorld(
         look: lookIndex(b.id),
       );
     } else {
-      buildRuin(w, p.originX, p.originY);
+      // A castle ruin is a ruin on each plot of its block.
+      for (final i
+          in footprintOf(b.tier, b.plotIndex, town.parcels) ?? [b.plotIndex]) {
+        final q = plotFor(i, town.parcels);
+        buildRuin(w, q.originX, q.originY);
+      }
     }
   }
   if (building != null && sitePlot != null) {

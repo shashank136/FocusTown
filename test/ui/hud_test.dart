@@ -10,6 +10,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
@@ -180,5 +181,23 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
     expect(find.byType(FocusTrendsScreen), findsOneWidget);
+  });
+
+  testWidgets('a castle counts as the four plots it takes', (tester) async {
+    await _pump(
+      tester,
+      TownState.initial().copyWith(
+        buildings: [
+          ...TownState.initial().buildings,
+          TownBuilding(
+            id: 'c',
+            tier: BuildingTier.castle,
+            status: BuildingStatus.complete,
+            plotIndex: plotAtCell(0, 0, const [])!,
+          ),
+        ],
+      ),
+    );
+    expect(_text(tester, 'hud-plots'), '5/6'); // the starter house + 4
   });
 }

@@ -27,8 +27,10 @@ void main() {
 
       test('stays inside its plot', () {
         for (final c in _cells(_build(t, maxStage(t), 1))) {
-          expect(c.$1, inInclusiveRange(_plot.originX, _plot.originX + 6));
-          expect(c.$2, inInclusiveRange(_plot.originY, _plot.originY + 6));
+          // A castle (pyramid) stands on a 2 x 2 block of plots.
+          final span = t == BuildingTier.castle ? 13 : 6;
+          expect(c.$1, inInclusiveRange(_plot.originX, _plot.originX + span));
+          expect(c.$2, inInclusiveRange(_plot.originY, _plot.originY + span));
         }
       });
 

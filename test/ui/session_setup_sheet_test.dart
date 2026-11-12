@@ -215,6 +215,48 @@ void main() {
     expect(find.byType(SessionSetupSheet), findsNothing);
   });
 
+  testWidgets('a full town with no ruins does not mention ruins', (
+    tester,
+  ) async {
+    final full = TownState.initial().copyWith(
+      buildings: [
+        for (var i = 0; i < 6; i++)
+          TownBuilding(
+            id: 'b$i',
+            tier: BuildingTier.hut,
+            status: BuildingStatus.complete,
+            plotIndex: i,
+          ),
+      ],
+    );
+    await _open(tester, seed: full);
+    expect(find.textContaining('All 6 plots are used.'), findsOneWidget);
+    expect(find.textContaining('ruin'), findsNothing);
+    expect(find.textContaining('first session each day'), findsOneWidget);
+  });
+
+  testWidgets('a castle says it needs four plots', (tester) async {
+    final town = TownState.initial().copyWith(
+      workers: 8,
+      plotsUnlocked: 6,
+      buildings: [
+        for (var i = 0; i < 3; i++)
+          TownBuilding(
+            id: 'b$i',
+            tier: BuildingTier.hut,
+            status: BuildingStatus.complete,
+            plotIndex: i,
+          ),
+      ],
+    );
+    await _open(tester, seed: town, lastDuration: 120);
+    expect(find.textContaining('A castle takes 4 plots'), findsOneWidget);
+    final button = tester.widget<TextButton>(
+      find.widgetWithText(TextButton, 'Choose plot…'),
+    );
+    expect(button.onPressed, isNull);
+  });
+
   testWidgets('a full town explains why Choose plot… is off', (tester) async {
     final full = TownState.initial().copyWith(
       buildings: [
@@ -230,8 +272,9 @@ void main() {
     await _open(tester, seed: full);
     expect(
       find.text(
-        'All 6 plots are used by buildings and ruins. Tap a ruin on the '
-        'island to repair it. A finished build waits for the next plot.',
+        'All 6 plots are used. A finished build waits for the next plot, which '
+        'unlocks with your first session each day. Tap a ruin on the island '
+        'to repair it and free its plot.',
       ),
       findsOneWidget,
     );

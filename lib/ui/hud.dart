@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/progression.dart';
+import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 import 'package:focus_town/ui/focus_trends_screen.dart';
 
@@ -18,7 +19,7 @@ class Hud extends ConsumerWidget {
     final today = LocalDate.fromDateTime(ref.watch(clockProvider).nowWall());
     final streak = Progression.currentStreak(town, today);
     final level = Progression.levelFor(town.xp).name;
-    final placed = town.buildings.length;
+    final placed = TownRules.occupied(town).length;
     return Material(
       color: Colors.black38,
       borderRadius: BorderRadius.circular(12),

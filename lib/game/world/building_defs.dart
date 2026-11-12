@@ -231,88 +231,101 @@ void _lighthouse(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 8) w.fill(ox + 1, oy + 1, 12, ox + 1, oy + 1, 13, Blocks.log);
 }
 
-// A stepped pyramid on the whole 7x7 plot, with pillars and a flag.
+// A stepped pyramid on the 14 x 14 block: seven layers, pillars and a flag.
 void _pyramid(VoxelWorld w, int ox, int oy, int stage) {
-  void layer(int z, int inset, {required bool full}) {
-    final size = 7 - 2 * inset;
-    final o = (x: ox + inset, y: oy + inset);
-    if (full) {
-      w.fill(o.x, o.y, z, o.x + size - 1, o.y + size - 1, z, Blocks.plank);
-    } else {
-      w.ring(o.x, o.y, size, size, z, Blocks.plank);
-    }
+  // Stages 1-7: one more layer each, 14, 12, 10 ... 2 wide.
+  for (var k = 1; k <= math.min(stage, 7); k++) {
+    final inset = k - 1;
+    final size = 14 - 2 * inset;
+    w.fill(
+      ox + inset,
+      oy + inset,
+      k,
+      ox + inset + size - 1,
+      oy + inset + size - 1,
+      k,
+      Blocks.plank,
+    );
   }
-
-  layer(1, 0, full: stage >= 2);
   // The entrance is open from the start.
   w
-    ..remove(ox + 3, oy + 6, 1)
-    ..remove(ox + 3, oy + 5, 1);
-  if (stage >= 3) layer(2, 1, full: stage >= 4);
-  if (stage >= 5) layer(3, 2, full: stage >= 6);
-  if (stage >= 7) w.set(ox + 3, oy + 3, 4, Blocks.plank);
-  if (stage >= 8) w.set(ox + 3, oy + 3, 5, Blocks.slate);
-  const corners = [(0, 0), (6, 0), (0, 6), (6, 6)];
+    ..remove(ox + 6, oy + 13, 1)
+    ..remove(ox + 7, oy + 13, 1)
+    ..remove(ox + 6, oy + 12, 1)
+    ..remove(ox + 7, oy + 12, 1);
+  if (stage >= 8) w.fill(ox + 6, oy + 6, 8, ox + 7, oy + 7, 8, Blocks.slate);
+  const corners = [(0, 0), (13, 0), (0, 13), (13, 13)];
   if (stage >= 9) {
     for (final (dx, dy) in corners) {
-      w.fill(ox + dx, oy + dy, 2, ox + dx, oy + dy, 3, Blocks.stone);
+      w.fill(ox + dx, oy + dy, 2, ox + dx, oy + dy, 4, Blocks.stone);
     }
   }
   if (stage >= 10) {
     for (final (dx, dy) in corners) {
-      w.set(ox + dx, oy + dy, 4, Blocks.wool);
+      w.set(ox + dx, oy + dy, 5, Blocks.wool);
     }
   }
-  if (stage >= 11) w.set(ox + 3, oy + 6, 2, Blocks.wool); // entrance banner
-  if (stage >= 12) _flag(w, ox + 3, oy + 3, 6);
+  if (stage >= 11) {
+    // The entrance banner.
+    w
+      ..set(ox + 6, oy + 13, 2, Blocks.wool)
+      ..set(ox + 7, oy + 13, 2, Blocks.wool);
+  }
+  if (stage >= 12) _flag(w, ox + 6, oy + 6, 9);
 }
 
-/// The castle. The prototype castle is 9x9; this one is shrunk to fit one 7x7
-/// plot, so it uses the plot origin itself (no margin) and has no scaffold.
+/// The castle: it stands on a 2 x 2 block of plots, so it is 14 x 14 tiles
+/// from the plot origin itself (no margin) and has no scaffold.
 void _castle(VoxelWorld w, int ox, int oy, int stage) {
-  // Stages 1-4: wall rings from the ground up; the gate gap is cleared as the
-  // rings are placed.
+  // Stages 1-4: wall rings from the ground up. The gate gap (4 wide, on the
+  // +y side) is open at z 1..3 and bridged by a lintel at z 4.
   for (var z = 1; z <= math.min(stage, 4); z++) {
-    w.ring(ox, oy, 7, 7, z, Blocks.stone);
+    w.ring(ox, oy, 14, 14, z, Blocks.stone);
     if (z <= 3) {
-      for (var x = ox + 2; x <= ox + 4; x++) {
-        w.remove(x, oy + 6, z);
+      for (var x = ox + 5; x <= ox + 8; x++) {
+        w.remove(x, oy + 13, z);
       }
     }
   }
   // Stage 5: battlements on every other wall cell (counted from the corner).
   if (stage >= 5) {
-    for (var dx = 0; dx < 7; dx++) {
-      for (var dy = 0; dy < 7; dy++) {
-        final onWall = dx == 0 || dx == 6 || dy == 0 || dy == 6;
+    for (var dx = 0; dx < 14; dx++) {
+      for (var dy = 0; dy < 14; dy++) {
+        final onWall = dx == 0 || dx == 13 || dy == 0 || dy == 13;
         if (onWall && (dx + dy).isEven) {
           w.set(ox + dx, oy + dy, 5, Blocks.stone);
         }
       }
     }
   }
-  const corners = [(0, 0), (5, 0), (0, 5), (5, 5)];
-  // Stages 6 and 7: corner towers up to z 3, then z 6. Stage 8: merlons.
+  const corners = [(0, 0), (11, 0), (0, 11), (11, 11)];
+  // Stages 6 and 7: corner towers (3 x 3) up to z 4, then z 8. Stage 8: merlons
+  // on the tower corners.
   if (stage >= 6) {
-    final top = stage >= 7 ? 6 : 3;
+    final top = stage >= 7 ? 8 : 4;
     for (final (dx, dy) in corners) {
-      w.fill(ox + dx, oy + dy, 1, ox + dx + 1, oy + dy + 1, top, Blocks.stone);
+      w.fill(ox + dx, oy + dy, 1, ox + dx + 2, oy + dy + 2, top, Blocks.stone);
     }
   }
   if (stage >= 8) {
     for (final (dx, dy) in corners) {
-      w
-        ..set(ox + dx, oy + dy, 7, Blocks.stone)
-        ..set(ox + dx + 1, oy + dy + 1, 7, Blocks.stone);
+      for (final (mx, my) in [(0, 0), (2, 0), (0, 2), (2, 2)]) {
+        w.set(ox + dx + mx, oy + dy + my, 9, Blocks.stone);
+      }
     }
   }
-  // Stages 9-11: keep, slate roof, roof peak. Stage 12: two flags.
-  if (stage >= 9) w.fill(ox + 2, oy + 2, 1, ox + 4, oy + 4, 4, Blocks.cobble);
-  if (stage >= 10) w.fill(ox + 2, oy + 2, 5, ox + 4, oy + 4, 5, Blocks.slate);
-  if (stage >= 11) w.set(ox + 3, oy + 3, 6, Blocks.slate);
+  // Stages 9-11: keep, slate roof, roof peak. Stage 12: three flags.
+  if (stage >= 9) w.fill(ox + 4, oy + 4, 1, ox + 9, oy + 9, 5, Blocks.cobble);
+  if (stage >= 10) w.fill(ox + 3, oy + 3, 6, ox + 10, oy + 10, 6, Blocks.slate);
+  if (stage >= 11) {
+    w
+      ..fill(ox + 5, oy + 5, 7, ox + 8, oy + 8, 7, Blocks.slate)
+      ..fill(ox + 6, oy + 6, 8, ox + 7, oy + 7, 8, Blocks.slate);
+  }
   if (stage >= 12) {
-    _flag(w, ox, oy, 8);
-    _flag(w, ox + 5, oy, 8);
+    _flag(w, ox, oy, 10);
+    _flag(w, ox + 12, oy, 10);
+    _flag(w, ox + 6, oy + 6, 9);
   }
 }
 

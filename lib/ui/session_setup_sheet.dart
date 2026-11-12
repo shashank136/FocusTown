@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/session_setup.dart';
+import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
 
@@ -144,13 +147,11 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
               option.reason!,
               style: TextStyle(color: theme.colorScheme.error),
             ),
-          if (!TownRules.hasRoom(town))
+          if (TownRules.nextFreePlot(town, option.tier) == null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                'All ${town.plotsUnlocked} plots are used by buildings and '
-                'ruins. Tap a ruin on the island to repair it. A finished '
-                'build waits for the next plot.',
+                _roomNote(town, option.tier),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -161,7 +162,9 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             spacing: 12,
             children: [
               TextButton(
-                onPressed: option.enabled && TownRules.hasRoom(town)
+                onPressed:
+                    option.enabled &&
+                        TownRules.nextFreePlot(town, option.tier) != null
                     ? () => _choosePlot(minutes)
                     : null,
                 child: const Text('Choose plot…'),
@@ -181,6 +184,21 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         ],
       ),
     );
+  }
+
+  // Why there is no room for a [tier] now, and what frees some.
+  static String _roomNote(TownState town, BuildingTier tier) {
+    final free = town.plotsUnlocked - TownRules.occupied(town).length;
+    final ruins = town.buildings.any((b) => b.status == BuildingStatus.ruin);
+    final head = plotsOf(tier) == 1
+        ? 'All ${town.plotsUnlocked} plots are used.'
+        : free < plotsOf(tier)
+        ? 'A castle takes 4 plots and only ${max(free, 0)} '
+              '${free == 1 ? 'is' : 'are'} free.'
+        : 'There is no free 2 x 2 block of plots for a castle.';
+    const repair = ' Tap a ruin on the island to repair it and free its plot.';
+    return '$head A finished build waits for the next plot, which unlocks '
+        'with your first session each day.${ruins ? repair : ''}';
   }
 
   Widget _preview(DurationOption option) {

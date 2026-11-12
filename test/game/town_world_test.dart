@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
@@ -37,17 +38,20 @@ Session _hut() => Session(
   startedAt: TimeStamp(DateTime(2026), Duration.zero),
 );
 
-// Blocks above the ground inside a plot.
-int _above(VoxelWorld w, Plot p) => w.blocks
+// Blocks above the ground inside a plot (or [span] x [span] plots from it).
+int _above(VoxelWorld w, Plot p, [int span = 1]) => w.blocks
     .where(
       (b) =>
           b.z >= 1 &&
           b.x >= p.originX &&
-          b.x < p.originX + 7 &&
+          b.x < p.originX + 7 * span &&
           b.y >= p.originY &&
-          b.y < p.originY + 7,
+          b.y < p.originY + 7 * span,
     )
     .length;
+
+// The anchor plot of a 2 x 2 block of the starting island.
+final int _block = plotAtCell(0, 0, const [])!;
 
 // Tree leaves inside a plot: a plot with a building or site has none.
 int _leaves(VoxelWorld w, Plot p) => w.blocks
@@ -106,17 +110,20 @@ void main() {
   });
 
   test('a complete building is drawn at its final stage', () {
-    final w = buildTownWorld(_town(buildings: [_b(1, BuildingTier.castle)]));
+    final w = buildTownWorld(
+      _town(buildings: [_b(_block, BuildingTier.castle)]),
+    );
     final direct = VoxelWorld();
+    final p = kPlots[_block];
     buildTier(
       direct,
       BuildingTier.castle,
-      kPlots[1].originX,
-      kPlots[1].originY,
+      p.originX,
+      p.originY,
       stage: 12,
-      look: lookIndex('b1'),
+      look: lookIndex('b$_block'),
     );
-    expect(_above(w, kPlots[1]), direct.blockCount);
+    expect(_above(w, p, 2), direct.blockCount);
   });
 
   test('a building is drawn with the look its id gives', () {
@@ -127,22 +134,65 @@ void main() {
       id: id,
       tier: BuildingTier.castle,
       status: BuildingStatus.complete,
-      plotIndex: 1,
+      plotIndex: _block,
     );
+    final p = kPlots[_block];
     int count(String id) =>
-        _above(buildTownWorld(_town(buildings: [at(id)])), kPlots[1]);
+        _above(buildTownWorld(_town(buildings: [at(id)])), p, 2);
     for (final look in [0, 1]) {
       final direct = VoxelWorld();
       buildTier(
         direct,
         BuildingTier.castle,
-        kPlots[1].originX,
-        kPlots[1].originY,
+        p.originX,
+        p.originY,
         stage: 12,
         look: look,
       );
       expect(count(idWith(look)), direct.blockCount, reason: 'look $look');
     }
+  });
+
+  test('a castle clears the forest on all four of its plots', () {
+    final w = buildTownWorld(
+      _town(buildings: [_b(_block, BuildingTier.castle)]),
+    );
+    for (final i in footprintOf(BuildingTier.castle, _block, const [])!) {
+      expect(_leaves(w, kPlots[i]), 0, reason: 'plot $i');
+    }
+    // Its neighbours stay forest.
+    expect(_leaves(w, kPlots[plotAtCell(2, 0, const [])!]), greaterThan(0));
+  });
+
+  test('a castle ruin is a ruin over each of its four plots', () {
+    final w = buildTownWorld(
+      _town(buildings: [_b(_block, BuildingTier.castle, BuildingStatus.ruin)]),
+    );
+    for (final i in footprintOf(BuildingTier.castle, _block, const [])!) {
+      final p = kPlots[i];
+      expect(
+        w.blocks.any(
+          (b) =>
+              b.material == Blocks.char &&
+              b.x >= p.originX &&
+              b.x < p.originX + 7 &&
+              b.y >= p.originY &&
+              b.y < p.originY + 7,
+        ),
+        isTrue,
+        reason: 'plot $i',
+      );
+    }
+  });
+
+  test('the site of a castle session spans a block', () {
+    final plot = plotForTier(_block, BuildingTier.castle, const []);
+    expect(plot.span, 2);
+    expect(plot.center.x, plot.originX + 7);
+    expect(plotForTier(_block, BuildingTier.hut, const []).span, 1);
+    // A block that does not fit falls back to a single plot.
+    final bad = plotAtCell(3, 0, const [])!;
+    expect(plotForTier(bad, BuildingTier.castle, const []).span, 1);
   });
 
   test('a ruin draws ruin blocks with char', () {
