@@ -107,4 +107,15 @@ void main() {
       ]);
     });
   });
+
+  test('addDays crosses month and year ends, forwards and back', () {
+    expect(
+      const LocalDate(2025, 12, 29).addDays(7),
+      const LocalDate(2026, 1, 5),
+    );
+    expect(
+      const LocalDate(2026, 3, 1).addDays(-1),
+      const LocalDate(2026, 2, 28),
+    );
+  });
 }

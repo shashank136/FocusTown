@@ -628,6 +628,7 @@ void main() {
       await tester.runAsync(controller.onForegrounded);
       await pumpFor(tester, const Duration(milliseconds: 100));
       expect(find.textContaining('Emergency pass used'), findsOneWidget);
+      expect(find.textContaining('Once a week'), findsOneWidget);
     });
 
     testWidgets('the pass tip stays away once shown', (tester) async {

@@ -191,7 +191,10 @@ class FocusController extends AsyncNotifier<FocusState> {
       await _safeNotify(
         () => ref
             .read(notifierProvider)
-            .scheduleAwayWarnings(passAvailable: !updated.passUsed),
+            .scheduleAwayWarnings(
+              passAvailable: !updated.passUsed,
+              emergency: updated.emergencyArmed,
+            ),
       );
     }
   }

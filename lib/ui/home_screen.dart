@@ -135,7 +135,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         title: const Text('Free pass spent'),
         content: const Text(
           'Emergency pass used. You were away more than 10 seconds, so we '
-          'spent your free pass. You get one per session.',
+          'spent your free pass. You get one per session. Once a week you can '
+          'also press Emergency pause on the session screen before you leave: '
+          'it lets you be away for up to 10 minutes.',
         ),
         actions: [
           TextButton(

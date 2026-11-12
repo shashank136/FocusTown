@@ -26,8 +26,15 @@ class FakeNotifier implements Notifier {
   Future<bool> hasPermission() async => permissionGranted;
 
   @override
-  Future<void> scheduleAwayWarnings({required bool passAvailable}) async {
-    calls.add('schedule(passAvailable: $passAvailable)');
+  Future<void> scheduleAwayWarnings({
+    required bool passAvailable,
+    bool emergency = false,
+  }) async {
+    calls.add(
+      emergency
+          ? 'schedule(emergency)'
+          : 'schedule(passAvailable: $passAvailable)',
+    );
   }
 
   @override

@@ -13,8 +13,8 @@ Single source of truth for coding work. Each task is one focused change (about 3
 
 Each session updates this section before stopping.
 
-- Current task: T-V2.4 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
-- What's left on it: T-V2.3 done: weekly emergency pause rule and storage. TownState.emergencyPauses/emergencyWeek, Session.emergencyArmed/emergencyUsed, TownRules.weekStart/refillEmergency/armEmergency, kEmergencyWindow (10 min, covers one absence then is spent), schema v6, FocusController.armEmergencyPause() (refill happens at start/startRepair). TownGame rebuilds the world only when buildings or plotsUnlocked change. Next: T-V2.4 button on the session panel, explanation once, notifications use the 10-minute window.
+- Current task: T-V2.5 (user loop: build step 17 workers + step 18 live construction, milestone T-18.5; Android T-11.x deferred; [device] tasks T-09.6, T-10.5, T-12.4, T-15.5, T-16.4, T-17.7 parked for a physical iPhone)
+- What's left on it: T-V2.4 done: Emergency pause button on the session panel (arms; shows 'on' text; disabled with 'Next pause on <day>' when none left; hidden for repairs), LocalDate.addDays, pass-tip dialog explains the weekly pause, notifier scheduleAwayWarnings(emergency:) tells the user about the 10 minutes and warns at 8 minutes. Next: T-V2.5 [device]: user checks repair and the pause on the iPhone.
 - Gotchas:
   - T-01.1 deviations: `cupertino_icons` removed (not on allowed list). Pinned: flutter_riverpod 3.5.0, very_good_analysis 11.0.0, mocktail 1.0.5. Bundle id is `com.shashank.focusTown` (decided 2026-11-11).
   - No Android SDK on this machine (`flutter build apk` fails with "No Android SDK found"); Android compile not verified. Needed by step 11.
@@ -28,7 +28,7 @@ Each session updates this section before stopping.
   - Private ctor with the 3.13 shorthand: `new _();` (not `new._()`).
   - Flutter on this machine: 3.47.9 stable, Dart 3.13.7.
   - Lint `unnecessary_type_name_in_constructor` (very_good_analysis 11) wants Dart 3.13 shorthand: write `new(...)` instead of `ClassName(...)` for constructors.
-- Last updated: 2026-11-09 (T-V2.3 done)
+- Last updated: 2026-11-09 (T-V2.4 done)
 
 ## Status of steps
 
@@ -1869,7 +1869,7 @@ Open questions (assumed answers):
 - Tests first: refill on the first session of a new week (never more than 1 stored); using it moves the away limit to 10 minutes exactly once; none left means the old rules; clock changes never grant extra.
 - Commit: `T-V2.3: emergency pause rule`
 
-### T-V2.4 [ ] Emergency pause button and first-time explanation
+### T-V2.4 [x] Emergency pause button and first-time explanation
 - Depends on: T-V2.3
 - Do: a button on the session screen that arms the pause (disabled when none are left, shows when the next one arrives); the first time the user leaves mid-session explain both the pass and the pause; notifications reflect the longer window.
 - Tests first: widget tests for armed, disabled and explanation-once; notification scheduling uses the 10-minute limit.

@@ -18,8 +18,10 @@ class _ThrowingNotifier implements warnings.Notifier {
   Future<bool> hasPermission() => throw StateError('boom');
 
   @override
-  Future<void> scheduleAwayWarnings({required bool passAvailable}) =>
-      throw StateError('boom');
+  Future<void> scheduleAwayWarnings({
+    required bool passAvailable,
+    bool emergency = false,
+  }) => throw StateError('boom');
 
   @override
   Future<void> cancelAwayWarnings() => throw StateError('boom');
@@ -123,6 +125,17 @@ void main() {
     await container(second).read(focusControllerProvider.future);
     expect(second.calls, ['cancel']);
   });
+
+  test(
+    'leaving with the pause armed schedules the 10-minute warnings',
+    () async {
+      final c = container(fake);
+      final controller = await started(c);
+      await controller.armEmergencyPause();
+      await controller.onBackgroundedUnlocked();
+      expect(fake.calls, ['schedule(emergency)']);
+    },
+  );
 
   test('a throwing notifier does not change any outcome', () async {
     Future<FocusState> run(warnings.Notifier notifier) async {

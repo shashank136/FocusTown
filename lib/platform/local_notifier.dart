@@ -11,6 +11,9 @@ const kPassNotificationId = 1002;
 
 const _passDelay = Duration(seconds: 10);
 
+// The warning comes 2 minutes before the 10-minute emergency window ends.
+const _emergencyWarning = Duration(minutes: 8);
+
 const _details = NotificationDetails(
   iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
 );
@@ -54,7 +57,27 @@ class LocalNotifier implements Notifier {
       (await _ios?.checkPermissions())?.isEnabled ?? false;
 
   @override
-  Future<void> scheduleAwayWarnings({required bool passAvailable}) async {
+  Future<void> scheduleAwayWarnings({
+    required bool passAvailable,
+    bool emergency = false,
+  }) async {
+    if (emergency) {
+      await _plugin.show(
+        id: kWarningNotificationId,
+        title: 'Focus Town',
+        body: 'Emergency pause on. You can be away for up to 10 minutes.',
+        notificationDetails: _details,
+      );
+      await _plugin.zonedSchedule(
+        id: kPassNotificationId,
+        title: 'Focus Town',
+        body: 'Come back! Your builders stop in 2 minutes.',
+        scheduledDate: tz.TZDateTime.now(tz.local).add(_emergencyWarning),
+        notificationDetails: _details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+      return;
+    }
     await _plugin.show(
       id: kWarningNotificationId,
       title: 'Focus Town',

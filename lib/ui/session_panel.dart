@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -74,6 +75,8 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
               const SizedBox(height: 8),
               const Text('Lock your phone and put it face down.'),
             ],
+            if (!session.isRepair && !session.emergencyUsed)
+              _pauseControl(session),
             const SizedBox(height: 8),
             TextButton(
               onPressed: () => unawaited(_confirmAbandon(session)),
@@ -81,6 +84,39 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // The weekly emergency pause: arm it before leaving.
+  Widget _pauseControl(Session session) {
+    final town = ref.watch(focusControllerProvider).value!.town;
+    if (session.emergencyArmed) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 8),
+        child: Text('Emergency pause on: you may be away up to 10 minutes.'),
+      );
+    }
+    final available = town.emergencyPauses > 0;
+    final week = town.emergencyWeek;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          OutlinedButton(
+            onPressed: available
+                ? () => unawaited(
+                    ref
+                        .read(focusControllerProvider.notifier)
+                        .armEmergencyPause(),
+                  )
+                : null,
+            child: const Text('Emergency pause'),
+          ),
+          if (!available && week != null)
+            Text('Next pause on ${_day(week.addDays(7))}'),
+        ],
       ),
     );
   }
@@ -113,6 +149,27 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
       await ref.read(focusControllerProvider.notifier).abandon();
     }
   }
+}
+
+const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const _months = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
+
+String _day(LocalDate d) {
+  final weekday = DateTime.utc(d.year, d.month, d.day).weekday;
+  return '${_weekdays[weekday - 1]} ${d.day} ${_months[d.month - 1]}';
 }
 
 String _format(Duration d) {

@@ -10,8 +10,10 @@ import 'package:focus_town/platform/testing/fake_notifier.dart';
 
 class _ThrowingNotifier extends FakeNotifier {
   @override
-  Future<void> scheduleAwayWarnings({required bool passAvailable}) =>
-      throw StateError('boom');
+  Future<void> scheduleAwayWarnings({
+    required bool passAvailable,
+    bool emergency = false,
+  }) => throw StateError('boom');
 }
 
 void main() {

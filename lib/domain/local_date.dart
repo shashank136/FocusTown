@@ -43,6 +43,12 @@ class LocalDate implements Comparable<LocalDate> {
     other.day,
   ).difference(DateTime.utc(year, month, day)).inDays;
 
+  /// This date moved by [days] (negative goes back), across month ends.
+  LocalDate addDays(int days) {
+    final d = DateTime.utc(year, month, day).add(Duration(days: days));
+    return LocalDate(d.year, d.month, d.day);
+  }
+
   /// `yyyy-MM-dd`, zero padded.
   String toIso() =>
       '${year.toString().padLeft(4, '0')}-'

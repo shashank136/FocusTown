@@ -7,6 +7,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -218,6 +219,53 @@ void main() {
       final focus = c.read(focusControllerProvider).requireValue;
       expect(focus.active, isNull);
       expect(focus.lastResult!.outcome.name, 'failed');
+    });
+  });
+
+  group('emergency pause', () {
+    testWidgets('a button arms it and says what it does', (tester) async {
+      final c = await _pump(tester);
+      expect(find.text('Emergency pause'), findsOneWidget);
+      await tester.tap(find.text('Emergency pause'));
+      await _settle(tester);
+      expect(find.text('Emergency pause'), findsNothing);
+      expect(
+        find.text('Emergency pause on: you may be away up to 10 minutes.'),
+        findsOneWidget,
+      );
+      expect(
+        c.read(focusControllerProvider).requireValue.active!.emergencyArmed,
+        isTrue,
+      );
+    });
+
+    testWidgets('with none left it is off and says when the next comes', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        town: TownState.initial().copyWith(
+          emergencyPauses: 0,
+          emergencyWeek: const LocalDate(2025, 12, 29),
+        ),
+      );
+      final button = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, 'Emergency pause'),
+      );
+      expect(button.onPressed, isNull);
+      expect(find.text('Next pause on Mon 5 Jan'), findsOneWidget);
+    });
+
+    testWidgets('a repair has no pause button', (tester) async {
+      final c = await _pump(tester);
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startRepair(1);
+      });
+      await _settle(tester);
+      expect(find.text('Emergency pause'), findsNothing);
     });
   });
 }
