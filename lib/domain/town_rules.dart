@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
@@ -18,46 +19,62 @@ class TownRules {
   static int plotCountOf(TownState town) =>
       plotCount + town.parcels.where((p) => !p.garden).length;
 
-  /// Whether the town may still take a building: the buildings and ruins on
-  /// the island are fewer than the plots unlocked. Which plots they stand on
-  /// is the player's choice.
-  static bool hasRoom(TownState town) =>
-      town.buildings.length < town.plotsUnlocked;
+  /// The plots covered by the buildings and ruins of [town].
+  static Set<int> occupied(TownState town) => {
+    for (final b in town.buildings)
+      ...(footprintOf(b.tier, b.plotIndex, town.parcels) ?? [b.plotIndex]),
+  };
 
-  /// Lowest plot with no building or ruin on it, or null when the town has no
-  /// room left.
-  static int? nextFreePlot(TownState town) {
-    return hasRoom(town) ? firstUnusedPlot(town) : null;
+  /// Whether the town may still take a building of [tier] (a hut by default):
+  /// the plots used by buildings and ruins plus the plots it needs fit in the
+  /// plots unlocked. Which plots they stand on is the player's choice.
+  static bool hasRoom(TownState town, [BuildingTier tier = BuildingTier.hut]) =>
+      occupied(town).length + plotsOf(tier) <= town.plotsUnlocked;
+
+  /// Lowest plot a building of [tier] could be anchored on, or null when the
+  /// town has no room left.
+  static int? nextFreePlot(
+    TownState town, [
+    BuildingTier tier = BuildingTier.hut,
+  ]) => hasRoom(town, tier) ? firstUnusedPlot(town, tier) : null;
+
+  /// Whether a building of [tier] may be anchored on plot [i]: its plots are
+  /// on the island, nothing stands there, and the town has room.
+  static bool isPlotFree(
+    TownState town,
+    int i, [
+    BuildingTier tier = BuildingTier.hut,
+  ]) => hasRoom(town, tier) && _blockFree(town, i, tier);
+
+  // The plots [tier] would cover from [i] exist and nothing stands on them.
+  static bool _blockFree(TownState town, int i, BuildingTier tier) {
+    final block = footprintOf(tier, i, town.parcels);
+    return block != null && !block.any(occupied(town).contains);
   }
-
-  /// Whether a building may go on plot [i]: it is on the island, nothing
-  /// stands there, and the town has room.
-  static bool isPlotFree(TownState town, int i) =>
-      i >= 0 &&
-      i < plotCountOf(town) &&
-      hasRoom(town) &&
-      !town.buildings.any((b) => b.plotIndex == i);
 
   /// Where [session] builds: the plot the user chose while it is still free,
   /// else the next free plot, or null when the town has no room.
   static int? sitePlot(TownState town, Session session) {
     final chosen = session.plotIndex;
-    return chosen != null && isPlotFree(town, chosen)
+    return chosen != null && isPlotFree(town, chosen, session.tier)
         ? chosen
-        : nextFreePlot(town);
+        : nextFreePlot(town, session.tier);
   }
 
   /// The plot a failed [session] leaves its ruin on: where it was building, or
   /// when the town has no room the first plot nothing stands on. A failure
-  /// always leaves a ruin (null only when all 64 plots are used).
+  /// always leaves a ruin (null only when every plot is used).
   static int? ruinPlot(TownState town, Session session) =>
-      sitePlot(town, session) ?? firstUnusedPlot(town);
+      sitePlot(town, session) ?? firstUnusedPlot(town, session.tier);
 
-  /// The lowest plot with no building or ruin, room or not.
-  static int? firstUnusedPlot(TownState town) {
-    final used = {for (final b in town.buildings) b.plotIndex};
+  /// The lowest plot a building of [tier] could be anchored on with nothing
+  /// standing on its plots, room or not.
+  static int? firstUnusedPlot(
+    TownState town, [
+    BuildingTier tier = BuildingTier.hut,
+  ]) {
     for (var i = 0; i < plotCountOf(town); i++) {
-      if (!used.contains(i)) return i;
+      if (_blockFree(town, i, tier)) return i;
     }
     return null;
   }
@@ -147,21 +164,31 @@ class TownRules {
   }
 
   /// Whether plot [plot] holds a ruin that a repair could clear.
-  static bool canRepair(TownState town, int plot) => town.buildings.any(
-    (b) => b.plotIndex == plot && b.status == BuildingStatus.ruin,
-  );
+  static bool canRepair(TownState town, int plot) =>
+      _ruinOn(town, plot) != null;
+
+  // The ruin whose plots include [plot], if any.
+  static TownBuilding? _ruinOn(TownState town, int plot) {
+    for (final b in town.buildings) {
+      if (b.status != BuildingStatus.ruin) continue;
+      final plots = footprintOf(b.tier, b.plotIndex, town.parcels);
+      if ((plots ?? [b.plotIndex]).contains(plot)) return b;
+    }
+    return null;
+  }
 
   /// Applies a completed repair [session]: the ruin on its plot is cleared
   /// and a waiting building may take the freed plot. Workers and recovery
   /// mode are untouched. A plot that no longer holds a ruin changes nothing.
   static TownState applyRepairCompleted(TownState town, Session session) {
     final plot = session.repairPlot;
-    if (plot == null || !canRepair(town, plot)) return town;
+    final ruin = plot == null ? null : _ruinOn(town, plot);
+    if (ruin == null) return town;
     return placeQueued(
       town.copyWith(
         buildings: [
           for (final b in town.buildings)
-            if (b.plotIndex != plot) b,
+            if (b != ruin) b,
         ],
       ),
     );
@@ -187,10 +214,12 @@ class TownRules {
   /// Moves queued buildings onto free plots, oldest first.
   static TownState placeQueued(TownState town) {
     var t = town;
+    // The oldest waiting building goes first; if it has no room, the ones
+    // behind it wait too.
     for (
-      var plot = nextFreePlot(t);
+      var plot = t.queue.isEmpty ? null : nextFreePlot(t, t.queue.first.tier);
       t.queue.isNotEmpty && plot != null;
-      plot = nextFreePlot(t)
+      plot = t.queue.isEmpty ? null : nextFreePlot(t, t.queue.first.tier)
     ) {
       final next = t.queue.first;
       t = t.copyWith(
@@ -215,7 +244,13 @@ class TownRules {
     final hurt = town.copyWith(
       workers: max(0, town.workers - session.workersAssigned),
     );
-    final plot = ruinPlot(hurt, session);
+    var tier = session.tier;
+    var plot = ruinPlot(hurt, session);
+    if (plot == null && tier == BuildingTier.castle) {
+      // No free block: the castle leaves a one-plot ruin instead.
+      tier = BuildingTier.hut;
+      plot = firstUnusedPlot(hurt);
+    }
     final ruined = plot == null
         ? hurt
         : hurt.copyWith(
@@ -223,7 +258,7 @@ class TownRules {
               ...hurt.buildings,
               TownBuilding(
                 id: session.id,
-                tier: session.tier,
+                tier: tier,
                 status: BuildingStatus.ruin,
                 plotIndex: plot,
               ),

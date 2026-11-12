@@ -422,3 +422,12 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - Space limits buildings: the daily plot unlock stops when every plot of the island is unlocked, until land is claimed.
 - A land session claims one parcel when it completes. It costs no workers and leaves no ruin if it fails. Its length is 25 minutes for the first parcel, 5 more for every 4 parcels claimed, at most 90.
 - Not in this version: gardens as buildable things, the globe, the showcase, a low-detail island view.
+
+## Multi-plot buildings (decided 2026-11-12)
+
+- A castle (91 to 120 minutes) is twice as wide as other buildings: it stands on a 2 x 2 block of four plots (14 x 14 tiles) instead of one. Every other tier still takes one plot. The pyramid, the castle tier's second look, takes the same block.
+- The block must be four plots that touch in the plot grid, none of them used, and it may not cross the road (columns 3|4 or rows 3|4 of the starting island). Claimed non-garden parcels count as plots; gardens do not. A block is named by its top-left plot (the lowest column and row), which is where the building is stored and what the user taps.
+- Plots unlocked are a quota of plots: a castle uses 4 of them, so it needs 4 unused unlocked plots. The HUD counts plots used, not buildings.
+- A castle that has no free block (or not enough quota) waits in the queue like any building and is placed on the first free block, lowest top-left plot first.
+- A failed castle leaves one ruin that covers the whole block. Tapping any of its four plots offers the repair, and a completed repair clears all four.
+- Existing castles are not migrated: a castle saved before this change now covers the plots to its east and south, and may overlap a neighbour. (The only town affected was a test town.)

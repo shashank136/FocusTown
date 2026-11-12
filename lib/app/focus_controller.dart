@@ -5,6 +5,7 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -79,8 +80,10 @@ class FocusController extends AsyncNotifier<FocusState> {
     if (!TownRules.canStart(current.town, minutes)) {
       throw StateError('Cannot start $minutes minutes with this town');
     }
-    if (plotIndex != null && !TownRules.isPlotFree(current.town, plotIndex)) {
-      throw StateError('Plot $plotIndex is not free');
+    final tier = BuildingTier.forMinutes(minutes);
+    if (plotIndex != null &&
+        !TownRules.isPlotFree(current.town, plotIndex, tier)) {
+      throw StateError('Plot $plotIndex is not free for a ${tier.name}');
     }
     final now = TimeStamp.now(ref.read(clockProvider));
     final built = SessionEngine.start(
@@ -89,7 +92,7 @@ class FocusController extends AsyncNotifier<FocusState> {
       workersAvailable: current.town.workers,
       recovery: current.town.inRecoveryMode,
       now: now,
-      plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town),
+      plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town, tier),
     );
     final session = _testLength(built);
     // The first session of a new week brings the emergency pause back.

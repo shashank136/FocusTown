@@ -1833,6 +1833,25 @@ A Live Activity shows the running countdown and the building status on the lock 
 - Do: record in `docs/device_tests.md`: it appears on session start, the countdown matches the app, it shows Away when the user leaves, it ends on finish and on abandon, and it disappears when the app is killed. Add the privacy manifest note if needed.
 - Commit: `T-LA.3: record live activity device check`
 
+## Phase M: multi-plot castle (decided 2026-11-12, before launch)
+
+Rules are in `docs/spec.md` ("Multi-plot buildings"). Built in this order, each with its tests first:
+
+### T-M.1 [x] Plot grid and footprint rules (pure)
+- `lib/domain/plot_grid.dart` (cells of plots, footprint of a tier on an anchor), `TownRules` (`occupied`, `hasRoom(town, tier)`, `isPlotFree`, `nextFreePlot`, `firstUnusedPlot`, `canRepair`, `applyRepairCompleted`, `placeQueued`) work on footprints.
+- Commit: `T-M.1: footprint rules`
+
+### T-M.2 [ ] 14 x 14 castle and pyramid
+- New layouts for the castle and the pyramid on a 14 x 14 footprint, 12 stages each; the tier preview, site workers and ruin follow.
+- Commit: `T-M.2: big castle`
+
+### T-M.3 [ ] World, choosing and HUD
+- World builder (borders, forest, ruin, site), choose-plot outlines with a 2 x 2 selection, repair by tapping any covered plot, HUD plots used.
+- Commit: `T-M.3: multi-plot world and choosing`
+
+### T-M.4 [ ] [device] Castle on the iPhone
+- Commit: `T-M.4: record castle device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.
