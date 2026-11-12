@@ -1,3 +1,4 @@
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
 /// Width and depth of the town map in tiles.
@@ -59,6 +60,22 @@ final List<Plot> kPlots = () {
       Plot(i, origins[i].$1, origins[i].$2),
   ]);
 }();
+
+/// The tile where the parcel column or row [g] starts: the classic origins for
+/// 0..7, then plot-wide steps in both directions beyond them.
+int parcelOrigin(int g) => g < 0
+    ? _origins.first + kPlotSize * g
+    : g < _origins.length
+    ? _origins[g]
+    : _origins.last + kPlotSize * (g - _origins.length + 1);
+
+/// Plot [index] of a town with the claimed [parcels]: the classic plots come
+/// first (0..63), then one plot per claimed parcel in claim order.
+Plot plotFor(int index, List<Parcel> parcels) {
+  if (index < kPlots.length) return kPlots[index];
+  final p = parcels[index - kPlots.length];
+  return Plot(index, parcelOrigin(p.gx), parcelOrigin(p.gy));
+}
 
 /// The plot covering tile ([x], [y]), or null for roads and scenery.
 Plot? plotAt(int x, int y) {

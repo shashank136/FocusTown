@@ -31,11 +31,13 @@ class Towns extends Table {
   BoolColumn get tipRecoveryShown =>
       boolean().withDefault(const Constant(false))();
   // weekly emergency pause: how many are left and the Monday they were set
-  IntColumn get emergencyPauses =>
-      integer().withDefault(const Constant(1))();
+  IntColumn get emergencyPauses => integer().withDefault(const Constant(1))();
   TextColumn get emergencyWeek => text().nullable()();
+
   BoolColumn get notificationNoteShown =>
       boolean().withDefault(const Constant(false))();
+  // claimed land beyond the starting island, as gx:gy,gx:gy
+  TextColumn get parcels => text().withDefault(const Constant(''))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -89,7 +91,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 6;
+  static const currentSchemaVersion = 7;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -110,6 +112,8 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v7: land claimed beyond the starting island.
+      if (from < 7) await m.addColumn(towns, towns.parcels);
       // v6: the weekly emergency pause.
       if (from < 6) {
         await m.addColumn(towns, towns.emergencyPauses);

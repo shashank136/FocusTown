@@ -216,6 +216,18 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         ),
         defaultValue: const Constant(false),
       );
+  static const VerificationMeta _parcelsMeta = const VerificationMeta(
+    'parcels',
+  );
+  @override
+  late final GeneratedColumn<String> parcels = GeneratedColumn<String>(
+    'parcels',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -235,6 +247,7 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     emergencyPauses,
     emergencyWeek,
     notificationNoteShown,
+    parcels,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -398,6 +411,12 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         ),
       );
     }
+    if (data.containsKey('parcels')) {
+      context.handle(
+        _parcelsMeta,
+        parcels.isAcceptableOrUnknown(data['parcels']!, _parcelsMeta),
+      );
+    }
     return context;
   }
 
@@ -475,6 +494,10 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         DriftSqlType.bool,
         data['${effectivePrefix}notification_note_shown'],
       )!,
+      parcels: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}parcels'],
+      )!,
     );
   }
 
@@ -502,6 +525,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
   final int emergencyPauses;
   final String? emergencyWeek;
   final bool notificationNoteShown;
+  final String parcels;
   const TownRow({
     required this.id,
     required this.workerCount,
@@ -520,6 +544,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     required this.emergencyPauses,
     this.emergencyWeek,
     required this.notificationNoteShown,
+    required this.parcels,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -547,6 +572,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       map['emergency_week'] = Variable<String>(emergencyWeek);
     }
     map['notification_note_shown'] = Variable<bool>(notificationNoteShown);
+    map['parcels'] = Variable<String>(parcels);
     return map;
   }
 
@@ -575,6 +601,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ? const Value.absent()
           : Value(emergencyWeek),
       notificationNoteShown: Value(notificationNoteShown),
+      parcels: Value(parcels),
     );
   }
 
@@ -607,6 +634,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       notificationNoteShown: serializer.fromJson<bool>(
         json['notificationNoteShown'],
       ),
+      parcels: serializer.fromJson<String>(json['parcels']),
     );
   }
   @override
@@ -630,6 +658,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       'emergencyPauses': serializer.toJson<int>(emergencyPauses),
       'emergencyWeek': serializer.toJson<String?>(emergencyWeek),
       'notificationNoteShown': serializer.toJson<bool>(notificationNoteShown),
+      'parcels': serializer.toJson<String>(parcels),
     };
   }
 
@@ -651,6 +680,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     int? emergencyPauses,
     Value<String?> emergencyWeek = const Value.absent(),
     bool? notificationNoteShown,
+    String? parcels,
   }) => TownRow(
     id: id ?? this.id,
     workerCount: workerCount ?? this.workerCount,
@@ -675,6 +705,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
         ? emergencyWeek.value
         : this.emergencyWeek,
     notificationNoteShown: notificationNoteShown ?? this.notificationNoteShown,
+    parcels: parcels ?? this.parcels,
   );
   TownRow copyWithCompanion(TownsCompanion data) {
     return TownRow(
@@ -723,6 +754,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       notificationNoteShown: data.notificationNoteShown.present
           ? data.notificationNoteShown.value
           : this.notificationNoteShown,
+      parcels: data.parcels.present ? data.parcels.value : this.parcels,
     );
   }
 
@@ -745,7 +777,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ..write('tipRecoveryShown: $tipRecoveryShown, ')
           ..write('emergencyPauses: $emergencyPauses, ')
           ..write('emergencyWeek: $emergencyWeek, ')
-          ..write('notificationNoteShown: $notificationNoteShown')
+          ..write('notificationNoteShown: $notificationNoteShown, ')
+          ..write('parcels: $parcels')
           ..write(')'))
         .toString();
   }
@@ -769,6 +802,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     emergencyPauses,
     emergencyWeek,
     notificationNoteShown,
+    parcels,
   );
   @override
   bool operator ==(Object other) =>
@@ -790,7 +824,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           other.tipRecoveryShown == this.tipRecoveryShown &&
           other.emergencyPauses == this.emergencyPauses &&
           other.emergencyWeek == this.emergencyWeek &&
-          other.notificationNoteShown == this.notificationNoteShown);
+          other.notificationNoteShown == this.notificationNoteShown &&
+          other.parcels == this.parcels);
 }
 
 class TownsCompanion extends UpdateCompanion<TownRow> {
@@ -811,6 +846,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
   final Value<int> emergencyPauses;
   final Value<String?> emergencyWeek;
   final Value<bool> notificationNoteShown;
+  final Value<String> parcels;
   const TownsCompanion({
     this.id = const Value.absent(),
     this.workerCount = const Value.absent(),
@@ -829,6 +865,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.emergencyPauses = const Value.absent(),
     this.emergencyWeek = const Value.absent(),
     this.notificationNoteShown = const Value.absent(),
+    this.parcels = const Value.absent(),
   });
   TownsCompanion.insert({
     this.id = const Value.absent(),
@@ -848,6 +885,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.emergencyPauses = const Value.absent(),
     this.emergencyWeek = const Value.absent(),
     this.notificationNoteShown = const Value.absent(),
+    this.parcels = const Value.absent(),
   }) : workerCount = Value(workerCount),
        plotsUnlocked = Value(plotsUnlocked),
        xp = Value(xp),
@@ -872,6 +910,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Expression<int>? emergencyPauses,
     Expression<String>? emergencyWeek,
     Expression<bool>? notificationNoteShown,
+    Expression<String>? parcels,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -893,6 +932,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       if (emergencyWeek != null) 'emergency_week': emergencyWeek,
       if (notificationNoteShown != null)
         'notification_note_shown': notificationNoteShown,
+      if (parcels != null) 'parcels': parcels,
     });
   }
 
@@ -914,6 +954,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Value<int>? emergencyPauses,
     Value<String?>? emergencyWeek,
     Value<bool>? notificationNoteShown,
+    Value<String>? parcels,
   }) {
     return TownsCompanion(
       id: id ?? this.id,
@@ -934,6 +975,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       emergencyWeek: emergencyWeek ?? this.emergencyWeek,
       notificationNoteShown:
           notificationNoteShown ?? this.notificationNoteShown,
+      parcels: parcels ?? this.parcels,
     );
   }
 
@@ -993,6 +1035,9 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
         notificationNoteShown.value,
       );
     }
+    if (parcels.present) {
+      map['parcels'] = Variable<String>(parcels.value);
+    }
     return map;
   }
 
@@ -1015,7 +1060,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
           ..write('tipRecoveryShown: $tipRecoveryShown, ')
           ..write('emergencyPauses: $emergencyPauses, ')
           ..write('emergencyWeek: $emergencyWeek, ')
-          ..write('notificationNoteShown: $notificationNoteShown')
+          ..write('notificationNoteShown: $notificationNoteShown, ')
+          ..write('parcels: $parcels')
           ..write(')'))
         .toString();
   }
@@ -2483,6 +2529,7 @@ typedef $$TownsTableCreateCompanionBuilder = TownsCompanion Function({
   Value<int> emergencyPauses,
   Value<String?> emergencyWeek,
   Value<bool> notificationNoteShown,
+  Value<String> parcels,
 });
 typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<int> id,
@@ -2502,6 +2549,7 @@ typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<int> emergencyPauses,
   Value<String?> emergencyWeek,
   Value<bool> notificationNoteShown,
+  Value<String> parcels,
 });
 
 class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
@@ -2594,6 +2642,11 @@ class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
 
   ColumnFilters<bool> get notificationNoteShown => $composableBuilder(
     column: $table.notificationNoteShown,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get parcels => $composableBuilder(
+    column: $table.parcels,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2691,6 +2744,11 @@ class $$TownsTableOrderingComposer
     column: $table.notificationNoteShown,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get parcels => $composableBuilder(
+    column: $table.parcels,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TownsTableAnnotationComposer
@@ -2780,6 +2838,9 @@ class $$TownsTableAnnotationComposer
     column: $table.notificationNoteShown,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get parcels =>
+      $composableBuilder(column: $table.parcels, builder: (column) => column);
 }
 
 class $$TownsTableTableManager
@@ -2827,6 +2888,7 @@ class $$TownsTableTableManager
                 Value<int> emergencyPauses = const Value.absent(),
                 Value<String?> emergencyWeek = const Value.absent(),
                 Value<bool> notificationNoteShown = const Value.absent(),
+                Value<String> parcels = const Value.absent(),
               }) => TownsCompanion(
                 id: id,
                 workerCount: workerCount,
@@ -2845,6 +2907,7 @@ class $$TownsTableTableManager
                 emergencyPauses: emergencyPauses,
                 emergencyWeek: emergencyWeek,
                 notificationNoteShown: notificationNoteShown,
+                parcels: parcels,
               ),
           createCompanionCallback:
               ({
@@ -2865,6 +2928,7 @@ class $$TownsTableTableManager
                 Value<int> emergencyPauses = const Value.absent(),
                 Value<String?> emergencyWeek = const Value.absent(),
                 Value<bool> notificationNoteShown = const Value.absent(),
+                Value<String> parcels = const Value.absent(),
               }) => TownsCompanion.insert(
                 id: id,
                 workerCount: workerCount,
@@ -2883,6 +2947,7 @@ class $$TownsTableTableManager
                 emergencyPauses: emergencyPauses,
                 emergencyWeek: emergencyWeek,
                 notificationNoteShown: notificationNoteShown,
+                parcels: parcels,
               ),
           withReferenceMapper: (p0) => p0
               .map(

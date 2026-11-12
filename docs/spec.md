@@ -414,3 +414,11 @@ Everything below waits until the MVP shows day-7 retention of at least 20%.
 | Achievements and daily quests | Badges and small daily challenges, once there is enough content to keep them fresh. |
 
 Product guardrail for v2: purchases must never shorten build time, since build time equals focus time.
+
+## Growing island (Phase V6, decided 2026-11-12)
+
+- The island is the starting 8 x 8 square of plots plus claimed land. Land comes in parcels, one plot-sized square (7 x 7 tiles) each; claimed parcels are stored in claim order and parcel `i` is plot `64 + i`.
+- Claimable parcels are the unclaimed parcels that touch the island on a side. The world has an edge (parcel columns and rows -18 to 16, from the 8-bit voxel coordinates).
+- Space limits buildings: the daily plot unlock stops when every plot of the island is unlocked, until land is claimed.
+- A land session claims one parcel when it completes. It costs no workers and leaves no ruin if it fails. Its length is 25 minutes for the first parcel, 5 more for every 4 parcels claimed, at most 90.
+- Not in this version: gardens as buildable things, the globe, the showcase, a low-detail island view.

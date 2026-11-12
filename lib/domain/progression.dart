@@ -65,7 +65,10 @@ class Progression {
       _ => 1,
     };
     final lastGrant = town.lastPlotGrantDate;
-    final grant = lastGrant == null || lastGrant.compareTo(today) < 0;
+    // A new plot needs land: the island's plots cap the daily plot.
+    final grant =
+        (lastGrant == null || lastGrant.compareTo(today) < 0) &&
+        town.plotsUnlocked < TownRules.plotCountOf(town);
     final updated = town.copyWith(
       xp: town.xp + session.plannedMinutes,
       streakCount: streak,

@@ -1996,7 +1996,8 @@ Design (assumed, to confirm before work starts):
 - Showcase: the globe auto-spins with no buttons and a save-picture button. Saving or sharing needs a package: ask the user and name it before adding anything.
 - Frame rate: a bigger island must stay at 15 fps normal and 10 fps in Low Power Mode. The renderer draws only parcels near the screen. Measure on the iPhone (T-17.7) before growing past today's size.
 
-### T-V6.1 [ ] Spec and parcel model
+### T-V6.1 [x] Spec and parcel model
+- Done 2026-11-12 (scope chosen by the user: growth only, V6.1 to V6.5; no globe or showcase): `lib/domain/parcel.dart`, `TownState.parcels`, schema v7 (`towns.parcels`), `plotFor`/`parcelOrigin` in `plot_layout.dart`, the daily plot capped by the island's plots.
 - Depends on: MVP done (T-22.15), T-V3.1
 - Goal: the island is a set of parcels instead of a fixed 64 x 64 map.
 - Files: `docs/spec.md` (first), `lib/domain/parcel.dart`, `lib/domain/town.dart`, `lib/domain/town_rules.dart`, `lib/game/world/plot_layout.dart`, `lib/data/database.dart` (next schema version and a migration), tests.

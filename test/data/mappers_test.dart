@@ -3,6 +3,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
@@ -27,6 +28,7 @@ TownRow _townRowFrom(TownState s) {
     notificationNoteShown: false,
     emergencyPauses: c.emergencyPauses.value,
     emergencyWeek: c.emergencyWeek.value,
+    parcels: c.parcels.value,
   );
 }
 
@@ -93,6 +95,7 @@ void main() {
     lastPlotGrantDate: LocalDate.parse('2026-03-03'),
     emergencyPauses: 0,
     emergencyWeek: LocalDate.parse('2026-03-02'),
+    parcels: const [Parcel(-1, 3), Parcel(8, 0)],
   );
 
   group('town', () {

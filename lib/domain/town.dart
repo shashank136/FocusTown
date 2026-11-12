@@ -3,6 +3,7 @@
 
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
+import 'package:focus_town/domain/parcel.dart';
 
 /// Whether a placed building is standing or destroyed.
 enum BuildingStatus {
@@ -81,8 +82,10 @@ class TownState {
     this.lastPlotGrantDate,
     this.emergencyPauses = 1,
     this.emergencyWeek,
+    List<Parcel> parcels = const [],
   }) : buildings = List.unmodifiable(buildings),
-       queue = List.unmodifiable(queue);
+       queue = List.unmodifiable(queue),
+       parcels = List.unmodifiable(parcels);
 
   /// The starting town.
   // ignore: unnecessary_type_name_in_constructor, shorthand not valid for factories
@@ -106,6 +109,10 @@ class TownState {
 
   /// Monday of the week the pause count was last refilled for.
   final LocalDate? emergencyWeek;
+
+  /// Land claimed beyond the starting island, in claim order. Parcel `i` is
+  /// plot `64 + i`.
+  final List<Parcel> parcels;
 
   /// Living workers.
   final int workers;
@@ -147,6 +154,7 @@ class TownState {
     LocalDate? lastPlotGrantDate,
     int? emergencyPauses,
     LocalDate? emergencyWeek,
+    List<Parcel>? parcels,
   }) => TownState(
     workers: workers ?? this.workers,
     plotsUnlocked: plotsUnlocked ?? this.plotsUnlocked,
@@ -159,6 +167,7 @@ class TownState {
     lastPlotGrantDate: lastPlotGrantDate ?? this.lastPlotGrantDate,
     emergencyPauses: emergencyPauses ?? this.emergencyPauses,
     emergencyWeek: emergencyWeek ?? this.emergencyWeek,
+    parcels: parcels ?? this.parcels,
   );
 
   @override
@@ -174,7 +183,8 @@ class TownState {
       other.lastStreakDate == lastStreakDate &&
       other.lastPlotGrantDate == lastPlotGrantDate &&
       other.emergencyPauses == emergencyPauses &&
-      other.emergencyWeek == emergencyWeek;
+      other.emergencyWeek == emergencyWeek &&
+      _sameItems(other.parcels, parcels);
 
   @override
   int get hashCode => Object.hash(
@@ -189,6 +199,7 @@ class TownState {
     lastPlotGrantDate,
     emergencyPauses,
     emergencyWeek,
+    Object.hashAll(parcels),
   );
 
   // Pure Dart: no collection package, so compare lists by hand.

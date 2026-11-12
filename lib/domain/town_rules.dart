@@ -9,8 +9,12 @@ import 'package:focus_town/domain/town.dart';
 class TownRules {
   new _();
 
-  /// How many plots the island has.
+  /// How many plots the starting island has.
   static const plotCount = 64;
+
+  /// How many plots [town]'s island has: the starting ones plus one per
+  /// claimed parcel.
+  static int plotCountOf(TownState town) => plotCount + town.parcels.length;
 
   /// Whether the town may still take a building: the buildings and ruins on
   /// the island are fewer than the plots unlocked. Which plots they stand on
@@ -28,7 +32,7 @@ class TownRules {
   /// stands there, and the town has room.
   static bool isPlotFree(TownState town, int i) =>
       i >= 0 &&
-      i < plotCount &&
+      i < plotCountOf(town) &&
       hasRoom(town) &&
       !town.buildings.any((b) => b.plotIndex == i);
 
@@ -50,7 +54,7 @@ class TownRules {
   /// The lowest plot with no building or ruin, room or not.
   static int? firstUnusedPlot(TownState town) {
     final used = {for (final b in town.buildings) b.plotIndex};
-    for (var i = 0; i < plotCount; i++) {
+    for (var i = 0; i < plotCountOf(town); i++) {
       if (!used.contains(i)) return i;
     }
     return null;
