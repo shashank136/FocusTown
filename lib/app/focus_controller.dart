@@ -338,6 +338,8 @@ class FocusController extends AsyncNotifier<FocusState> {
           ? 'repair'
           : active.isLand
           ? 'land'
+          : active.isLandmark
+          ? 'landmark'
           : active.tier.name,
       away: active.state == SessionState.away,
     );

@@ -7,6 +7,7 @@ private extension FocusActivityAttributes.ContentState {
     switch title {
     case "repair": return "Repairing a ruin"
     case "land": return "Claiming land"
+    case "landmark": return "Building a landmark"
     default: return "Building a \(title)"
     }
   }

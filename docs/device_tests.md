@@ -129,4 +129,15 @@ Install the release build in place (`xcrun devicectl device install app ...`), t
 - [ ] Workers walking past a castle or tower hide behind its walls and show again after (no see-through, no flicker).
 - [ ] The castle and pyramid are 12 x 12 inside their block, leaving the road tile free.
 
+## Landmark on the iPhone (T-V8.6, to do, built 2026-11-12)
+
+Switch on **Short test sessions** in the debug screen first (a very short landmark session counts as a whole stage).
+
+- [ ] Start focus shows "Eiffel Tower: not started" and a "Work on the Eiffel Tower" button.
+- [ ] Pressing it starts a session (no workers at risk, no pause button, label "Building the Eiffel Tower"); a free 2 x 2 block now holds the tower with a road around it.
+- [ ] While it runs, the tower grows live; when it ends you see "Eiffel Tower: stage N of 12".
+- [ ] Each finished session adds a stage; the setup sheet shows the progress ("stage N of 12 (X of 240 minutes)").
+- [ ] Abandoning a landmark session says "Eiffel Tower damaged" and the tower loses one stage; no workers are lost.
+- [ ] After 12 stages: "Eiffel Tower finished!", the tower stands complete, and the button is gone.
+
 ## Android

@@ -1892,7 +1892,7 @@ Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Towe
 - 12 stages on the 12 x 12 inset block; the world draws a landmark in progress, live during a session.
 - Commit: `T-V8.4: eiffel tower`
 
-### T-V8.5 [ ] Setup sheet, panel and dialogs
+### T-V8.5 [x] Setup sheet, panel and dialogs
 - Commit: `T-V8.5: landmark screens`
 
 ### T-V8.6 [ ] [device] Landmark on the iPhone

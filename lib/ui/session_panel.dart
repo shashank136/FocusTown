@@ -38,6 +38,8 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
   // What the session is doing; land and repair sessions have no building.
   static String _label(Session s) => s.isRepair
       ? 'Repairing a ruin'
+      : s.isLandmark
+      ? 'Building the ${s.landmark!.title}'
       : s.isLand
       ? (s.land!.garden ? 'Making a garden' : 'Claiming land')
       : s.tier.name;
@@ -82,7 +84,10 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
               const SizedBox(height: 8),
               const Text('Lock your phone and put it face down.'),
             ],
-            if (!session.isRepair && !session.isLand && !session.emergencyUsed)
+            if (!session.isRepair &&
+                !session.isLand &&
+                !session.isLandmark &&
+                !session.emergencyUsed)
               _pauseControl(session),
             const SizedBox(height: 8),
             TextButton(

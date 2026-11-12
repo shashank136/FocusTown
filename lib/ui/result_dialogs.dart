@@ -22,6 +22,7 @@ Future<void> showResultDialog(
   builder: (context) {
     final (title, lines) = switch (r.outcome) {
       _ when r.repair => _repair(r),
+      _ when r.landmark != null => _landmark(r),
       _ when r.land => _land(r),
       SessionOutcome.completed => _completed(r, growthTip),
       SessionOutcome.queued => _queued(r),
@@ -98,6 +99,41 @@ TextStyle? _heading(BuildContext context) =>
             ('You were away for ${_awayText(r.awaySeconds)}', false),
         ],
       );
+
+(String, List<(String, bool)>) _landmark(SessionResult r) {
+  final title = r.landmark!.title;
+  final stages = r.landmark!.stages;
+  if (r.outcome != SessionOutcome.completed) {
+    return (
+      '$title damaged',
+      [
+        (
+          'It lost a stage and is at stage ${r.landmarkStage} of $stages. '
+              'No workers were lost.',
+          false,
+        ),
+        if (r.reason == OutcomeReason.leftTooLong)
+          ('You were away for ${_awayText(r.awaySeconds)}', false),
+      ],
+    );
+  }
+  return (
+    r.landmarkFinished
+        ? '$title finished!'
+        : '$title: stage ${r.landmarkStage} of $stages',
+    [
+      if (r.landmarkFinished) ('Your landmark is complete.', true),
+      if (r.xpGained > 0) ('+${r.xpGained} XP', false),
+      if (r.newStreak > 0)
+        (
+          'Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}',
+          false,
+        ),
+      if (r.leveledUpTo != null)
+        ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
+    ],
+  );
+}
 
 (String, List<(String, bool)>) _land(SessionResult r) =>
     r.outcome == SessionOutcome.completed

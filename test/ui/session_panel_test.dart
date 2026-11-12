@@ -7,6 +7,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
@@ -285,6 +286,15 @@ void main() {
       await _settle(tester);
       expect(find.text('Repairing a ruin'), findsOneWidget);
       expect(find.text('hut'), findsNothing);
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startLandmark(Landmark.eiffel, 30);
+      });
+      await _settle(tester);
+      expect(find.text('Building the Eiffel Tower'), findsOneWidget);
+      expect(find.text('Emergency pause'), findsNothing);
     });
 
     testWidgets('a land session has no pause button', (tester) async {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/ui/result_dialogs.dart';
@@ -144,6 +145,49 @@ void main() {
       expect(find.text('Land session stopped'), findsOneWidget);
       expect(
         find.text('The land is still free. Nothing was lost.'),
+        findsOneWidget,
+      );
+    });
+  });
+
+  group('landmark', () {
+    SessionResult landmark({
+      SessionOutcome outcome = SessionOutcome.completed,
+      int stage = 4,
+      bool finished = false,
+    }) => SessionResult(
+      outcome: outcome,
+      tier: BuildingTier.hut,
+      workersLost: 0,
+      workersGained: 0,
+      newStreak: 2,
+      xpGained: outcome == SessionOutcome.completed ? 45 : 0,
+      landmark: Landmark.eiffel,
+      landmarkStage: stage,
+      landmarkFinished: finished,
+    );
+
+    testWidgets('progress shows the stage, xp and no workers', (tester) async {
+      await _show(tester, landmark());
+      expect(find.text('Eiffel Tower: stage 4 of 12'), findsOneWidget);
+      expect(find.text('+45 XP'), findsOneWidget);
+      expect(find.textContaining('worker'), findsNothing);
+    });
+
+    testWidgets('finishing says it is built', (tester) async {
+      await _show(tester, landmark(stage: 12, finished: true));
+      expect(find.text('Eiffel Tower finished!'), findsOneWidget);
+    });
+
+    testWidgets('a failed session says it lost a stage, and no workers', (
+      tester,
+    ) async {
+      await _show(tester, landmark(outcome: SessionOutcome.failed, stage: 3));
+      expect(find.text('Eiffel Tower damaged'), findsOneWidget);
+      expect(
+        find.text(
+          'It lost a stage and is at stage 3 of 12. No workers were lost.',
+        ),
         findsOneWidget,
       );
     });

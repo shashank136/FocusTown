@@ -12,6 +12,7 @@ import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -246,6 +247,78 @@ void main() {
     expect(c.read(focusControllerProvider).requireValue.active, isNull);
     expect(await c.read(townRepositoryProvider).lastDurationMinutes(), 20);
     expect(find.byType(SessionSetupSheet), findsNothing);
+  });
+
+  group('landmark', () {
+    TownState withProject(int progress) => TownState.initial().copyWith(
+      buildings: [
+        ...TownState.initial().buildings,
+        TownBuilding(
+          id: 'landmark-eiffel',
+          tier: BuildingTier.castle,
+          status: BuildingStatus.building,
+          plotIndex: plotAtCell(0, 0, const [])!,
+          landmark: Landmark.eiffel,
+          progress: progress,
+        ),
+      ],
+    );
+
+    testWidgets('a new landmark offers to start the Eiffel Tower', (
+      tester,
+    ) async {
+      final c = await _open(tester);
+      expect(find.text('Eiffel Tower: not started'), findsOneWidget);
+      await tester.tap(find.text('Work on the Eiffel Tower'));
+      await _settle(tester);
+      final s = c.read(focusControllerProvider).requireValue.active!;
+      expect(s.isLandmark, isTrue);
+      expect(s.plannedMinutes, 25);
+      expect(s.workersAssigned, 0);
+    });
+
+    testWidgets('a project shows its progress and continues it', (
+      tester,
+    ) async {
+      final c = await _open(tester, seed: withProject(85));
+      expect(
+        find.text('Eiffel Tower: stage 4 of 12 (85 of 240 minutes)'),
+        findsOneWidget,
+      );
+      _jumpTo(tester, 60);
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.tap(find.text('Work on the Eiffel Tower'));
+      await _settle(tester);
+      final s = c.read(focusControllerProvider).requireValue.active!;
+      expect(s.plannedMinutes, 60);
+      expect(
+        c
+            .read(focusControllerProvider)
+            .requireValue
+            .town
+            .buildings
+            .where((b) => b.landmark != null),
+        hasLength(1),
+      );
+    });
+
+    testWidgets('a finished landmark is not offered again', (tester) async {
+      final done = TownState.initial().copyWith(
+        buildings: [
+          ...TownState.initial().buildings,
+          TownBuilding(
+            id: 'landmark-eiffel',
+            tier: BuildingTier.castle,
+            status: BuildingStatus.complete,
+            plotIndex: plotAtCell(0, 0, const [])!,
+            landmark: Landmark.eiffel,
+            progress: 240,
+          ),
+        ],
+      );
+      await _open(tester, seed: done);
+      expect(find.textContaining('Eiffel Tower'), findsNothing);
+    });
   });
 
   testWidgets('Extend land… starts choosing land', (tester) async {
