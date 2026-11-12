@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
@@ -42,6 +43,8 @@ List<BuildingRow> _buildingRowsFrom(TownState s, DateTime now) => [
       sessionId: c.sessionId.value,
       completedAt: c.completedAt.value,
       look: c.look.value,
+      landmark: c.landmark.value,
+      progress: c.progress.value,
     ),
 ];
 
@@ -63,6 +66,7 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   repairPlotIndex: c.repairPlotIndex.value,
   land: c.land.value,
   look: c.look.value,
+  landmark: c.landmark.value,
   emergencyArmed: c.emergencyArmed.value,
   emergencyUsed: c.emergencyUsed.value,
 );
@@ -133,6 +137,7 @@ void main() {
         status: 'queued',
         sessionId: id,
         completedAt: at,
+        progress: 0,
       );
       final s = townFromRows(_townRowFrom(TownState.initial()), [
         q('b', 20),
@@ -320,5 +325,55 @@ void main() {
         expect(sessionFromRow(_sessionRowFrom(sessionToRow(s))).look, 1);
       },
     );
+  });
+
+  group('landmarks', () {
+    test('a landmark project and a landmark session round trip', () {
+      final town = TownState(
+        workers: 3,
+        plotsUnlocked: 6,
+        buildings: const [
+          TownBuilding(
+            id: 'landmark-eiffel',
+            tier: BuildingTier.castle,
+            status: BuildingStatus.building,
+            plotIndex: 7,
+            landmark: Landmark.eiffel,
+            progress: 85,
+          ),
+          TownBuilding(
+            id: 'h',
+            tier: BuildingTier.hut,
+            status: BuildingStatus.complete,
+            plotIndex: 1,
+          ),
+        ],
+        queue: const [],
+        inRecoveryMode: false,
+      );
+      final back = townFromRows(
+        _townRowFrom(town),
+        _buildingRowsFrom(town, now),
+      );
+      expect(back.buildings.first.landmark, Landmark.eiffel);
+      expect(back.buildings.first.progress, 85);
+      expect(back.buildings.first.status, BuildingStatus.building);
+      expect(back.buildings.last.landmark, isNull);
+      expect(back, town);
+
+      final s = Session(
+        id: 'm',
+        plannedMinutes: 45,
+        tier: BuildingTier.hut,
+        workersAssigned: 0,
+        state: SessionState.running,
+        startedAt: TimeStamp(DateTime(2026, 3, 4, 9), Duration.zero),
+        landmark: Landmark.eiffel,
+      );
+      expect(
+        sessionFromRow(_sessionRowFrom(sessionToRow(s))).landmark,
+        Landmark.eiffel,
+      );
+    });
   });
 }

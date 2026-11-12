@@ -1880,7 +1880,7 @@ Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Towe
 - `Landmark`, `TownBuilding.landmark/progress`, `BuildingStatus.building`, rules for starting, adding progress and damage.
 - Commit: `T-V8.1: landmark rules`
 
-### T-V8.2 [ ] Storage (schema v9)
+### T-V8.2 [x] Storage (schema v9)
 - `buildings.landmark/progress`, `sessions.landmark`, mappers, migration.
 - Commit: `T-V8.2: landmark storage`
 

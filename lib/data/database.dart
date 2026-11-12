@@ -57,6 +57,9 @@ class Buildings extends Table {
   IntColumn get completedAt => integer()();
   // the look the user chose (null: the id decides)
   IntColumn get look => integer().nullable()();
+  // Landmark.name for a landmark, and the minutes built into it so far
+  TextColumn get landmark => text().nullable()();
+  IntColumn get progress => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -83,6 +86,8 @@ class Sessions extends Table {
   TextColumn get land => text().nullable()();
   // the look of the building the session builds (null: the id decides)
   IntColumn get look => integer().nullable()();
+  // Landmark.name for a landmark session
+  TextColumn get landmark => text().nullable()();
   BoolColumn get emergencyArmed =>
       boolean().withDefault(const Constant(false))();
   BoolColumn get emergencyUsed =>
@@ -97,7 +102,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 8;
+  static const currentSchemaVersion = 9;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -118,6 +123,12 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v9: landmarks, built over several sessions.
+      if (from < 9) {
+        await m.addColumn(buildings, buildings.landmark);
+        await m.addColumn(buildings, buildings.progress);
+        await m.addColumn(sessions, sessions.landmark);
+      }
       // v8: the look the user chose for a building.
       if (from < 8) {
         await m.addColumn(buildings, buildings.look);

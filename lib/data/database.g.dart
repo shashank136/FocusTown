@@ -1142,6 +1142,29 @@ class $BuildingsTable extends Buildings
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _landmarkMeta = const VerificationMeta(
+    'landmark',
+  );
+  @override
+  late final GeneratedColumn<String> landmark = GeneratedColumn<String>(
+    'landmark',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _progressMeta = const VerificationMeta(
+    'progress',
+  );
+  @override
+  late final GeneratedColumn<int> progress = GeneratedColumn<int>(
+    'progress',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1151,6 +1174,8 @@ class $BuildingsTable extends Buildings
     sessionId,
     completedAt,
     look,
+    landmark,
+    progress,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1214,6 +1239,18 @@ class $BuildingsTable extends Buildings
         look.isAcceptableOrUnknown(data['look']!, _lookMeta),
       );
     }
+    if (data.containsKey('landmark')) {
+      context.handle(
+        _landmarkMeta,
+        landmark.isAcceptableOrUnknown(data['landmark']!, _landmarkMeta),
+      );
+    }
+    if (data.containsKey('progress')) {
+      context.handle(
+        _progressMeta,
+        progress.isAcceptableOrUnknown(data['progress']!, _progressMeta),
+      );
+    }
     return context;
   }
 
@@ -1251,6 +1288,14 @@ class $BuildingsTable extends Buildings
         DriftSqlType.int,
         data['${effectivePrefix}look'],
       ),
+      landmark: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}landmark'],
+      ),
+      progress: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}progress'],
+      )!,
     );
   }
 
@@ -1268,6 +1313,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
   final String? sessionId;
   final int completedAt;
   final int? look;
+  final String? landmark;
+  final int progress;
   const BuildingRow({
     required this.id,
     required this.tier,
@@ -1276,6 +1323,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
     this.sessionId,
     required this.completedAt,
     this.look,
+    this.landmark,
+    required this.progress,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1293,6 +1342,10 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
     if (!nullToAbsent || look != null) {
       map['look'] = Variable<int>(look);
     }
+    if (!nullToAbsent || landmark != null) {
+      map['landmark'] = Variable<String>(landmark);
+    }
+    map['progress'] = Variable<int>(progress);
     return map;
   }
 
@@ -1309,6 +1362,10 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
           : Value(sessionId),
       completedAt: Value(completedAt),
       look: look == null && nullToAbsent ? const Value.absent() : Value(look),
+      landmark: landmark == null && nullToAbsent
+          ? const Value.absent()
+          : Value(landmark),
+      progress: Value(progress),
     );
   }
 
@@ -1325,6 +1382,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
       sessionId: serializer.fromJson<String?>(json['sessionId']),
       completedAt: serializer.fromJson<int>(json['completedAt']),
       look: serializer.fromJson<int?>(json['look']),
+      landmark: serializer.fromJson<String?>(json['landmark']),
+      progress: serializer.fromJson<int>(json['progress']),
     );
   }
   @override
@@ -1338,6 +1397,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
       'sessionId': serializer.toJson<String?>(sessionId),
       'completedAt': serializer.toJson<int>(completedAt),
       'look': serializer.toJson<int?>(look),
+      'landmark': serializer.toJson<String?>(landmark),
+      'progress': serializer.toJson<int>(progress),
     };
   }
 
@@ -1349,6 +1410,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
     Value<String?> sessionId = const Value.absent(),
     int? completedAt,
     Value<int?> look = const Value.absent(),
+    Value<String?> landmark = const Value.absent(),
+    int? progress,
   }) => BuildingRow(
     id: id ?? this.id,
     tier: tier ?? this.tier,
@@ -1357,6 +1420,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
     sessionId: sessionId.present ? sessionId.value : this.sessionId,
     completedAt: completedAt ?? this.completedAt,
     look: look.present ? look.value : this.look,
+    landmark: landmark.present ? landmark.value : this.landmark,
+    progress: progress ?? this.progress,
   );
   BuildingRow copyWithCompanion(BuildingsCompanion data) {
     return BuildingRow(
@@ -1369,6 +1434,8 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
           ? data.completedAt.value
           : this.completedAt,
       look: data.look.present ? data.look.value : this.look,
+      landmark: data.landmark.present ? data.landmark.value : this.landmark,
+      progress: data.progress.present ? data.progress.value : this.progress,
     );
   }
 
@@ -1381,14 +1448,25 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
           ..write('plotIndex: $plotIndex, ')
           ..write('sessionId: $sessionId, ')
           ..write('completedAt: $completedAt, ')
-          ..write('look: $look')
+          ..write('look: $look, ')
+          ..write('landmark: $landmark, ')
+          ..write('progress: $progress')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, tier, status, plotIndex, sessionId, completedAt, look);
+  int get hashCode => Object.hash(
+    id,
+    tier,
+    status,
+    plotIndex,
+    sessionId,
+    completedAt,
+    look,
+    landmark,
+    progress,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1399,7 +1477,9 @@ class BuildingRow extends DataClass implements Insertable<BuildingRow> {
           other.plotIndex == this.plotIndex &&
           other.sessionId == this.sessionId &&
           other.completedAt == this.completedAt &&
-          other.look == this.look);
+          other.look == this.look &&
+          other.landmark == this.landmark &&
+          other.progress == this.progress);
 }
 
 class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
@@ -1410,6 +1490,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
   final Value<String?> sessionId;
   final Value<int> completedAt;
   final Value<int?> look;
+  final Value<String?> landmark;
+  final Value<int> progress;
   final Value<int> rowid;
   const BuildingsCompanion({
     this.id = const Value.absent(),
@@ -1419,6 +1501,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
     this.sessionId = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.look = const Value.absent(),
+    this.landmark = const Value.absent(),
+    this.progress = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   BuildingsCompanion.insert({
@@ -1429,6 +1513,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
     this.sessionId = const Value.absent(),
     required int completedAt,
     this.look = const Value.absent(),
+    this.landmark = const Value.absent(),
+    this.progress = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        tier = Value(tier),
@@ -1442,6 +1528,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
     Expression<String>? sessionId,
     Expression<int>? completedAt,
     Expression<int>? look,
+    Expression<String>? landmark,
+    Expression<int>? progress,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1452,6 +1540,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
       if (sessionId != null) 'session_id': sessionId,
       if (completedAt != null) 'completed_at': completedAt,
       if (look != null) 'look': look,
+      if (landmark != null) 'landmark': landmark,
+      if (progress != null) 'progress': progress,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1464,6 +1554,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
     Value<String?>? sessionId,
     Value<int>? completedAt,
     Value<int?>? look,
+    Value<String?>? landmark,
+    Value<int>? progress,
     Value<int>? rowid,
   }) {
     return BuildingsCompanion(
@@ -1474,6 +1566,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
       sessionId: sessionId ?? this.sessionId,
       completedAt: completedAt ?? this.completedAt,
       look: look ?? this.look,
+      landmark: landmark ?? this.landmark,
+      progress: progress ?? this.progress,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1502,6 +1596,12 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
     if (look.present) {
       map['look'] = Variable<int>(look.value);
     }
+    if (landmark.present) {
+      map['landmark'] = Variable<String>(landmark.value);
+    }
+    if (progress.present) {
+      map['progress'] = Variable<int>(progress.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1518,6 +1618,8 @@ class BuildingsCompanion extends UpdateCompanion<BuildingRow> {
           ..write('sessionId: $sessionId, ')
           ..write('completedAt: $completedAt, ')
           ..write('look: $look, ')
+          ..write('landmark: $landmark, ')
+          ..write('progress: $progress, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1710,6 +1812,17 @@ class $SessionsTable extends Sessions
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _landmarkMeta = const VerificationMeta(
+    'landmark',
+  );
+  @override
+  late final GeneratedColumn<String> landmark = GeneratedColumn<String>(
+    'landmark',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _emergencyArmedMeta = const VerificationMeta(
     'emergencyArmed',
   );
@@ -1759,6 +1872,7 @@ class $SessionsTable extends Sessions
     repairPlotIndex,
     land,
     look,
+    landmark,
     emergencyArmed,
     emergencyUsed,
   ];
@@ -1918,6 +2032,12 @@ class $SessionsTable extends Sessions
         look.isAcceptableOrUnknown(data['look']!, _lookMeta),
       );
     }
+    if (data.containsKey('landmark')) {
+      context.handle(
+        _landmarkMeta,
+        landmark.isAcceptableOrUnknown(data['landmark']!, _landmarkMeta),
+      );
+    }
     if (data.containsKey('emergency_armed')) {
       context.handle(
         _emergencyArmedMeta,
@@ -2013,6 +2133,10 @@ class $SessionsTable extends Sessions
         DriftSqlType.int,
         data['${effectivePrefix}look'],
       ),
+      landmark: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}landmark'],
+      ),
       emergencyArmed: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}emergency_armed'],
@@ -2048,6 +2172,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final int? repairPlotIndex;
   final String? land;
   final int? look;
+  final String? landmark;
   final bool emergencyArmed;
   final bool emergencyUsed;
   const SessionRow({
@@ -2068,6 +2193,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     this.repairPlotIndex,
     this.land,
     this.look,
+    this.landmark,
     required this.emergencyArmed,
     required this.emergencyUsed,
   });
@@ -2107,6 +2233,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     if (!nullToAbsent || look != null) {
       map['look'] = Variable<int>(look);
     }
+    if (!nullToAbsent || landmark != null) {
+      map['landmark'] = Variable<String>(landmark);
+    }
     map['emergency_armed'] = Variable<bool>(emergencyArmed);
     map['emergency_used'] = Variable<bool>(emergencyUsed);
     return map;
@@ -2143,6 +2272,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           : Value(repairPlotIndex),
       land: land == null && nullToAbsent ? const Value.absent() : Value(land),
       look: look == null && nullToAbsent ? const Value.absent() : Value(look),
+      landmark: landmark == null && nullToAbsent
+          ? const Value.absent()
+          : Value(landmark),
       emergencyArmed: Value(emergencyArmed),
       emergencyUsed: Value(emergencyUsed),
     );
@@ -2171,6 +2303,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       repairPlotIndex: serializer.fromJson<int?>(json['repairPlotIndex']),
       land: serializer.fromJson<String?>(json['land']),
       look: serializer.fromJson<int?>(json['look']),
+      landmark: serializer.fromJson<String?>(json['landmark']),
       emergencyArmed: serializer.fromJson<bool>(json['emergencyArmed']),
       emergencyUsed: serializer.fromJson<bool>(json['emergencyUsed']),
     );
@@ -2196,6 +2329,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'repairPlotIndex': serializer.toJson<int?>(repairPlotIndex),
       'land': serializer.toJson<String?>(land),
       'look': serializer.toJson<int?>(look),
+      'landmark': serializer.toJson<String?>(landmark),
       'emergencyArmed': serializer.toJson<bool>(emergencyArmed),
       'emergencyUsed': serializer.toJson<bool>(emergencyUsed),
     };
@@ -2219,6 +2353,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     Value<int?> repairPlotIndex = const Value.absent(),
     Value<String?> land = const Value.absent(),
     Value<int?> look = const Value.absent(),
+    Value<String?> landmark = const Value.absent(),
     bool? emergencyArmed,
     bool? emergencyUsed,
   }) => SessionRow(
@@ -2245,6 +2380,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
         : this.repairPlotIndex,
     land: land.present ? land.value : this.land,
     look: look.present ? look.value : this.look,
+    landmark: landmark.present ? landmark.value : this.landmark,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -2287,6 +2423,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           : this.repairPlotIndex,
       land: data.land.present ? data.land.value : this.land,
       look: data.look.present ? data.look.value : this.look,
+      landmark: data.landmark.present ? data.landmark.value : this.landmark,
       emergencyArmed: data.emergencyArmed.present
           ? data.emergencyArmed.value
           : this.emergencyArmed,
@@ -2316,6 +2453,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('repairPlotIndex: $repairPlotIndex, ')
           ..write('land: $land, ')
           ..write('look: $look, ')
+          ..write('landmark: $landmark, ')
           ..write('emergencyArmed: $emergencyArmed, ')
           ..write('emergencyUsed: $emergencyUsed')
           ..write(')'))
@@ -2341,6 +2479,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     repairPlotIndex,
     land,
     look,
+    landmark,
     emergencyArmed,
     emergencyUsed,
   );
@@ -2365,6 +2504,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.repairPlotIndex == this.repairPlotIndex &&
           other.land == this.land &&
           other.look == this.look &&
+          other.landmark == this.landmark &&
           other.emergencyArmed == this.emergencyArmed &&
           other.emergencyUsed == this.emergencyUsed);
 }
@@ -2387,6 +2527,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<int?> repairPlotIndex;
   final Value<String?> land;
   final Value<int?> look;
+  final Value<String?> landmark;
   final Value<bool> emergencyArmed;
   final Value<bool> emergencyUsed;
   final Value<int> rowid;
@@ -2408,6 +2549,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.repairPlotIndex = const Value.absent(),
     this.land = const Value.absent(),
     this.look = const Value.absent(),
+    this.landmark = const Value.absent(),
     this.emergencyArmed = const Value.absent(),
     this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2430,6 +2572,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.repairPlotIndex = const Value.absent(),
     this.land = const Value.absent(),
     this.look = const Value.absent(),
+    this.landmark = const Value.absent(),
     this.emergencyArmed = const Value.absent(),
     this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2460,6 +2603,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<int>? repairPlotIndex,
     Expression<String>? land,
     Expression<int>? look,
+    Expression<String>? landmark,
     Expression<bool>? emergencyArmed,
     Expression<bool>? emergencyUsed,
     Expression<int>? rowid,
@@ -2482,6 +2626,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (repairPlotIndex != null) 'repair_plot_index': repairPlotIndex,
       if (land != null) 'land': land,
       if (look != null) 'look': look,
+      if (landmark != null) 'landmark': landmark,
       if (emergencyArmed != null) 'emergency_armed': emergencyArmed,
       if (emergencyUsed != null) 'emergency_used': emergencyUsed,
       if (rowid != null) 'rowid': rowid,
@@ -2506,6 +2651,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<int?>? repairPlotIndex,
     Value<String?>? land,
     Value<int?>? look,
+    Value<String?>? landmark,
     Value<bool>? emergencyArmed,
     Value<bool>? emergencyUsed,
     Value<int>? rowid,
@@ -2528,6 +2674,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       repairPlotIndex: repairPlotIndex ?? this.repairPlotIndex,
       land: land ?? this.land,
       look: look ?? this.look,
+      landmark: landmark ?? this.landmark,
       emergencyArmed: emergencyArmed ?? this.emergencyArmed,
       emergencyUsed: emergencyUsed ?? this.emergencyUsed,
       rowid: rowid ?? this.rowid,
@@ -2588,6 +2735,9 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (look.present) {
       map['look'] = Variable<int>(look.value);
     }
+    if (landmark.present) {
+      map['landmark'] = Variable<String>(landmark.value);
+    }
     if (emergencyArmed.present) {
       map['emergency_armed'] = Variable<bool>(emergencyArmed.value);
     }
@@ -2620,6 +2770,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('repairPlotIndex: $repairPlotIndex, ')
           ..write('land: $land, ')
           ..write('look: $look, ')
+          ..write('landmark: $landmark, ')
           ..write('emergencyArmed: $emergencyArmed, ')
           ..write('emergencyUsed: $emergencyUsed, ')
           ..write('rowid: $rowid')
@@ -3122,6 +3273,8 @@ typedef $$BuildingsTableCreateCompanionBuilder = BuildingsCompanion Function({
   Value<String?> sessionId,
   required int completedAt,
   Value<int?> look,
+  Value<String?> landmark,
+  Value<int> progress,
   Value<int> rowid,
 });
 typedef $$BuildingsTableUpdateCompanionBuilder = BuildingsCompanion Function({
@@ -3132,6 +3285,8 @@ typedef $$BuildingsTableUpdateCompanionBuilder = BuildingsCompanion Function({
   Value<String?> sessionId,
   Value<int> completedAt,
   Value<int?> look,
+  Value<String?> landmark,
+  Value<int> progress,
   Value<int> rowid,
 });
 
@@ -3176,6 +3331,16 @@ class $$BuildingsTableFilterComposer
 
   ColumnFilters<int> get look => $composableBuilder(
     column: $table.look,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get landmark => $composableBuilder(
+    column: $table.landmark,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get progress => $composableBuilder(
+    column: $table.progress,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3223,6 +3388,16 @@ class $$BuildingsTableOrderingComposer
     column: $table.look,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get landmark => $composableBuilder(
+    column: $table.landmark,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get progress => $composableBuilder(
+    column: $table.progress,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$BuildingsTableAnnotationComposer
@@ -3256,6 +3431,12 @@ class $$BuildingsTableAnnotationComposer
 
   GeneratedColumn<int> get look =>
       $composableBuilder(column: $table.look, builder: (column) => column);
+
+  GeneratedColumn<String> get landmark =>
+      $composableBuilder(column: $table.landmark, builder: (column) => column);
+
+  GeneratedColumn<int> get progress =>
+      $composableBuilder(column: $table.progress, builder: (column) => column);
 }
 
 class $$BuildingsTableTableManager
@@ -3296,6 +3477,8 @@ class $$BuildingsTableTableManager
                 Value<String?> sessionId = const Value.absent(),
                 Value<int> completedAt = const Value.absent(),
                 Value<int?> look = const Value.absent(),
+                Value<String?> landmark = const Value.absent(),
+                Value<int> progress = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BuildingsCompanion(
                 id: id,
@@ -3305,6 +3488,8 @@ class $$BuildingsTableTableManager
                 sessionId: sessionId,
                 completedAt: completedAt,
                 look: look,
+                landmark: landmark,
+                progress: progress,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3316,6 +3501,8 @@ class $$BuildingsTableTableManager
                 Value<String?> sessionId = const Value.absent(),
                 required int completedAt,
                 Value<int?> look = const Value.absent(),
+                Value<String?> landmark = const Value.absent(),
+                Value<int> progress = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => BuildingsCompanion.insert(
                 id: id,
@@ -3325,6 +3512,8 @@ class $$BuildingsTableTableManager
                 sessionId: sessionId,
                 completedAt: completedAt,
                 look: look,
+                landmark: landmark,
+                progress: progress,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -3379,6 +3568,7 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<int?> repairPlotIndex,
   Value<String?> land,
   Value<int?> look,
+  Value<String?> landmark,
   Value<bool> emergencyArmed,
   Value<bool> emergencyUsed,
   Value<int> rowid,
@@ -3401,6 +3591,7 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<int?> repairPlotIndex,
   Value<String?> land,
   Value<int?> look,
+  Value<String?> landmark,
   Value<bool> emergencyArmed,
   Value<bool> emergencyUsed,
   Value<int> rowid,
@@ -3497,6 +3688,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<int> get look => $composableBuilder(
     column: $table.look,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get landmark => $composableBuilder(
+    column: $table.landmark,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3605,6 +3801,11 @@ class $$SessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get landmark => $composableBuilder(
+    column: $table.landmark,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get emergencyArmed => $composableBuilder(
     column: $table.emergencyArmed,
     builder: (column) => ColumnOrderings(column),
@@ -3696,6 +3897,9 @@ class $$SessionsTableAnnotationComposer
   GeneratedColumn<int> get look =>
       $composableBuilder(column: $table.look, builder: (column) => column);
 
+  GeneratedColumn<String> get landmark =>
+      $composableBuilder(column: $table.landmark, builder: (column) => column);
+
   GeneratedColumn<bool> get emergencyArmed => $composableBuilder(
     column: $table.emergencyArmed,
     builder: (column) => column,
@@ -3755,6 +3959,7 @@ class $$SessionsTableTableManager
                 Value<int?> repairPlotIndex = const Value.absent(),
                 Value<String?> land = const Value.absent(),
                 Value<int?> look = const Value.absent(),
+                Value<String?> landmark = const Value.absent(),
                 Value<bool> emergencyArmed = const Value.absent(),
                 Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3776,6 +3981,7 @@ class $$SessionsTableTableManager
                 repairPlotIndex: repairPlotIndex,
                 land: land,
                 look: look,
+                landmark: landmark,
                 emergencyArmed: emergencyArmed,
                 emergencyUsed: emergencyUsed,
                 rowid: rowid,
@@ -3799,6 +4005,7 @@ class $$SessionsTableTableManager
                 Value<int?> repairPlotIndex = const Value.absent(),
                 Value<String?> land = const Value.absent(),
                 Value<int?> look = const Value.absent(),
+                Value<String?> landmark = const Value.absent(),
                 Value<bool> emergencyArmed = const Value.absent(),
                 Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3820,6 +4027,7 @@ class $$SessionsTableTableManager
                 repairPlotIndex: repairPlotIndex,
                 land: land,
                 look: look,
+                landmark: landmark,
                 emergencyArmed: emergencyArmed,
                 emergencyUsed: emergencyUsed,
                 rowid: rowid,

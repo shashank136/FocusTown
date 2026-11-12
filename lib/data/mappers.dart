@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
@@ -8,6 +9,9 @@ import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 
 const _queued = 'queued';
+
+Landmark? _landmark(String? name) =>
+    name == null ? null : Landmark.values.byName(name);
 
 /// Builds a [TownState] from the town row and all building rows.
 ///
@@ -33,6 +37,8 @@ TownState townFromRows(TownRow town, List<BuildingRow> buildings) {
           status: BuildingStatus.values.byName(b.status),
           plotIndex: b.plotIndex!,
           look: b.look,
+          landmark: _landmark(b.landmark),
+          progress: b.progress,
         ),
     ],
     queue: [
@@ -84,6 +90,8 @@ List<BuildingsCompanion> buildingsToRows(
         sessionId: Value(b.id == 'starter' ? null : b.id),
         completedAt: at,
         look: Value(b.look),
+        landmark: Value(b.landmark?.name),
+        progress: Value(b.progress),
       ),
     for (final q in state.queue)
       BuildingsCompanion.insert(
@@ -93,6 +101,7 @@ List<BuildingsCompanion> buildingsToRows(
         sessionId: Value(q.id),
         completedAt: at,
         look: Value(q.look),
+        progress: const Value(0),
       ),
   ];
 }
@@ -125,6 +134,7 @@ Session sessionFromRow(SessionRow row) {
     repairPlot: row.repairPlotIndex,
     land: row.land == null ? null : Parcel.decode(row.land!),
     look: row.look,
+    landmark: _landmark(row.landmark),
     emergencyArmed: row.emergencyArmed,
     emergencyUsed: row.emergencyUsed,
   );
@@ -150,6 +160,7 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     repairPlotIndex: Value(session.repairPlot),
     land: Value(session.land?.encode()),
     look: Value(session.look),
+    landmark: Value(session.landmark?.name),
     emergencyArmed: Value(session.emergencyArmed),
     emergencyUsed: Value(session.emergencyUsed),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),
