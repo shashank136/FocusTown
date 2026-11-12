@@ -2012,19 +2012,22 @@ Design (assumed, to confirm before work starts):
 - Tests first: the block count for a 64-parcel island matches today's world; a far parcel adds no blocks while off screen; the world is deterministic for the same parcels.
 - Commit: `T-V6.2: parcel renderer`
 
-### T-V6.3 [ ] Gardens and open space as buildable things
+### T-V6.3 [x] Gardens and open space as buildable things
+- Done 2026-11-12 in a smaller form: a garden is a claimed parcel marked `garden` (open space, not a plot): four looks in `lib/game/world/garden.dart` chosen by position; the user picks it with a switch when choosing land. It is not a building, so it takes no plot, workers or ruin.
 - Depends on: T-V3.2
 - Do: park, pond, orchard and garden looks: they take a plot and a session, no workers at risk, no ruin on failure (the plot goes back to forest).
 - Tests first: a garden session loses no workers and leaves no ruin; layouts fit the plot; goldens.
 - Commit: `T-V6.3: gardens`
 
-### T-V6.4 [ ] Land sessions claim parcels
+### T-V6.4 [x] Land sessions claim parcels
+- Done: `Session.land`, `SessionEngine.startLand`, `TownRules.landMinutes/canClaim/applyLandCompleted`, `FocusController.startLand`, `Placement` land mode (virtual plot indexes from `kLandBase`), "Extend land…" in the setup sheet, result dialogs. A land session counts for XP, streak and the day's plot; a lost one costs nothing.
 - Depends on: T-V6.2
 - Do: session kind `land` (length from the parcel count as above); "Extend land" mode outlines the claimable parcels and the player picks one; completing claims it; a failed one claims nothing and costs no workers.
 - Tests first: length rule per parcel count and the 90 minute cap; completing adds exactly the chosen parcel; failing adds none; only a claimable parcel can be chosen.
 - Commit: `T-V6.4: land sessions`
 
-### T-V6.5 [ ] Island view
+### T-V6.5 [x] Island view
+- Done in a smaller form: choosing land glides the camera out to the whole island (`TownGame.showIsland`) and outlines the claimable parcels; zooming out works anywhere. No separate low-detail mode and no "World" button (the globe, V6.6 and V6.7, was not in scope).
 - Depends on: T-V6.4
 - Do: zoom out to a low-detail island view with outlined claimable parcels and a "World" button; the camera glides between plot view and island view.
 - Tests first: zoom thresholds switch the detail level; the claimable outlines show only in extend mode; widget test for the button.

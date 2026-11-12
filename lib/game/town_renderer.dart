@@ -238,14 +238,15 @@ class TownRenderer {
   /// The claimed land, for picking and outlines.
   List<Parcel> get parcels => _town?.parcels ?? const [];
 
-  // The island as a tile box, for the camera.
+  // The island as a tile box for the camera, with a plot of sea on every side
+  // so the claimable land at the coast fits on screen too.
   Rect get _box {
     final b = islandBox(parcels);
     return Rect.fromLTRB(
-      b.left.toDouble(),
-      b.top.toDouble(),
-      b.right.toDouble(),
-      b.bottom.toDouble(),
+      b.left - kPlotSize.toDouble(),
+      b.top - kPlotSize.toDouble(),
+      b.right + kPlotSize.toDouble(),
+      b.bottom + kPlotSize.toDouble(),
     );
   }
 

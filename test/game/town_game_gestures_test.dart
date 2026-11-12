@@ -126,6 +126,15 @@ void main() {
       expect(cam.origin, after);
     });
 
+    test('showIsland glides out to the whole island', () {
+      final game = _game();
+      final cam = game.renderer.camera!;
+      game
+        ..showIsland()
+        ..update(0.5);
+      expect(cam.tile, closeTo(cam.fitMapTile, 1e-6));
+    });
+
     test('recenter glides back to the unlocked plots', () {
       final game = _game();
       final cam = game.renderer.camera!;

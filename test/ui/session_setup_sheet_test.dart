@@ -205,6 +205,16 @@ void main() {
     expect(find.byType(SessionSetupSheet), findsNothing);
   });
 
+  testWidgets('Extend land… starts choosing land', (tester) async {
+    final c = await _open(tester);
+    await tester.tap(find.text('Extend land…'));
+    await _settle(tester);
+    final placement = c.read(placementProvider)!;
+    expect(placement.land, isTrue);
+    expect(placement.minutes, 25);
+    expect(find.byType(SessionSetupSheet), findsNothing);
+  });
+
   testWidgets('a full town explains why Choose plot… is off', (tester) async {
     final full = TownState.initial().copyWith(
       buildings: [

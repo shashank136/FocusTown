@@ -325,6 +325,67 @@ void main() {
     expect(find.byKey(const ValueKey('ready-label')), findsNothing);
   });
 
+  group('choose land', () {
+    Future<ProviderContainer> choosing(WidgetTester tester) async {
+      final c = await _pump(tester);
+      c.read(placementProvider.notifier).beginLand();
+      await tester.pump();
+      // The camera glides out to the coast.
+      for (var i = 0; i < 20; i++) {
+        await tester.pump(const Duration(milliseconds: 100));
+      }
+      return c;
+    }
+
+    Offset parcelOnScreen(WidgetTester tester, int k) {
+      final cam = _game.renderer.camera!;
+      final plot = plotFor(kLandBase + k, const []);
+      final c = plot.center;
+      final v = project(c.x, c.y, 1, cam.tile, cam.origin);
+      return tester.getTopLeft(find.byType(GameWidget<TownGame>)) +
+          Offset(v.x, v.y);
+    }
+
+    testWidgets('the bar asks for land and the free parcels are outlined', (
+      tester,
+    ) async {
+      await choosing(tester);
+      expect(
+        find.text('Choose land for your 25-minute session'),
+        findsOneWidget,
+      );
+      expect(find.text('Make it a garden'), findsOneWidget);
+      expect(_game.renderer.plotOutlines, {
+        for (var i = 0; i < 32; i++) kLandBase + i,
+      });
+    });
+
+    testWidgets('tapping a parcel selects it, Confirm claims it', (
+      tester,
+    ) async {
+      final c = await choosing(tester);
+      await tester.tapAt(parcelOnScreen(tester, 5));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(c.read(placementProvider)!.plot, kLandBase + 5);
+      await tester.tap(find.text('Confirm'));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+      final land = c.read(focusControllerProvider).requireValue.active!.land;
+      expect(land, isNotNull);
+      expect(land!.garden, isFalse);
+      expect(_game.renderer.plotOutlines, isEmpty);
+    });
+
+    testWidgets('the garden switch makes the land a garden', (tester) async {
+      final c = await choosing(tester);
+      await tester.tap(find.text('Make it a garden'));
+      await tester.pump();
+      expect(c.read(placementProvider)!.garden, isTrue);
+    });
+  });
+
   group('choose a plot', () {
     Offset plotCenterOnScreen(WidgetTester tester, int plot) {
       final cam = _game.renderer.camera!;

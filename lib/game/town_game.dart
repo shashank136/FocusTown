@@ -271,13 +271,33 @@ class TownGame extends FlameGame
     final cam = renderer.camera;
     if (cam == null) return null;
     final g = unprojectGround(p.x, p.y + cam.tile, cam.tile, cam.origin);
-    return plotAtWith(renderer.parcels, g.x.floor(), g.y.floor())?.index;
+    final x = g.x.floor();
+    final y = g.y.floor();
+    // Choosing land: the outlined parcels are not plots yet.
+    for (final i in renderer.plotOutlines.where((i) => i >= kLandBase)) {
+      final plot = plotFor(i, renderer.parcels);
+      if (x >= plot.originX &&
+          x < plot.originX + kPlotSize &&
+          y >= plot.originY &&
+          y < plot.originY + kPlotSize) {
+        return i;
+      }
+    }
+    return plotAtWith(renderer.parcels, x, y)?.index;
   }
 
   /// Glides the camera to [plot] (zooming in to at least tile 14). If the first
   /// frame has not been drawn yet the glide starts as soon as it has.
   // ignore: use_setters_to_change_properties, a command, not a property
   void focusOnSite(Plot plot) => _siteToFocus = plot;
+
+  /// Glides out to show the whole island (choosing land).
+  void showIsland() {
+    final cam = renderer.camera;
+    if (cam == null) return;
+    final target = TownCamera(cam.viewSize, box: cam.box);
+    _transition = CameraTransition(from: cam.pose, to: target.pose);
+  }
 
   /// Glides back to the unlocked plots.
   void recenter() {
