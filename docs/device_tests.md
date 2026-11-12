@@ -115,10 +115,10 @@ Release build on the iPhone 15 Pro Max, in-place install, user-reported.
 
 Install the release build in place (`xcrun devicectl device install app ...`), then:
 
-- [ ] V3: finish a few sessions. Buildings show a classic or a second look (tent, townhouse, smithy, lighthouse, pyramid); the starter house stays the classic house.
-- [ ] V4: tap the flame (streak) in the HUD: "Your focus" opens. Before any session it says to finish one; afterwards the bars, streak, completion rate and the sentence match what you did.
-- [ ] V6: Start focus > "Extend land…": the camera steps back, the coast parcels are outlined, the bar says "Choose land for your 25-minute session". Tap a parcel, Confirm: a 25-minute session starts (no workers at risk). Finish it: "Land claimed", the new land appears and is forest.
-- [ ] V6: repeat with "Make it a garden" switched on: the new land is a park, pond, orchard or flower beds, and it is not a plot.
+- [x] V3 (user: looks good, 2026-11-12): finish a few sessions. Buildings show a classic or a second look (tent, townhouse, smithy, lighthouse, pyramid); the starter house stays the classic house.
+- [x] V4 (user: looks good): tap the flame (streak) in the HUD: "Your focus" opens. Before any session it says to finish one; afterwards the bars, streak, completion rate and the sentence match what you did.
+- [x] V6 (user: land and garden flow look good): Start focus > "Extend land…": the camera steps back, the coast parcels are outlined, the bar says "Choose land for your 25-minute session". Tap a parcel, Confirm: a 25-minute session starts (no workers at risk). Finish it: "Land claimed", the new land appears and is forest.
+- [x] V6: repeat with "Make it a garden" switched on: the new land is a park, pond, orchard or flower beds, and it is not a plot.
 - [ ] V6: abandon a land session: nothing is lost and no land is added.
 - [ ] V6: the camera can zoom out over the grown island and pan to the new land.
 
