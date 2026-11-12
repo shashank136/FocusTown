@@ -4,6 +4,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/ui/debug_screen.dart';
+import 'package:focus_town/ui/focus_trends_screen.dart';
 
 /// Streak, town level with progress, workers, plots and the queue badge.
 class Hud extends ConsumerWidget {
@@ -33,10 +34,18 @@ class Hud extends ConsumerWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _Stat(
-                  Icons.local_fire_department,
-                  'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
-                  Text('$streak', key: const ValueKey('hud-streak')),
+                // The streak opens "Your focus".
+                InkWell(
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const FocusTrendsScreen(),
+                    ),
+                  ),
+                  child: _Stat(
+                    Icons.local_fire_department,
+                    'Streak, $streak ${streak == 1 ? 'day' : 'days'}',
+                    Text('$streak', key: const ValueKey('hud-streak')),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 _LevelBadge(

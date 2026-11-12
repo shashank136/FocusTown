@@ -1966,7 +1966,8 @@ Open questions (assumed answers):
 - Tests first: only resolved sessions are returned, in time order; the provider updates after a completed and a failed session.
 - Commit: `T-V4.2: stats provider`
 
-### T-V4.3 [ ] "Your focus" screen
+### T-V4.3 [x] "Your focus" screen
+- Done: `lib/ui/focus_trends_screen.dart`; the bars are plain widgets (no painter, so each bar is a screen-reader label), no golden; opened by tapping the streak in the HUD.
 - Depends on: T-V4.2
 - Do: a screen with the two bar charts (painted, no package), the numbers, the trend sentence and an empty state before the first session; opened from the HUD; accessible labels for the bars.
 - Tests first: widget tests for the empty state, the numbers for a seeded history, the trend sentence, and opening from the HUD; one golden of the charts.

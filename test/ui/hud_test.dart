@@ -12,6 +12,7 @@ import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/debug_screen.dart';
+import 'package:focus_town/ui/focus_trends_screen.dart';
 import 'package:focus_town/ui/hud.dart';
 
 class _Seeded extends FocusController {
@@ -156,5 +157,13 @@ void main() {
       await tapLevel(tester, clock, 7, const Duration(seconds: 1));
       expect(find.byType(DebugScreen), findsNothing);
     });
+  });
+
+  testWidgets('tapping the streak opens Your focus', (tester) async {
+    await _pump(tester, TownState.initial());
+    await tester.tap(find.byKey(const ValueKey('hud-streak')));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+    expect(find.byType(FocusTrendsScreen), findsOneWidget);
   });
 }
