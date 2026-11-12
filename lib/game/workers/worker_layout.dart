@@ -43,7 +43,7 @@ final FlatColor _shirt = FlatColor.of(WorkerColors.shirt);
 (int, int) _footprint(BuildingTier t) => switch (t) {
   BuildingTier.hut || BuildingTier.tower => (3, 3),
   BuildingTier.house || BuildingTier.workshop => (5, 5),
-  BuildingTier.castle => (14, 14),
+  BuildingTier.castle => (12, 12),
 };
 
 /// Up to [count] (max 8) hammering workers along the two front sides of the
@@ -56,7 +56,7 @@ List<PlacedWorker> siteWorkers(
   bool reducedMotion = false,
 }) {
   final (width, depth) = _footprint(tier);
-  final margin = tier == BuildingTier.castle ? 0 : 1;
+  const margin = 1;
   final ox = site.originX + margin;
   final oy = site.originY + margin;
   final out = <PlacedWorker>[];

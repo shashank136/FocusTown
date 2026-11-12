@@ -8,7 +8,7 @@ import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
 /// Pinned: blocks in the finished 14 x 14 castle (computed from the shape).
-const kCastleBlocks = 715;
+const kCastleBlocks = 675;
 
 extension on VoxelWorld {
   void buildRuinAt(Plot p) => buildRuin(this, p.originX, p.originY);
@@ -287,10 +287,10 @@ void main() {
   });
 
   group('castle', () {
-    // The castle stands on a 2 x 2 block of plots: 14 x 14 tiles from the
-    // anchor plot's origin, no margin.
-    final cx = plot0.originX;
-    final cy = plot0.originY;
+    // The castle stands on a 2 x 2 block of plots (14 x 14 tiles) but is only
+    // 12 x 12: one tile in from the block's edge, which is left for the road.
+    final cx = plot0.originX + 1;
+    final cy = plot0.originY + 1;
 
     test('block count never decreases across 12 stages', () {
       var last = 0;
@@ -302,12 +302,12 @@ void main() {
       expect(last, kCastleBlocks);
     });
 
-    test('every stage fits the 14x14 block', () {
+    test('every stage fits inside the block, one tile in from its edge', () {
       for (final p in [kPlots.first, kPlots.last]) {
         for (var s = 1; s <= 12; s++) {
           for (final b in _build(BuildingTier.castle, s, plot: p).blocks) {
-            expect(b.x, inInclusiveRange(p.originX, p.originX + 13));
-            expect(b.y, inInclusiveRange(p.originY, p.originY + 13));
+            expect(b.x, inInclusiveRange(p.originX + 1, p.originX + 12));
+            expect(b.y, inInclusiveRange(p.originY + 1, p.originY + 12));
           }
         }
       }
@@ -316,18 +316,17 @@ void main() {
     test('the gate gap is open from stage 1 at z 1..3, with a lintel', () {
       for (var s = 1; s <= 12; s++) {
         final w = _build(BuildingTier.castle, s);
-        for (var x = cx + 5; x <= cx + 8; x++) {
+        for (var x = cx + 4; x <= cx + 7; x++) {
           for (var z = 1; z <= math.min(s, 3); z++) {
-            expect(w.has(x, cy + 13, z), isFalse, reason: 'stage $s ($x, $z)');
+            expect(w.has(x, cy + 11, z), isFalse, reason: 'stage $s ($x, $z)');
           }
         }
       }
-      expect(_build(BuildingTier.castle, 4).has(cx + 6, cy + 13, 4), isTrue);
+      expect(_build(BuildingTier.castle, 4).has(cx + 5, cy + 11, 4), isTrue);
     });
 
     test('stages add their parts in order', () {
-      final c4 = _build(BuildingTier.castle, 4);
-      expect(c4.has(cx, cy, 5), isFalse);
+      expect(_build(BuildingTier.castle, 4).has(cx, cy, 5), isFalse);
       expect(_build(BuildingTier.castle, 5).has(cx, cy, 5), isTrue); // merlon
       expect(_build(BuildingTier.castle, 5).has(cx + 1, cy, 5), isFalse);
       expect(_build(BuildingTier.castle, 5).has(cx + 1, cy + 1, 1), isFalse);
@@ -336,19 +335,19 @@ void main() {
       expect(_build(BuildingTier.castle, 7).has(cx + 1, cy + 1, 8), isTrue);
       expect(_build(BuildingTier.castle, 7).has(cx, cy, 9), isFalse);
       expect(_build(BuildingTier.castle, 8).has(cx, cy, 9), isTrue);
-      expect(_build(BuildingTier.castle, 8).has(cx + 6, cy + 6, 1), isFalse);
+      expect(_build(BuildingTier.castle, 8).has(cx + 5, cy + 5, 1), isFalse);
       expect(
-        _build(BuildingTier.castle, 9).get(cx + 6, cy + 6, 5),
+        _build(BuildingTier.castle, 9).get(cx + 5, cy + 5, 5),
         Blocks.cobble,
       );
-      expect(_build(BuildingTier.castle, 9).has(cx + 6, cy + 6, 6), isFalse);
+      expect(_build(BuildingTier.castle, 9).has(cx + 5, cy + 5, 6), isFalse);
       expect(
-        _build(BuildingTier.castle, 10).get(cx + 6, cy + 6, 6),
+        _build(BuildingTier.castle, 10).get(cx + 5, cy + 5, 6),
         Blocks.slate,
       );
-      expect(_build(BuildingTier.castle, 10).has(cx + 6, cy + 6, 7), isFalse);
+      expect(_build(BuildingTier.castle, 10).has(cx + 5, cy + 5, 7), isFalse);
       expect(
-        _build(BuildingTier.castle, 11).get(cx + 6, cy + 6, 8),
+        _build(BuildingTier.castle, 11).get(cx + 5, cy + 5, 8),
         Blocks.slate,
       );
       expect(_build(BuildingTier.castle, 11).has(cx, cy, 10), isFalse);

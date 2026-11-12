@@ -95,10 +95,10 @@ void main() {
       expect(w[1].worker.facing, (-1, 0));
     });
 
-    test('the castle uses the block origin itself', () {
+    test('the castle stands one tile in from its block, 12 wide', () {
       final w = siteWorkers(plot, BuildingTier.castle, 1, 0);
-      expect(w[0].worker.y, closeTo(plot.originY + 14 + 0.7, 1e-9));
-      expect(w[0].worker.x, closeTo(plot.originX + 0.8, 1e-9));
+      expect(w[0].worker.y, closeTo(plot.originY + 1 + 12 + 0.7, 1e-9));
+      expect(w[0].worker.x, closeTo(plot.originX + 1 + 0.8, 1e-9));
     });
 
     test(
