@@ -15,5 +15,8 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "FocusLifecyclePlugin") {
       FocusLifecyclePlugin.register(with: registrar)
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "LiveStatusPlugin") {
+      LiveStatusPlugin.register(with: registrar)
+    }
   }
 }
