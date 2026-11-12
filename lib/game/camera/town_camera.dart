@@ -12,12 +12,30 @@ const kMaxTile = 64.0;
 /// Where the isometric town sits on screen: its tile size and where tile
 /// (0, 0) lands. Pure math, no UI. Every change keeps the map reachable.
 class TownCamera {
-  /// Creates a camera for a view of [viewSize], fitted to the whole map.
-  new(this.viewSize) {
+  /// Creates a camera for a view of [viewSize], fitted to the whole map, or to
+  /// [box] (tile coordinates) when the island is bigger than the old map.
+  new(this.viewSize, {Rect? box})
+    : _box = box ?? const Rect.fromLTRB(0, 0, kMapSize * 1.0, kMapSize * 1.0) {
     fitToMap();
   }
 
-  static const double _n = kMapSize * 1.0;
+  Rect _box;
+
+  /// The island in tile coordinates; the camera never leaves it.
+  Rect get box => _box;
+
+  set box(Rect value) {
+    if (value == _box) return;
+    _box = value;
+    tile = _clampTile(tile);
+    _clampOrigin();
+  }
+
+  // The box as it projects at tile size 1, relative to the origin.
+  double get _x0 => _box.left - _box.bottom;
+  double get _x1 => _box.right - _box.top;
+  double get _y0 => (_box.left + _box.top) / 2;
+  double get _y1 => (_box.right + _box.bottom) / 2;
 
   /// Size of the view in pixels.
   Vec2 viewSize;
@@ -30,7 +48,7 @@ class TownCamera {
 
   /// The tile size at which the whole map just fits.
   double get fitMapTile =>
-      math.min(viewSize.x / (2 * _n + 6), viewSize.y / (_n + 18));
+      math.min(viewSize.x / (_x1 - _x0 + 6), viewSize.y / (_y1 - _y0 + 18));
 
   /// Smallest tile size: a bit less than the whole-map fit.
   double get minTile => fitMapTile * 0.7;
@@ -38,7 +56,10 @@ class TownCamera {
   /// Shows the whole map.
   void fitToMap() {
     tile = _clampTile(fitMapTile);
-    origin = Vec2(viewSize.x / 2, viewSize.y / 2 - _n * tile * 0.5 + 5 * tile);
+    origin = Vec2(
+      viewSize.x / 2 - (_x0 + _x1) / 2 * tile,
+      viewSize.y / 2 - (_y0 + _y1) / 2 * tile + 5 * tile,
+    );
     _clampOrigin();
   }
 
@@ -121,13 +142,15 @@ class TownCamera {
 
   double _clampTile(double t) => math.max(minTile, math.min(kMaxTile, t));
 
-  // Keeps at least 30% of the map's projected box on screen on both axes.
+  // Keeps at least 30% of the island's projected box on screen on both axes.
   void _clampOrigin() {
     final w = viewSize.x;
     final h = viewSize.y;
+    final bw = (_x1 - _x0) * tile;
+    final bh = (_y1 - _y0) * tile;
     origin = Vec2(
-      origin.x.clamp(-0.4 * _n * tile, w + 0.4 * _n * tile),
-      origin.y.clamp(-0.7 * _n * tile, h - 0.3 * _n * tile),
+      origin.x.clamp(0.3 * bw - _x1 * tile, w - 0.3 * bw - _x0 * tile),
+      origin.y.clamp(0.3 * bh - _y1 * tile, h - 0.3 * bh - _y0 * tile),
     );
   }
 }

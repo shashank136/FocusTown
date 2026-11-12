@@ -269,7 +269,7 @@ class TownGame extends FlameGame
     final cam = renderer.camera;
     if (cam == null) return null;
     final g = unprojectGround(p.x, p.y + cam.tile, cam.tile, cam.origin);
-    return plotAt(g.x.floor(), g.y.floor())?.index;
+    return plotAtWith(renderer.parcels, g.x.floor(), g.y.floor())?.index;
   }
 
   /// Glides the camera to [plot] (zooming in to at least tile 14). If the first
@@ -281,7 +281,7 @@ class TownGame extends FlameGame
   void recenter() {
     final cam = renderer.camera;
     if (cam == null) return;
-    final target = TownCamera(cam.viewSize)
+    final target = TownCamera(cam.viewSize, box: cam.box)
       ..fitToRegion(renderer.unlockedRegion);
     _transition = CameraTransition(from: cam.pose, to: target.pose);
   }

@@ -15,15 +15,15 @@ import 'package:focus_town/game/world/voxel_world.dart';
 /// plot nothing stands on (a temporary site).
 Plot activeSitePlot(TownState town, [int? chosen]) {
   if (chosen != null && TownRules.isPlotFree(town, chosen)) {
-    return kPlots[chosen];
+    return plotFor(chosen, town.parcels);
   }
   final plot = TownRules.nextFreePlot(town) ?? TownRules.firstUnusedPlot(town);
-  return kPlots[plot ?? 0];
+  return plotFor(plot ?? 0, town.parcels);
 }
 
 /// Where [session] works: the ruin of a repair, else its building site.
 Plot sessionSitePlot(TownState town, Session session) => session.isRepair
-    ? kPlots[session.repairPlot!]
+    ? plotFor(session.repairPlot!, town.parcels)
     : activeSitePlot(town, session.plotIndex);
 
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
@@ -60,15 +60,26 @@ VoxelWorld buildTownWorld(
       : activeSitePlot(town, building.plotIndex);
   // Plots in use (a building, a ruin or the site) are cleared and bordered;
   // all others stay forest.
+  // Claimed land is ground too, and starts as forest.
+  for (final p in town.parcels) {
+    final plot = plotFor(kPlots.length + town.parcels.indexOf(p), town.parcels);
+    for (var x = plot.originX; x < plot.originX + kPlotSize; x++) {
+      for (var y = plot.originY; y < plot.originY + kPlotSize; y++) {
+        w
+          ..set(x, y, -1, Blocks.dirt)
+          ..set(x, y, 0, Blocks.grass);
+      }
+    }
+  }
   final inUse = {for (final b in town.buildings) b.plotIndex, ?sitePlot?.index};
   for (final i in inUse) {
-    final p = kPlots[i];
+    final p = plotFor(i, town.parcels);
     w.ring(p.originX, p.originY, kPlotSize, kPlotSize, 0, Blocks.path);
   }
   buildScenery(w);
-  buildForest(w, cleared: inUse);
+  buildForest(w, cleared: inUse, parcels: town.parcels);
   for (final b in town.buildings) {
-    final p = kPlots[b.plotIndex];
+    final p = plotFor(b.plotIndex, town.parcels);
     if (b.status == BuildingStatus.complete) {
       buildTier(
         w,

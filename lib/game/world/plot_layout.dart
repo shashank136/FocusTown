@@ -77,6 +77,40 @@ Plot plotFor(int index, List<Parcel> parcels) {
   return Plot(index, parcelOrigin(p.gx), parcelOrigin(p.gy));
 }
 
+/// The plot covering tile ([x], [y]) in a town with the claimed [parcels], or
+/// null for roads, scenery and unclaimed land.
+Plot? plotAtWith(List<Parcel> parcels, int x, int y) {
+  final base = plotAt(x, y);
+  if (base != null) return base;
+  for (var i = 0; i < parcels.length; i++) {
+    final p = plotFor(kPlots.length + i, parcels);
+    if (x >= p.originX &&
+        x < p.originX + kPlotSize &&
+        y >= p.originY &&
+        y < p.originY + kPlotSize) {
+      return p;
+    }
+  }
+  return null;
+}
+
+/// The tile box of the island: the starting map plus every claimed parcel.
+({int left, int top, int right, int bottom}) islandBox(List<Parcel> parcels) {
+  var left = 0;
+  var top = 0;
+  var right = kMapSize;
+  var bottom = kMapSize;
+  for (final p in parcels) {
+    final ox = parcelOrigin(p.gx);
+    final oy = parcelOrigin(p.gy);
+    left = ox < left ? ox : left;
+    top = oy < top ? oy : top;
+    right = ox + kPlotSize > right ? ox + kPlotSize : right;
+    bottom = oy + kPlotSize > bottom ? oy + kPlotSize : bottom;
+  }
+  return (left: left, top: top, right: right, bottom: bottom);
+}
+
 /// The plot covering tile ([x], [y]), or null for roads and scenery.
 Plot? plotAt(int x, int y) {
   for (final p in kPlots) {

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/effects/particles.dart';
@@ -73,6 +74,7 @@ class TownRenderer {
   /// Rebuilds the world for [town]; the next paint re-records the layer.
   void setTown(TownState town) {
     _town = town;
+    _camera?.box = _box;
     // The view starts on the first unlocked plots and wherever buildings are.
     _regionPlots = {
       for (var i = 0; i < town.plotsUnlocked && i < kPlots.length; i++) i,
@@ -167,7 +169,7 @@ class TownRenderer {
     );
     final visible = _visible;
     final view = Vec2(size.width, size.height);
-    final cam = _camera ??= TownCamera(view);
+    final cam = _camera ??= TownCamera(view, box: _box);
     if (cam.viewSize != view) cam.resize(view);
     if (visible == null) return;
     if (!_fitted) {
@@ -189,6 +191,7 @@ class TownRenderer {
         canvas,
         _outlines,
         _selected,
+        parcels: parcels,
         tile: cam.tile,
         origin: cam.origin,
       );
@@ -232,9 +235,24 @@ class TownRenderer {
     }
   }
 
+  /// The claimed land, for picking and outlines.
+  List<Parcel> get parcels => _town?.parcels ?? const [];
+
+  // The island as a tile box, for the camera.
+  Rect get _box {
+    final b = islandBox(parcels);
+    return Rect.fromLTRB(
+      b.left.toDouble(),
+      b.top.toDouble(),
+      b.right.toDouble(),
+      b.bottom.toDouble(),
+    );
+  }
+
   /// The unlocked plots plus a 4-tile margin (tile coordinates).
   Rect get unlockedRegion {
-    final plots = [for (final i in _regionPlots) kPlots[i]];
+    final parcels = _town?.parcels ?? const <Parcel>[];
+    final plots = [for (final i in _regionPlots) plotFor(i, parcels)];
     return Rect.fromLTRB(
       plots.map((p) => p.originX).reduce(math.min) - 4.0,
       plots.map((p) => p.originY).reduce(math.min) - 4.0,

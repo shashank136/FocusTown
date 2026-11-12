@@ -30,7 +30,10 @@ class WorldStatsCard extends ConsumerWidget {
         for (final b in focus.town.buildings)
           Text(
             '${b.tier.name} ${b.status.name} plot ${b.plotIndex}: '
-            '${_blocksInPlot(world.blocks, kPlots[b.plotIndex])} blocks',
+            '${_blocksInPlot(
+              world.blocks,
+              plotFor(b.plotIndex, focus.town.parcels),
+            )} blocks',
           ),
       ],
     );

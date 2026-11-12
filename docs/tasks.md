@@ -2005,7 +2005,8 @@ Design (assumed, to confirm before work starts):
 - Tests first: migration keeps every building on the same plot; the 64 starting parcels match today's layout; the claimable set is exactly the free neighbours of the island; plots outside the island are refused.
 - Commit: `T-V6.1: parcel model`
 
-### T-V6.2 [ ] Renderer draws only nearby parcels
+### T-V6.2 [x] Renderer draws only nearby parcels
+- Done 2026-11-12 in a smaller form: claimed parcels are ground and forest in the world, plots/outlines/picking/camera use `plotFor`, `plotAtWith` and the island box; the camera zooms out over the whole island (this is the island view of V6.5). No culling (at most 33 extra parcels exist; measure on the iPhone before adding it) and no generated roads.
 - Depends on: T-V6.1
 - Do: the world builder, forest and cached picture work per parcel and draw only parcels near the view; roads and paths are generated between built parcels and the hub; a coast with a few lakes.
 - Tests first: the block count for a 64-parcel island matches today's world; a far parcel adds no blocks while off screen; the world is deterministic for the same parcels.

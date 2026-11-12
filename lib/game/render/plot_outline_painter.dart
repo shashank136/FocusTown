@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/vec2.dart';
@@ -12,6 +13,7 @@ void paintPlotOutlines(
   int? selected, {
   required double tile,
   required Vec2 origin,
+  List<Parcel> parcels = const [],
 }) {
   Path diamond(Plot p) {
     Offset at(int dx, int dy) {
@@ -38,10 +40,10 @@ void paintPlotOutlines(
     ..strokeWidth = 2
     ..color = const Color(0xCCFFFFFF);
   for (final i in free) {
-    canvas.drawPath(diamond(kPlots[i]), stroke);
+    canvas.drawPath(diamond(plotFor(i, parcels)), stroke);
   }
   if (selected != null) {
-    final path = diamond(kPlots[selected]);
+    final path = diamond(plotFor(selected, parcels));
     canvas
       ..drawPath(path, Paint()..color = const Color(0x6643A047))
       ..drawPath(
