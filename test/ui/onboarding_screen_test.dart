@@ -8,15 +8,13 @@ const _titles = [
   'Start your first build.',
 ];
 
-Future<void> _open(WidgetTester tester, {VoidCallback? onStart}) =>
-    tester.pumpWidget(
-      MaterialApp(home: OnboardingScreen(onStart: onStart ?? () {})),
-    );
+Future<void> _open(WidgetTester tester, {VoidCallback? onStart}) => tester
+    .pumpWidget(MaterialApp(home: OnboardingScreen(onStart: onStart ?? () {})));
 
 int _dot(WidgetTester tester) {
-  final active = Theme.of(
-    tester.element(find.byType(OnboardingScreen)),
-  ).colorScheme.primary;
+  final active = Theme.of(tester.element(find.byType(OnboardingScreen)))
+      .colorScheme
+      .primary;
   for (var i = 0; i < 3; i++) {
     final dot = tester.widget<Container>(find.byKey(ValueKey('page-dot-$i')));
     if ((dot.decoration! as BoxDecoration).color == active) return i;
@@ -32,12 +30,22 @@ void main() {
     expect(find.text('Start'), findsNothing);
   });
 
+  testWidgets('page two explains what counts as leaving', (tester) async {
+    await _open(tester);
+    expect(find.textContaining('home screen'), findsNothing);
+    await tester.tap(find.text('Next'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.textContaining('home screen'), findsOneWidget);
+    expect(find.textContaining('lock your phone'), findsOneWidget);
+  });
+
   testWidgets('Next walks through the titles in order', (tester) async {
     await _open(tester);
     for (var i = 1; i < 3; i++) {
       await tester.tap(find.text('Next'));
       await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
       expect(find.text(_titles[i]), findsOneWidget);
     }
   });
@@ -72,7 +80,7 @@ void main() {
       expect(find.byKey(ValueKey('demo-area-$i')), findsOneWidget);
       await tester.tap(find.text(i < 2 ? 'Next' : 'Start'));
       await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+      await tester.pump(const Duration(milliseconds: 400));
     }
   });
 

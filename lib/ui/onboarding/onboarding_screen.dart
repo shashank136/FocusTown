@@ -79,6 +79,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             textAlign: TextAlign.center,
                             style: theme.textTheme.headlineSmall,
                           ),
+                          if (i == 1) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              'Going to the home screen or another app '
+                              'counts as leaving. To take a break, stay in '
+                              'the app and lock your phone.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
                           if (i == _titles.length - 1) ...[
                             const SizedBox(height: 12),
                             Text(
