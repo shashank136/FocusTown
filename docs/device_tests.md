@@ -106,6 +106,8 @@ Release build on the iPhone 15 Pro Max, in-place install, user-reported.
 - [x] The countdown matches the app's timer.
 - [x] The Dynamic Island shows the icon and time.
 - [x] Away shows the "Away" text and returns to "Builders working" on coming back.
-- [ ] Not yet reported: it disappears on give up / finish, and what happens when the app is swiped away.
+- [x] It disappears when the session ends.
+- [x] Swiping the app away removes the card (iOS ends a force-quit app's Live Activities); reopening the app shows it again, and the away warning notification still arrives.
+- [ ] The card showed a Flutter icon: the extension had no app icon. Fixed with an icon set in `ios/FocusStatus/Assets.xcassets`; the user checks the new build.
 
 ## Android

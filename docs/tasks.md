@@ -1823,7 +1823,7 @@ A Live Activity shows the running countdown and the building status on the lock 
 - Tests first: fake sink sees start/update/end for a run, an away and a finish.
 - Commit: `T-LA.1: live status bridge`
 
-### T-LA.2 [~] [device] Widget extension and ActivityKit in Swift
+### T-LA.2 [x] [device] Widget extension and ActivityKit in Swift
 - Depends on: T-LA.1
 - Do: add a widget extension target in Xcode (needs the same signing team; the user may need to approve the new App ID in the developer account), `NSSupportsLiveActivities` in Info.plist, the lock screen layout (countdown, tier, "Builders working" / "Away"), compact and expanded Dynamic Island. Swift side of the channel starts, updates and ends the activity.
 - Commit: `T-LA.2: live activity`
