@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/session_setup.dart';
+import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
@@ -32,6 +33,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
       .lastDurationMinutes();
   FixedExtentScrollController? _wheel;
   int? _selected; // minutes
+  int _look = 0; // the look of the building, 0 is the classic one
 
   @override
   void dispose() {
@@ -130,7 +132,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           ),
           const SizedBox(height: 8),
           Text(option.tier.name, style: theme.textTheme.titleMedium),
-          _preview(option),
+          _looks(option.tier),
           if (option.workersAtRisk > 0)
             Text(
               'Risks ${option.workersAtRisk} '
@@ -195,14 +197,54 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         'land to add some${ruins ? ', or tap a ruin to repair it' : ''}.';
   }
 
-  Widget _preview(DurationOption option) {
-    final image = ref.watch(tierPreviewProvider(option.tier));
-    return SizedBox(
-      height: 96,
-      child: image.when(
-        data: (img) => RawImage(image: img, width: 96, height: 96),
-        loading: () => const SizedBox(width: 96, height: 96),
-        error: (_, _) => const SizedBox(width: 96, height: 96),
+  // The looks to choose from, each shown as the building it will be.
+  Widget _looks(BuildingTier tier) => Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      for (var look = 0; look < kLooksPerTier; look++) _lookTile(tier, look),
+    ],
+  );
+
+  Widget _lookTile(BuildingTier tier, int look) {
+    final image = ref.watch(tierPreviewProvider((tier, look)));
+    final selected = _look == look;
+    final theme = Theme.of(context);
+    final name = lookName(tier, look);
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: name,
+      excludeSemantics: true,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => setState(() => _look = look),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              width: selected ? 3 : 1,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.outlineVariant,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 80,
+                child: image.when(
+                  data: (img) => RawImage(image: img, width: 80, height: 80),
+                  loading: () => const SizedBox(width: 80, height: 80),
+                  error: (_, _) => const SizedBox(width: 80, height: 80),
+                ),
+              ),
+              Text(name),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -211,7 +253,9 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     try {
-      await ref.read(focusControllerProvider.notifier).start(minutes);
+      await ref
+          .read(focusControllerProvider.notifier)
+          .start(minutes, look: _look);
       await ref.read(townRepositoryProvider).saveLastDuration(minutes);
       navigator.pop();
     } on Object catch (e) {
@@ -226,7 +270,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
 
   void _choosePlot(int minutes) {
     unawaited(ref.read(townRepositoryProvider).saveLastDuration(minutes));
-    ref.read(placementProvider.notifier).begin(minutes);
+    ref.read(placementProvider.notifier).begin(minutes, look: _look);
     Navigator.of(context).pop();
   }
 }

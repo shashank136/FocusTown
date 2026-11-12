@@ -1945,7 +1945,8 @@ Open questions (assumed answers):
 - Tests first: each look builds inside its plot, finishes at its last stage and differs from the others in its tier; goldens.
 - Commit: `T-V3.2: building look layouts`
 
-### T-V3.3 [!] Pick a look in the setup sheet (skipped: looks are by id; add a stored choice later if wanted)
+### T-V3.3 [x] Pick a look in the setup sheet
+- Done 2026-11-12 after the user found the preview did not match what was built: the setup sheet shows both looks of the chosen tier (classic is the default) and the choice is stored (schema v8: `sessions.look`, `buildings.look`). Older buildings keep the look their id gives.
 - Depends on: T-V3.2
 - Do: a small look picker under the dial (random by default); the preview and the town show the chosen look.
 - Tests first: widget tests for picking, the default, and a start that stores the look.

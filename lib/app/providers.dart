@@ -190,11 +190,12 @@ final fpsProvider = Provider<ValueNotifier<double>>((ref) {
   return fps;
 });
 
-/// The picture of each tier's finished building, drawn once per tier.
+/// The picture of each tier's finished building in each look, drawn once.
 // ignore: specify_nonobvious_property_types, the family type is not exported
-final tierPreviewProvider = FutureProvider.family<ui.Image, BuildingTier>(
-  (ref, tier) => renderTierPreview(tier),
-);
+final tierPreviewProvider =
+    FutureProvider.family<ui.Image, (BuildingTier, int)>(
+      (ref, key) => renderTierPreview(key.$1, look: key.$2),
+    );
 
 /// How many sessions were stored; recounted whenever the session state
 /// changes, so a new session or a result shows up at once.

@@ -32,11 +32,16 @@ TownState townFromRows(TownRow town, List<BuildingRow> buildings) {
           tier: BuildingTier.values.byName(b.tier),
           status: BuildingStatus.values.byName(b.status),
           plotIndex: b.plotIndex!,
+          look: b.look,
         ),
     ],
     queue: [
       for (final b in queued)
-        QueuedBuilding(id: b.id, tier: BuildingTier.values.byName(b.tier)),
+        QueuedBuilding(
+          id: b.id,
+          tier: BuildingTier.values.byName(b.tier),
+          look: b.look,
+        ),
     ],
     inRecoveryMode: town.inRecoveryMode,
     xp: town.xp,
@@ -78,6 +83,7 @@ List<BuildingsCompanion> buildingsToRows(
         plotIndex: Value(b.plotIndex),
         sessionId: Value(b.id == 'starter' ? null : b.id),
         completedAt: at,
+        look: Value(b.look),
       ),
     for (final q in state.queue)
       BuildingsCompanion.insert(
@@ -86,6 +92,7 @@ List<BuildingsCompanion> buildingsToRows(
         status: _queued,
         sessionId: Value(q.id),
         completedAt: at,
+        look: Value(q.look),
       ),
   ];
 }
@@ -117,6 +124,7 @@ Session sessionFromRow(SessionRow row) {
     plotIndex: row.plotIndex,
     repairPlot: row.repairPlotIndex,
     land: row.land == null ? null : Parcel.decode(row.land!),
+    look: row.look,
     emergencyArmed: row.emergencyArmed,
     emergencyUsed: row.emergencyUsed,
   );
@@ -141,6 +149,7 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     plotIndex: Value(session.plotIndex),
     repairPlotIndex: Value(session.repairPlot),
     land: Value(session.land?.encode()),
+    look: Value(session.look),
     emergencyArmed: Value(session.emergencyArmed),
     emergencyUsed: Value(session.emergencyUsed),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),

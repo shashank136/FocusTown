@@ -126,6 +126,46 @@ void main() {
     expect(find.text('+2 workers if you finish'), findsOneWidget);
   });
 
+  testWidgets('shows both looks of the tier and builds the chosen one', (
+    tester,
+  ) async {
+    final c = await _open(tester);
+    expect(find.text('House'), findsOneWidget);
+    expect(find.text('Townhouse'), findsOneWidget);
+    await tester.tap(find.text('Townhouse'));
+    await tester.pump();
+    await tester.tap(find.text('Start'));
+    await _settle(tester);
+    expect(c.read(focusControllerProvider).requireValue.active!.look, 1);
+  });
+
+  testWidgets('the classic look is the default', (tester) async {
+    final c = await _open(tester);
+    await tester.tap(find.text('Start'));
+    await _settle(tester);
+    expect(c.read(focusControllerProvider).requireValue.active!.look, 0);
+  });
+
+  testWidgets('the looks follow the tier: a castle or a pyramid', (
+    tester,
+  ) async {
+    await _open(tester, seed: TownState.initial().copyWith(workers: 8));
+    _jumpTo(tester, 95);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.text('Castle'), findsOneWidget);
+    expect(find.text('Pyramid'), findsOneWidget);
+    expect(find.text('Townhouse'), findsNothing);
+  });
+
+  testWidgets('Choose plot… keeps the chosen look', (tester) async {
+    final c = await _open(tester);
+    await tester.tap(find.text('Townhouse'));
+    await tester.pump();
+    await tester.tap(find.text('Choose plot…'));
+    await _settle(tester);
+    expect(c.read(placementProvider)!.look, 1);
+  });
+
   testWidgets('opens on the last used duration', (tester) async {
     await _open(tester, seed: TownState.initial(), lastDuration: 45);
     expect(find.text('workshop'), findsOneWidget);
@@ -171,11 +211,13 @@ void main() {
     expect(_start(tester).onPressed, isNull);
   });
 
-  testWidgets('the picture of the selected tier is shown', (tester) async {
+  testWidgets('a picture of each look of the selected tier is shown', (
+    tester,
+  ) async {
     await _open(tester);
     await _settle(tester);
     await _settle(tester);
-    expect(find.byType(RawImage), findsOneWidget);
+    expect(find.byType(RawImage), findsNWidgets(2));
   });
 
   testWidgets('Start begins the session, saves the duration, closes', (

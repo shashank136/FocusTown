@@ -120,7 +120,7 @@ class TownGame extends FlameGame
       }
       if (result.outcome == SessionOutcome.queued) {
         final queue = focus.town.queue;
-        _queue(plot, result.tier, queue.isEmpty ? 0 : lookIndex(queue.last.id));
+        _queue(plot, result.tier, queue.isEmpty ? 0 : queue.last.effectiveLook);
       }
     }
     final active = focus.active;
@@ -381,7 +381,7 @@ class TownGame extends FlameGame
         active.tier,
         stageForProgress(active.tier, progress),
         plotIndex: active.plotIndex,
-        look: lookIndex(active.id),
+        look: active.look ?? lookIndex(active.id),
       ),
     );
   }

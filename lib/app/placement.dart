@@ -13,7 +13,13 @@ import 'package:focus_town/game/world/plot_layout.dart';
 /// a claimable parcel, and [garden] makes the new land open space.
 class Placement {
   /// Creates a pending placement.
-  const new(this.minutes, {this.plot, this.land = false, this.garden = false});
+  const new(
+    this.minutes, {
+    this.plot,
+    this.land = false,
+    this.garden = false,
+    this.look,
+  });
 
   /// Planned minutes of the session to start.
   final int minutes;
@@ -27,16 +33,20 @@ class Placement {
   /// Whether the claimed land becomes a garden.
   final bool garden;
 
+  /// The look of the building the user chose, or null.
+  final int? look;
+
   @override
   bool operator ==(Object other) =>
       other is Placement &&
       other.minutes == minutes &&
       other.plot == plot &&
       other.land == land &&
-      other.garden == garden;
+      other.garden == garden &&
+      other.look == look;
 
   @override
-  int get hashCode => Object.hash(minutes, plot, land, garden);
+  int get hashCode => Object.hash(minutes, plot, land, garden, look);
 }
 
 /// The choose-a-plot step between "Start" and a running session.
@@ -44,12 +54,12 @@ class PlacementController extends Notifier<Placement?> {
   @override
   Placement? build() => null;
 
-  /// Starts choosing a plot for a session of [minutes]. Ignored while a
-  /// session is running.
-  void begin(int minutes) {
+  /// Starts choosing a plot for a session of [minutes] building [look].
+  /// Ignored while a session is running.
+  void begin(int minutes, {int? look}) {
     final focus = ref.read(focusControllerProvider).value;
     if (focus == null || focus.active != null) return;
-    state = Placement(minutes);
+    state = Placement(minutes, look: look);
   }
 
   /// Starts choosing land to claim. Ignored while a session is running.
@@ -95,6 +105,7 @@ class PlacementController extends Notifier<Placement?> {
       plot: i,
       land: current.land,
       garden: current.garden,
+      look: current.look,
     );
   }
 
@@ -113,7 +124,11 @@ class PlacementController extends Notifier<Placement?> {
       final p = claimableParcels(town.parcels)[plot - kLandBase];
       await controller.startLand(Parcel(p.gx, p.gy, garden: current.garden));
     } else {
-      await controller.start(current.minutes, plotIndex: plot);
+      await controller.start(
+        current.minutes,
+        plotIndex: plot,
+        look: current.look,
+      );
     }
     state = null;
   }

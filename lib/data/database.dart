@@ -55,6 +55,8 @@ class Buildings extends Table {
   TextColumn get sessionId => text().nullable()();
   // epoch ms
   IntColumn get completedAt => integer()();
+  // the look the user chose (null: the id decides)
+  IntColumn get look => integer().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -79,6 +81,8 @@ class Sessions extends Table {
   IntColumn get repairPlotIndex => integer().nullable()();
   // the parcel a land session claims, as gx:gy or gx:gy:g (garden)
   TextColumn get land => text().nullable()();
+  // the look of the building the session builds (null: the id decides)
+  IntColumn get look => integer().nullable()();
   BoolColumn get emergencyArmed =>
       boolean().withDefault(const Constant(false))();
   BoolColumn get emergencyUsed =>
@@ -93,7 +97,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 7;
+  static const currentSchemaVersion = 8;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -114,6 +118,11 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v8: the look the user chose for a building.
+      if (from < 8) {
+        await m.addColumn(buildings, buildings.look);
+        await m.addColumn(sessions, sessions.look);
+      }
       // v7: land claimed beyond the starting island.
       if (from < 7) {
         await m.addColumn(towns, towns.parcels);

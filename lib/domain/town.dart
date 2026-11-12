@@ -1,6 +1,7 @@
 // All fields are final; @immutable would need package:meta (not approved).
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
+import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -22,6 +23,7 @@ class TownBuilding {
     required this.tier,
     required this.status,
     required this.plotIndex,
+    this.look,
   });
 
   /// Unique id.
@@ -36,22 +38,30 @@ class TownBuilding {
   /// Plot it sits on.
   final int plotIndex;
 
+  /// The look the user chose, or null for a building from before looks were
+  /// chosen (its id decides).
+  final int? look;
+
+  /// The look it is drawn with.
+  int get effectiveLook => look ?? lookIndex(id);
+
   @override
   bool operator ==(Object other) =>
       other is TownBuilding &&
       other.id == id &&
       other.tier == tier &&
       other.status == status &&
-      other.plotIndex == plotIndex;
+      other.plotIndex == plotIndex &&
+      other.look == look;
 
   @override
-  int get hashCode => Object.hash(id, tier, status, plotIndex);
+  int get hashCode => Object.hash(id, tier, status, plotIndex, look);
 }
 
 /// A finished building waiting for a free plot. [id] is the session id.
 class QueuedBuilding {
   /// Creates a queued building.
-  const new({required this.id, required this.tier});
+  const new({required this.id, required this.tier, this.look});
 
   /// Session id.
   final String id;
@@ -59,12 +69,21 @@ class QueuedBuilding {
   /// Building size.
   final BuildingTier tier;
 
-  @override
-  bool operator ==(Object other) =>
-      other is QueuedBuilding && other.id == id && other.tier == tier;
+  /// The look the user chose, or null (its id decides).
+  final int? look;
+
+  /// The look it is drawn with.
+  int get effectiveLook => look ?? lookIndex(id);
 
   @override
-  int get hashCode => Object.hash(id, tier);
+  bool operator ==(Object other) =>
+      other is QueuedBuilding &&
+      other.id == id &&
+      other.tier == tier &&
+      other.look == look;
+
+  @override
+  int get hashCode => Object.hash(id, tier, look);
 }
 
 /// The whole town. Immutable; lists are unmodifiable.

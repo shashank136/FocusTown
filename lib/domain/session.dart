@@ -49,6 +49,7 @@ class Session {
     this.plotIndex,
     this.repairPlot,
     this.land,
+    this.look,
     this.emergencyArmed = false,
     this.emergencyUsed = false,
   });
@@ -92,6 +93,10 @@ class Session {
 
   /// The parcel this session claims when it completes, for a land session.
   final Parcel? land;
+
+  /// The look of the building this session builds, as the user chose it
+  /// (null: its id decides).
+  final int? look;
 
   /// The weekly emergency pause is switched on: the next absence may last up
   /// to 10 minutes.
@@ -142,6 +147,7 @@ class Session {
     plotIndex: plotIndex,
     repairPlot: repairPlot,
     land: land,
+    look: look,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -162,6 +168,7 @@ class Session {
       other.plotIndex == plotIndex &&
       other.repairPlot == repairPlot &&
       other.land == land &&
+      other.look == look &&
       other.emergencyArmed == emergencyArmed &&
       other.emergencyUsed == emergencyUsed;
 
@@ -180,6 +187,7 @@ class Session {
     plotIndex,
     repairPlot,
     land,
+    look,
     emergencyArmed,
     emergencyUsed,
   );

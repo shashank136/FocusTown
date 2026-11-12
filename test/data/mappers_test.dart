@@ -41,6 +41,7 @@ List<BuildingRow> _buildingRowsFrom(TownState s, DateTime now) => [
       plotIndex: c.plotIndex.value,
       sessionId: c.sessionId.value,
       completedAt: c.completedAt.value,
+      look: c.look.value,
     ),
 ];
 
@@ -61,6 +62,7 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   plotIndex: c.plotIndex.value,
   repairPlotIndex: c.repairPlotIndex.value,
   land: c.land.value,
+  look: c.look.value,
   emergencyArmed: c.emergencyArmed.value,
   emergencyUsed: c.emergencyUsed.value,
 );
@@ -270,5 +272,53 @@ void main() {
       expect(c.outcomeReason.value, 'completed');
       expect(sessionToRow(s).resolvedAt.value, isNull);
     });
+  });
+
+  group('looks', () {
+    test(
+      'a chosen look round trips on a building, the queue and a session',
+      () {
+        final town = TownState(
+          workers: 3,
+          plotsUnlocked: 6,
+          buildings: const [
+            TownBuilding(
+              id: 'a',
+              tier: BuildingTier.hut,
+              status: BuildingStatus.complete,
+              plotIndex: 1,
+              look: 1,
+            ),
+            TownBuilding(
+              id: 'b',
+              tier: BuildingTier.hut,
+              status: BuildingStatus.complete,
+              plotIndex: 2,
+            ),
+          ],
+          queue: const [
+            QueuedBuilding(id: 'q', tier: BuildingTier.castle, look: 1),
+          ],
+          inRecoveryMode: false,
+        );
+        final back = townFromRows(
+          _townRowFrom(town),
+          _buildingRowsFrom(town, now),
+        );
+        expect(back.buildings.map((b) => b.look), [1, null]);
+        expect(back.queue.single.look, 1);
+
+        final s = Session(
+          id: 'l',
+          plannedMinutes: 25,
+          tier: BuildingTier.house,
+          workersAssigned: 2,
+          state: SessionState.running,
+          startedAt: TimeStamp(DateTime(2026, 3, 4, 9), Duration.zero),
+          look: 1,
+        );
+        expect(sessionFromRow(_sessionRowFrom(sessionToRow(s))).look, 1);
+      },
+    );
   });
 }

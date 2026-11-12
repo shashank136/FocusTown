@@ -153,4 +153,39 @@ void main() {
     expect(cleared.buildings, isEmpty);
     expect(TownRules.occupied(cleared), isEmpty);
   });
+
+  test('the look the user chose is kept when the building is placed', () {
+    final done = SessionEngine.start(
+      id: 'c',
+      minutes: 120,
+      workersAvailable: 8,
+      now: TimeStamp(DateTime(2026, 11, 11, 9), Duration.zero),
+      plotIndex: block,
+      look: 1,
+    ).copyWith(state: SessionState.completed);
+    expect(done.look, 1);
+    final town = TownRules.applyCompleted(_town(), done);
+    expect(town.buildings.single.look, 1);
+  });
+
+  test('the look survives the queue', () {
+    final done = SessionEngine.start(
+      id: 'c',
+      minutes: 10,
+      workersAvailable: 8,
+      now: TimeStamp(DateTime(2026, 11, 11, 9), Duration.zero),
+      look: 1,
+    ).copyWith(state: SessionState.completed);
+    final queued = TownRules.applyCompleted(
+      _crowded().copyWith(
+        buildings: [for (var i = 0; i < 64; i++) _b(i, BuildingTier.hut)],
+      ),
+      done,
+    );
+    expect(queued.queue.single.look, 1);
+    final placed = TownRules.placeQueued(
+      queued.copyWith(buildings: queued.buildings.skip(1).toList()),
+    );
+    expect(placed.buildings.last.look, 1);
+  });
 }

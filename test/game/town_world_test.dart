@@ -286,4 +286,58 @@ void main() {
       _all(buildTownWorld(town, active: _hut(), progress: 0.5)),
     );
   });
+
+  test('a chosen look beats the one the id would give', () {
+    final id = [for (var i = 0; i < 20; i++) 'b$i']
+        .firstWhere((id) => lookIndex(id) == 0);
+    final p = kPlots[_block];
+    final direct = VoxelWorld();
+    buildTier(
+      direct,
+      BuildingTier.castle,
+      p.originX,
+      p.originY,
+      stage: 12,
+      look: 1,
+    );
+    final w = buildTownWorld(
+      _town(
+        buildings: [
+          TownBuilding(
+            id: id,
+            tier: BuildingTier.castle,
+            status: BuildingStatus.complete,
+            plotIndex: _block,
+            look: 1,
+          ),
+        ],
+      ),
+    );
+    expect(_above(w, p, 2), direct.blockCount);
+  });
+
+  test('a running session is drawn with the look it was started with', () {
+    final session = Session(
+      id: 's',
+      plannedMinutes: 120,
+      tier: BuildingTier.castle,
+      workersAssigned: 8,
+      state: SessionState.running,
+      startedAt: TimeStamp(DateTime(2026), Duration.zero),
+      plotIndex: _block,
+      look: 1,
+    );
+    final w = buildTownWorld(_town(), active: session, progress: 1);
+    final direct = VoxelWorld();
+    final p = kPlots[_block];
+    buildTier(
+      direct,
+      BuildingTier.castle,
+      p.originX,
+      p.originY,
+      stage: 12,
+      look: 1,
+    );
+    expect(_above(w, p, 2), direct.blockCount);
+  });
 }

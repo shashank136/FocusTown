@@ -99,7 +99,11 @@ class TownRules {
         ? grown.copyWith(
             queue: [
               ...grown.queue,
-              QueuedBuilding(id: session.id, tier: session.tier),
+              QueuedBuilding(
+                id: session.id,
+                tier: session.tier,
+                look: session.look,
+              ),
             ],
           )
         : grown.copyWith(
@@ -110,6 +114,7 @@ class TownRules {
                 tier: session.tier,
                 status: BuildingStatus.complete,
                 plotIndex: plot,
+                look: session.look,
               ),
             ],
           );
@@ -230,6 +235,7 @@ class TownRules {
             tier: next.tier,
             status: BuildingStatus.complete,
             plotIndex: plot,
+            look: next.look,
           ),
         ],
         queue: t.queue.skip(1).toList(),

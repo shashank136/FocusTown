@@ -1,3 +1,5 @@
+import 'package:focus_town/domain/building_tier.dart';
+
 /// Every tier has this many looks (the second ones: cabin, townhouse,
 /// smithy, lighthouse, pyramid).
 const kLooksPerTier = 2;
@@ -13,3 +15,18 @@ int lookIndex(String id) {
   }
   return (h >> 3) % kLooksPerTier;
 }
+
+/// The name of look [look] of [tier]: the classic building, then its second
+/// look.
+String lookName(BuildingTier tier, int look) => switch ((tier, look)) {
+  (BuildingTier.hut, 0) => 'Hut',
+  (BuildingTier.hut, _) => 'Cabin',
+  (BuildingTier.house, 0) => 'House',
+  (BuildingTier.house, _) => 'Townhouse',
+  (BuildingTier.workshop, 0) => 'Workshop',
+  (BuildingTier.workshop, _) => 'Smithy',
+  (BuildingTier.tower, 0) => 'Tower',
+  (BuildingTier.tower, _) => 'Lighthouse',
+  (BuildingTier.castle, 0) => 'Castle',
+  (BuildingTier.castle, _) => 'Pyramid',
+};

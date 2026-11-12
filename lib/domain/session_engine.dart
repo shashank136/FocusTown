@@ -22,7 +22,8 @@ class SessionEngine {
   /// Throws [ArgumentError] for an invalid duration and [StateError] when
   /// [workersAvailable] is below the tier's workers at risk.
   ///
-  /// [plotIndex] is the plot the user chose (null: the automatic one).
+  /// [plotIndex] is the plot the user chose (null: the automatic one) and
+  /// [look] the look of the building (null: its id decides).
   ///
   /// With [recovery], only a hut is allowed, [workersAvailable] is ignored and
   /// no workers are put at risk.
@@ -33,6 +34,7 @@ class SessionEngine {
     required TimeStamp now,
     bool recovery = false,
     int? plotIndex,
+    int? look,
   }) {
     final tier = BuildingTier.forMinutes(minutes);
     if (recovery) {
@@ -52,6 +54,7 @@ class SessionEngine {
       state: SessionState.running,
       startedAt: now,
       plotIndex: plotIndex,
+      look: look,
     );
   }
 

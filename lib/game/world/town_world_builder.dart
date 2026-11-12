@@ -71,7 +71,7 @@ VoxelWorld buildTownWorld(
               active.tier,
               stageForProgress(active.tier, progress),
               plotIndex: active.plotIndex,
-              look: lookIndex(active.id),
+              look: active.look ?? lookIndex(active.id),
             ));
   final sitePlot = building == null
       ? null
@@ -127,7 +127,7 @@ VoxelWorld buildTownWorld(
         p.originX,
         p.originY,
         stage: maxStage(b.tier),
-        look: lookIndex(b.id),
+        look: b.effectiveLook,
       );
     } else {
       // A castle ruin is a ruin on each plot of its block.

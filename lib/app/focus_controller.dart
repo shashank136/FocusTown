@@ -82,37 +82,41 @@ class FocusController extends AsyncNotifier<FocusState> {
     }
   }
 
-  /// Starts a session of [minutes] on [plotIndex] (a free unlocked plot), or
-  /// on the next free plot when null; it exists only once it is saved.
-  Future<void> start(int minutes, {int? plotIndex}) => _once(() async {
-    final current = await future;
-    if (current.active != null) {
-      throw StateError('A session is already active');
-    }
-    if (!TownRules.canStart(current.town, minutes)) {
-      throw StateError('Cannot start $minutes minutes with this town');
-    }
-    final tier = BuildingTier.forMinutes(minutes);
-    if (plotIndex != null &&
-        !TownRules.isPlotFree(current.town, plotIndex, tier)) {
-      throw StateError('Plot $plotIndex is not free for a ${tier.name}');
-    }
-    final now = TimeStamp.now(ref.read(clockProvider));
-    final built = SessionEngine.start(
-      id: 's${now.wall.microsecondsSinceEpoch}',
-      minutes: minutes,
-      workersAvailable: current.town.workers,
-      recovery: current.town.inRecoveryMode,
-      now: now,
-      plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town, tier),
-    );
-    final session = _testLength(built);
-    // The first session of a new week brings the emergency pause back.
-    final town = _refilled(current.town, now);
-    // Save first: a session that was not saved never starts.
-    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
-    state = AsyncData(current.copyWith(town: town, active: session));
-  });
+  /// Starts a session of [minutes] on [plotIndex] (a free plot), or on the
+  /// next free plot when null, building the chosen [look]; it exists only
+  /// once it is saved.
+  Future<void> start(int minutes, {int? plotIndex, int? look}) => _once(
+    () async {
+      final current = await future;
+      if (current.active != null) {
+        throw StateError('A session is already active');
+      }
+      if (!TownRules.canStart(current.town, minutes)) {
+        throw StateError('Cannot start $minutes minutes with this town');
+      }
+      final tier = BuildingTier.forMinutes(minutes);
+      if (plotIndex != null &&
+          !TownRules.isPlotFree(current.town, plotIndex, tier)) {
+        throw StateError('Plot $plotIndex is not free for a ${tier.name}');
+      }
+      final now = TimeStamp.now(ref.read(clockProvider));
+      final built = SessionEngine.start(
+        id: 's${now.wall.microsecondsSinceEpoch}',
+        minutes: minutes,
+        workersAvailable: current.town.workers,
+        recovery: current.town.inRecoveryMode,
+        now: now,
+        plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town, tier),
+        look: look,
+      );
+      final session = _testLength(built);
+      // The first session of a new week brings the emergency pause back.
+      final town = _refilled(current.town, now);
+      // Save first: a session that was not saved never starts.
+      await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+      state = AsyncData(current.copyWith(town: town, active: session));
+    },
+  );
 
   // Testing aid: new sessions last 1 minute while the switch is on.
   Session _testLength(Session s) =>
