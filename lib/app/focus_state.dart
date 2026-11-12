@@ -34,6 +34,7 @@ class SessionResult {
     this.leveledUpTo,
     this.recoveryStarted = false,
     this.recoveryEnded = false,
+    this.repair = false,
   });
 
   /// How it ended.
@@ -72,6 +73,9 @@ class SessionResult {
   /// Whether this completion got the town out of recovery mode.
   final bool recoveryEnded;
 
+  /// Whether the session was a repair of a ruin.
+  final bool repair;
+
   @override
   bool operator ==(Object other) =>
       other is SessionResult &&
@@ -86,7 +90,8 @@ class SessionResult {
       other.reason == reason &&
       other.leveledUpTo == leveledUpTo &&
       other.recoveryStarted == recoveryStarted &&
-      other.recoveryEnded == recoveryEnded;
+      other.recoveryEnded == recoveryEnded &&
+      other.repair == repair;
 
   @override
   int get hashCode => Object.hash(
@@ -102,6 +107,7 @@ class SessionResult {
     leveledUpTo,
     recoveryStarted,
     recoveryEnded,
+    repair,
   );
 }
 

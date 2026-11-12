@@ -74,6 +74,27 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(active: session));
   }
 
+  /// Starts a 10-minute repair of the ruin on [plot]. Nothing is at risk.
+  Future<void> startRepair(int plot) async {
+    final current = await future;
+    if (current.active != null) {
+      throw StateError('A session is already active');
+    }
+    if (!TownRules.canRepair(current.town, plot)) {
+      throw StateError('Plot $plot has no ruin to repair');
+    }
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final session = SessionEngine.startRepair(
+      id: 's${now.wall.microsecondsSinceEpoch}',
+      plot: plot,
+      now: now,
+    );
+    await ref
+        .read(townRepositoryProvider)
+        .saveSessionStarted(current.town, session);
+    state = AsyncData(current.copyWith(active: session));
+  }
+
   /// Resolves the active session from the clock; finishes it if due.
   Future<void> tick() async {
     final current = await future;
@@ -182,13 +203,22 @@ class FocusController extends AsyncNotifier<FocusState> {
     if (wallClockTampered(finished.startedAt, now)) {
       _log('clock tamper detected');
     }
-    final town = completed
-        ? Progression.onSessionCompleted(
-            TownRules.applyCompleted(base.town, finished),
-            finished,
-            now.wall,
-          )
-        : TownRules.applyFailed(base.town, finished);
+    final repair = finished.isRepair;
+    final town = switch ((repair, completed)) {
+      (true, true) => Progression.onSessionCompleted(
+        TownRules.applyRepairCompleted(base.town, finished),
+        finished,
+        now.wall,
+      ),
+      // A lost repair costs nothing.
+      (true, false) => base.town,
+      (false, true) => Progression.onSessionCompleted(
+        TownRules.applyCompleted(base.town, finished),
+        finished,
+        now.wall,
+      ),
+      (false, false) => TownRules.applyFailed(base.town, finished),
+    };
     try {
       await ref
           .read(townRepositoryProvider)
@@ -209,7 +239,9 @@ class FocusController extends AsyncNotifier<FocusState> {
           : SessionOutcome.completed,
       tier: finished.tier,
       workersLost: completed ? 0 : finished.workersAssigned,
-      workersGained: completed ? finished.tier.workersAddedOnSuccess : 0,
+      workersGained: completed && !repair
+          ? finished.tier.workersAddedOnSuccess
+          : 0,
       newStreak: Progression.currentStreak(
         town,
         LocalDate.fromDateTime(now.wall),
@@ -224,6 +256,7 @@ class FocusController extends AsyncNotifier<FocusState> {
           : null,
       recoveryStarted: !base.town.inRecoveryMode && town.inRecoveryMode,
       recoveryEnded: base.town.inRecoveryMode && !town.inRecoveryMode,
+      repair: repair,
     );
     return FocusState(town: town, lastResult: result);
   }

@@ -109,12 +109,15 @@ class TownGame extends FlameGame
         !identical(result, _focus?.lastResult) &&
         plot != null) {
       if (result.outcome == SessionOutcome.completed) _celebrate(plot);
-      if (result.outcome == SessionOutcome.failed) _fail(plot);
+      // A lost repair loses nothing: no smoke, no fallen workers.
+      if (result.outcome == SessionOutcome.failed && !result.repair) {
+        _fail(plot);
+      }
       if (result.outcome == SessionOutcome.queued) _queue(plot, result.tier);
     }
     final active = focus.active;
     if (active != null) {
-      _lastPlot = activeSitePlot(focus.town, active.plotIndex);
+      _lastPlot = sessionSitePlot(focus.town, active);
     }
     if (focus.town != _town) {
       _town = focus.town;
@@ -323,7 +326,8 @@ class TownGame extends FlameGame
   // The stage comes from the clock on every frame, never from stored state.
   void _updateSite() {
     final active = _focus?.active;
-    if (active == null) {
+    // A repair builds nothing: the ruin stays until the repair is done.
+    if (active == null || active.isRepair) {
       renderer.setSite(null);
       return;
     }
@@ -347,14 +351,17 @@ class TownGame extends FlameGame
     final site = <PlacedWorker>[];
     if (active != null) {
       var onSite = active.workersAssigned;
-      if (onSite == 0 && focus.town.inRecoveryMode) {
+      if (active.isRepair) {
+        // One repairer at the ruin; the other workers keep walking.
+        onSite = 1;
+      } else if (onSite == 0 && focus.town.inRecoveryMode) {
         // The Last Builder works the site alone instead of walking the road.
         onSite = 1;
         spare = 0;
       }
       site.addAll(
         siteWorkers(
-          activeSitePlot(focus.town, active.plotIndex),
+          sessionSitePlot(focus.town, active),
           active.tier,
           onSite,
           seconds,

@@ -10,6 +10,7 @@ import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/workers/worker_model.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 
 Session _session(BuildingTier t, int assigned) => Session(
   id: 's',
@@ -92,6 +93,46 @@ void main() {
         FocusState(town: town, active: _session(BuildingTier.hut, 0)),
       );
       expect(g.renderer.workers, hasLength(1));
+    });
+
+    test('a repair puts one worker at the ruin and builds nothing', () {
+      final town = TownState.initial().copyWith(
+        workers: 3,
+        buildings: [
+          const TownBuilding(
+            id: 'a',
+            tier: BuildingTier.house,
+            status: BuildingStatus.complete,
+            plotIndex: 0,
+          ),
+          const TownBuilding(
+            id: 'r',
+            tier: BuildingTier.house,
+            status: BuildingStatus.ruin,
+            plotIndex: 2,
+          ),
+        ],
+      );
+      final repair = Session(
+        id: 'r1',
+        plannedMinutes: 10,
+        tier: BuildingTier.hut,
+        workersAssigned: 0,
+        state: SessionState.running,
+        startedAt: TimeStamp(DateTime(2026), Duration.zero),
+        repairPlot: 2,
+      );
+      final g = _game(FocusState(town: town, active: repair));
+      expect(g.renderer.site, isNull);
+      // One repairer and three spare walkers.
+      expect(g.renderer.workers, hasLength(4));
+      final plot = kPlots[2];
+      final near = g.renderer.workers.where(
+        (w) =>
+            (w.worker.x - plot.center.x).abs() < 4 &&
+            (w.worker.y - plot.center.y).abs() < 4,
+      );
+      expect(near, isNotEmpty);
     });
 
     test('workers move between frames', () {

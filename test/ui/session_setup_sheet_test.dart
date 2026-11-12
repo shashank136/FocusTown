@@ -220,8 +220,8 @@ void main() {
     await _open(tester, seed: full);
     expect(
       find.text(
-        'All 6 plots are used by buildings and ruins. A finished build '
-        'waits for the next plot.',
+        'All 6 plots are used by buildings and ruins. Tap a ruin on the '
+        'island to repair it. A finished build waits for the next plot.',
       ),
       findsOneWidget,
     );

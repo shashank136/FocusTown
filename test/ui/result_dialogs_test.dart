@@ -79,6 +79,46 @@ Iterable<String> _allText(WidgetTester tester) => [
 ];
 
 void main() {
+  group('repair', () {
+    SessionResult repair({
+      SessionOutcome outcome = SessionOutcome.completed,
+      bool plot = false,
+    }) => SessionResult(
+      outcome: outcome,
+      tier: BuildingTier.hut,
+      workersLost: 0,
+      workersGained: 0,
+      newStreak: 2,
+      plotGranted: plot,
+      xpGained: outcome == SessionOutcome.completed ? 10 : 0,
+      reason: outcome == SessionOutcome.completed
+          ? OutcomeReason.completed
+          : OutcomeReason.leftTooLong,
+      awaySeconds: 90,
+      repair: true,
+    );
+
+    testWidgets('a cleared ruin shows XP and streak, no workers', (
+      tester,
+    ) async {
+      await _show(tester, repair());
+      expect(find.text('Ruin cleared'), findsOneWidget);
+      expect(find.text('+10 XP'), findsOneWidget);
+      expect(find.text('Streak: 2 days'), findsOneWidget);
+      expect(find.textContaining('worker'), findsNothing);
+    });
+
+    testWidgets('a lost repair says nothing was lost', (tester) async {
+      await _show(tester, repair(outcome: SessionOutcome.failed));
+      expect(find.text('Repair stopped'), findsOneWidget);
+      expect(
+        find.text('The ruin is still there. Nothing was lost.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Lost'), findsNothing);
+    });
+  });
+
   group('completed', () {
     testWidgets('title, gains, xp and streak', (tester) async {
       await _show(tester, _completed());
@@ -215,7 +255,8 @@ void main() {
 
   group('tips in the dialogs', () {
     const growth = 'Huts and houses add builders to your town.';
-    const full = 'All your builders are gone. A wanderer arrives who cannot '
+    const full =
+        'All your builders are gone. A wanderer arrives who cannot '
         'be lost. Build huts (10 to 20 minutes) until you have 3 builders.';
     const short = 'Recovery mode again. Build huts to get back to 3 builders.';
 
@@ -236,11 +277,7 @@ void main() {
     });
 
     testWidgets('a short recovery line afterwards', (tester) async {
-      await _show(
-        tester,
-        _failed(recoveryStarted: true),
-        recoveryFull: false,
-      );
+      await _show(tester, _failed(recoveryStarted: true), recoveryFull: false);
       expect(_allText(tester), contains(short));
       expect(_allText(tester), isNot(contains(full)));
     });

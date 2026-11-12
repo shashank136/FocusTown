@@ -711,6 +711,71 @@ void main() {
     });
   });
 
+  group('repair a ruin', () {
+    Offset plotOnScreen(WidgetTester tester, int plot) {
+      final cam = _game.renderer.camera!;
+      final c = kPlots[plot].center;
+      final v = project(c.x, c.y, 1, cam.tile, cam.origin);
+      return tester.getTopLeft(find.byType(GameWidget<TownGame>)) +
+          Offset(v.x, v.y);
+    }
+
+    TownState withRuin() => TownState.initial().copyWith(
+      buildings: [
+        const TownBuilding(
+          id: 'a',
+          tier: BuildingTier.house,
+          status: BuildingStatus.complete,
+          plotIndex: 0,
+        ),
+        const TownBuilding(
+          id: 'r',
+          tier: BuildingTier.house,
+          status: BuildingStatus.ruin,
+          plotIndex: 2,
+        ),
+      ],
+    );
+
+    testWidgets('tapping a ruin offers a 10-minute repair', (tester) async {
+      await _pump(tester, seed: withRuin());
+      await tester.tapAt(plotOnScreen(tester, 2));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Repair this ruin?'), findsOneWidget);
+      expect(find.text('Repair (10 min)'), findsOneWidget);
+    });
+
+    testWidgets('Repair starts the repair on that ruin', (tester) async {
+      final c = await _pump(tester, seed: withRuin());
+      await tester.tapAt(plotOnScreen(tester, 2));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text('Repair (10 min)'));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 100)),
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+      final active = c.read(focusControllerProvider).requireValue.active;
+      expect(active?.repairPlot, 2);
+      expect(find.text('Repair this ruin?'), findsNothing);
+    });
+
+    testWidgets('Cancel starts nothing', (tester) async {
+      final c = await _pump(tester, seed: withRuin());
+      await tester.tapAt(plotOnScreen(tester, 2));
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.tap(find.text('Cancel'));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(c.read(focusControllerProvider).requireValue.active, isNull);
+    });
+
+    testWidgets('tapping a standing building offers nothing', (tester) async {
+      await _pump(tester, seed: withRuin());
+      await tester.tapAt(plotOnScreen(tester, 0));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Repair this ruin?'), findsNothing);
+    });
+  });
+
   group('semantics', () {
     testWidgets('Start focus and every icon button have a label', (
       tester,

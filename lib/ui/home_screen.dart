@@ -79,7 +79,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       // A session just became active (or was found running at launch): glide
       // the camera to its site.
       if (focus.active != null && prev?.value?.active == null) {
-        _game.focusOnSite(activeSitePlot(focus.town, focus.active?.plotIndex));
+        _game.focusOnSite(sessionSitePlot(focus.town, focus.active!));
       }
       _syncPlacement();
     }, fireImmediately: true);
@@ -162,6 +162,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
+  // A tap on a ruin offers to repair it (not while a session is running).
+  Future<void> _tapTown(Offset at) async {
+    final town = ref.read(focusControllerProvider).value?.town;
+    final plot = _game.plotAtScreen(Vec2(at.dx, at.dy));
+    if (town == null || plot == null || !TownRules.canRepair(town, plot)) {
+      return;
+    }
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Repair this ruin?'),
+        content: const Text(
+          'Focus for 10 minutes to clear it. Nothing is at risk: if you '
+          'leave, the ruin just stays.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Repair (10 min)'),
+          ),
+        ],
+      ),
+    );
+    if (go ?? false) {
+      await ref.read(focusControllerProvider.notifier).startRepair(plot);
+    }
+  }
+
   void _pick(Offset at) {
     final plot = _game.plotAtScreen(Vec2(at.dx, at.dy));
     if (plot != null) ref.read(placementProvider.notifier).select(plot);
@@ -197,6 +229,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             label: town == null ? null : townSummary(town),
             child: GameWidget(game: _game),
           ),
+          // Tapping a ruin offers a repair; pan and zoom still work.
+          if (active == null && placement == null)
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTapUp: (d) => unawaited(_tapTown(d.localPosition)),
+              ),
+            ),
           // Streak, level, workers and plots, clear of the debug button.
           const SafeArea(
             child: Align(

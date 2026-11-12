@@ -149,7 +149,8 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
               padding: const EdgeInsets.only(top: 8),
               child: Text(
                 'All ${town.plotsUnlocked} plots are used by buildings and '
-                'ruins. A finished build waits for the next plot.',
+                'ruins. Tap a ruin on the island to repair it. A finished '
+                'build waits for the next plot.',
                 textAlign: TextAlign.center,
               ),
             ),

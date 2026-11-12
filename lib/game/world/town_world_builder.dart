@@ -20,6 +20,11 @@ Plot activeSitePlot(TownState town, [int? chosen]) {
   return kPlots[plot ?? 0];
 }
 
+/// Where [session] works: the ruin of a repair, else its building site.
+Plot sessionSitePlot(TownState town, Session session) => session.isRepair
+    ? kPlots[session.repairPlot!]
+    : activeSitePlot(town, session.plotIndex);
+
 /// Builds the whole town as blocks: ground, plot borders, scenery, the
 /// buildings and ruins, and the building under construction.
 ///

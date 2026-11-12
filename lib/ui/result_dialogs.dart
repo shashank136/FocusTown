@@ -17,42 +17,39 @@ Future<void> showResultDialog(
   SessionResult r, {
   bool growthTip = false,
   bool recoveryFull = true,
-}) =>
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        final (title, lines) = switch (r.outcome) {
-          SessionOutcome.completed => _completed(r, growthTip),
-          SessionOutcome.queued => _queued(r),
-          SessionOutcome.failed => _failed(r, recoveryFull),
-        };
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final line in lines)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text(
-                      line.$1,
-                      style: line.$2 ? _heading(context) : null,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Continue'),
-            ),
+}) => showDialog<void>(
+  context: context,
+  builder: (context) {
+    final (title, lines) = switch (r.outcome) {
+      _ when r.repair => _repair(r),
+      SessionOutcome.completed => _completed(r, growthTip),
+      SessionOutcome.queued => _queued(r),
+      SessionOutcome.failed => _failed(r, recoveryFull),
+    };
+    return AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final line in lines)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Text(line.$1, style: line.$2 ? _heading(context) : null),
+              ),
           ],
-        );
-      },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Continue'),
+        ),
+      ],
     );
+  },
+);
 
 TextStyle? _heading(BuildContext context) =>
     Theme.of(context).textTheme.titleSmall;
@@ -76,6 +73,31 @@ TextStyle? _heading(BuildContext context) =>
     if (growthTip) ('Huts and houses add builders to your town.', false),
   ],
 );
+
+(String, List<(String, bool)>) _repair(SessionResult r) =>
+    r.outcome == SessionOutcome.completed
+    ? (
+        'Ruin cleared',
+        [
+          if (r.xpGained > 0) ('+${r.xpGained} XP', false),
+          if (r.newStreak > 0)
+            (
+              'Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}',
+              false,
+            ),
+          if (r.plotGranted) ('New plot unlocked', false),
+          if (r.leveledUpTo != null)
+            ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
+        ],
+      )
+    : (
+        'Repair stopped',
+        [
+          ('The ruin is still there. Nothing was lost.', false),
+          if (r.reason == OutcomeReason.leftTooLong)
+            ('You were away for ${_awayText(r.awaySeconds)}', false),
+        ],
+      );
 
 (String, List<(String, bool)>) _queued(SessionResult r) => (
   'Ready to place',
@@ -110,9 +132,6 @@ TextStyle? _heading(BuildContext context) =>
       ),
     ],
     if (r.recoveryStarted && !full)
-      (
-        'Recovery mode again. Build huts to get back to 3 builders.',
-        false,
-      ),
+      ('Recovery mode again. Build huts to get back to 3 builders.', false),
   ],
 );
