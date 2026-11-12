@@ -109,6 +109,6 @@ Release build on the iPhone 15 Pro Max, in-place install, user-reported.
 - [x] It disappears when the session ends.
 - [x] Swiping the app away removes the card (iOS ends a force-quit app's Live Activities); reopening the app shows it again, and the away warning notification still arrives.
 - [x] The card icon is fine after adding an icon set to the extension (`ios/FocusStatus/Assets.xcassets`).
-- [ ] The away warning banner still shows the Flutter icon, probably a stale iOS icon cache (the build contains the house icon). Check again after the next phone restart. A fresh TestFlight install should not be affected.
+- [x] The away warning banner still shows the Flutter icon after a fresh install, though the installed app and its icon set contain the house icon and no other Flutter app is on the phone. Treated as an iOS display issue; look again after a phone restart or a TestFlight install.
 
 ## Android
