@@ -10,6 +10,14 @@ enum Landmark {
     unlockLevel: TownLevel.village,
   ),
 
+  /// The Lighthouse of Alexandria: 12 stages of 15 minutes each, from Village.
+  lighthouse(
+    title: 'Lighthouse of Alexandria',
+    stages: 12,
+    minutesPerStage: 15,
+    unlockLevel: TownLevel.village,
+  ),
+
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
   eiffel(
     title: 'Eiffel Tower',

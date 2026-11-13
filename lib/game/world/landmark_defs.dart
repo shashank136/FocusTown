@@ -9,6 +9,8 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
   switch (landmark) {
     case Landmark.greatPyramid:
       _greatPyramid(w, ox, oy, stage);
+    case Landmark.lighthouse:
+      _lighthouse(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -78,5 +80,35 @@ void _greatPyramid(VoxelWorld w, int ox, int oy, int stage) {
       ..fill(ox + 5, oy + 5, 12, ox + 6, oy + 6, 12, Blocks.wool)
       ..fill(ox + 3, oy + 11, 3, ox + 3, oy + 11, 4, Blocks.stone)
       ..fill(ox + 8, oy + 11, 3, ox + 8, oy + 11, 4, Blocks.stone);
+  }
+}
+
+// The Lighthouse of Alexandria: a square base, a narrower middle with a ledge
+// at its foot, a narrow glass lantern and a fire on top. Two levels per stage;
+// the door in the base is open from the start.
+void _lighthouse(VoxelWorld w, int ox, int oy, int stage) {
+  // Stages 1-4: the square base, an 8 x 8 ring (z 1-8).
+  for (var z = 1; z <= 8 && z <= stage * 2; z++) {
+    w.ring(ox + 2, oy + 2, 8, 8, z, Blocks.stone);
+  }
+  w
+    ..remove(ox + 5, oy + 9, 1)
+    ..remove(ox + 6, oy + 9, 1)
+    ..remove(ox + 5, oy + 9, 2)
+    ..remove(ox + 6, oy + 9, 2);
+  // Stages 5-8: the middle, a 6 x 6 ring (z 9-16), with a ledge at its foot.
+  if (stage >= 5) w.ring(ox + 1, oy + 1, 10, 10, 9, Blocks.plank);
+  for (var z = 9; z <= 16 && z <= stage * 2; z++) {
+    w.ring(ox + 3, oy + 3, 6, 6, z, Blocks.cobble);
+  }
+  // Stages 9-11: the top, a 4 x 4 ring (z 17-22); the lantern is glass.
+  for (var z = 17; z <= 22 && z <= stage * 2; z++) {
+    w.ring(ox + 4, oy + 4, 4, 4, z, z >= 21 ? Blocks.glass : Blocks.stone);
+  }
+  // Stage 12: the roof and the fire.
+  if (stage >= 12) {
+    w
+      ..fill(ox + 4, oy + 4, 23, ox + 7, oy + 7, 23, Blocks.slate)
+      ..fill(ox + 5, oy + 5, 24, ox + 6, oy + 6, 25, Blocks.wool);
   }
 }

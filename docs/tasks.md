@@ -1918,7 +1918,7 @@ Rules are in `docs/spec.md` ("Landmarks unlock and screen"). Built in this order
 One landmark at a time, each with its tests first (stage by stage layout, inside 12 x 12, its own look), then commit and push. The list and times are in `docs/spec.md` ("The landmark list").
 
 - [x] Great Pyramid (also: only one landmark in progress at a time)
-- [ ] Lighthouse of Alexandria
+- [x] Lighthouse of Alexandria
 - [ ] Pagoda
 - [ ] Taj Mahal
 - [ ] Statue of Liberty

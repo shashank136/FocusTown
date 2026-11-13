@@ -94,6 +94,11 @@ TownState _town({int xp = 300, List<TownBuilding> extra = const []}) =>
 Finder _card(String title) =>
     find.ancestor(of: find.text(title), matching: find.byType(Card));
 
+// How many landmarks are unlocked at 300 minutes of focus.
+final int _unlockedAt300 = Landmark.values
+    .where((l) => l.unlockLevel.minXp <= 300)
+    .length;
+
 void main() {
   testWidgets('a locked landmark says when it unlocks and has no button', (
     tester,
@@ -103,7 +108,9 @@ void main() {
     expect(find.text('About 4 hours over many sessions'), findsOneWidget);
     expect(
       find.text('Unlocks at Village (300 minutes of focus)'),
-      findsNWidgets(2), // the Great Pyramid unlocks there too
+      findsNWidgets(
+        Landmark.values.where((l) => l.unlockLevel.minXp == 300).length,
+      ),
     );
     expect(find.byType(FilledButton), findsNothing);
   });
@@ -112,7 +119,7 @@ void main() {
     tester,
   ) async {
     final c = await _open(tester, _town());
-    expect(find.text('Not started'), findsNWidgets(2));
+    expect(find.text('Not started'), findsNWidgets(_unlockedAt300));
     await tester.tap(
       find.descendant(
         of: _card('Eiffel Tower'),
@@ -143,7 +150,10 @@ void main() {
 
   testWidgets('one landmark at a time: the others wait for it', (tester) async {
     await _open(tester, _town(extra: [_eiffel(85, BuildingStatus.building)]));
-    expect(find.text('Finish the Eiffel Tower first.'), findsOneWidget);
+    expect(
+      find.text('Finish the Eiffel Tower first.'),
+      findsNWidgets(_unlockedAt300 - 1),
+    );
     // Only the landmark in progress has a button.
     expect(find.byType(FilledButton), findsOneWidget);
   });
@@ -179,7 +189,7 @@ void main() {
       find.text(
         'No free 2 x 2 block of plots. Extend your land or clear a plot.',
       ),
-      findsNWidgets(2),
+      findsNWidgets(_unlockedAt300),
     );
     expect(find.byType(FilledButton), findsNothing);
   });
