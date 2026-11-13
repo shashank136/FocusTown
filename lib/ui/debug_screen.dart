@@ -51,6 +51,8 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
       await ref
           .read(focusControllerProvider.notifier)
           .resetLandmark(Landmark.eiffel);
+      // The controller refuses with a StateError while a session runs.
+      // ignore: avoid_catching_errors
     } on StateError catch (e) {
       messenger.showSnackBar(SnackBar(content: Text(e.message)));
     }
