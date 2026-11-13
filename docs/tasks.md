@@ -1976,6 +1976,12 @@ Look at the island from the north, east, south or west (the view turns in steps 
 - Do: give the user steps (turn all four ways with the landmarks on the map, tap plots in each view, run a session, watch the workers), measure frame rate and battery, and record in `docs/device_tests.md`.
 - Commit: `T-V12.4: record rotation device check`
 
+## Phase V13: turn a forest square into a garden (asked 2026-11-12, to be settled)
+
+The user wants to turn a square of forest into a garden. Open questions before building: does it cost a focus session (and how many minutes), and does the garden last for ever or only for some time (then the forest grows back)? Today a garden can only be made on newly claimed land (the "Make it a garden" switch on a land session); forest squares inside the starting island have no way to become one.
+
+- [ ] Decide the rules with the user, then write them into `docs/spec.md` and split this into tasks (rule and storage, session and picker, device check).
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.
