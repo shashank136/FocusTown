@@ -1956,6 +1956,26 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 - Do: give the user steps (unlock City with the debug button, start a district, finish a row, build on it, fail a session), measure frame rate and battery with 1, 2 and 3 districts, and record in `docs/device_tests.md`.
 - Commit: `T-V11.6: record districts device check`
 
+## Phase V12: rotate the island (decided 2026-11-12)
+
+Look at the island from the north, east, south or west (the view turns in steps of 90 degrees). The game keeps its world as it is; the view rotates the (x, y) of everything that is drawn or tapped around the middle of the island. Each task: tests first, then commit.
+
+### T-V12.1 [ ] View rotation (pure)
+- Do: a `ViewRotation` (four turns) in `lib/game/world`: map a tile or a point to the rotated view and back, rotate a block list, plus the compass name of the side that faces the viewer. Tests: four turns are the identity, a turn then its inverse are the identity, a block and its neighbours keep their order of depth.
+- Commit: `T-V12.1: view rotation`
+
+### T-V12.2 [ ] Draw the rotated world
+- Do: `TownGame`/`TownRenderer` draw the world through the rotation: blocks, plot outlines, workers and their paths, particles, the camera's island box and site focus, the static layer rebuilt on a turn.
+- Commit: `T-V12.2: draw the rotated world`
+
+### T-V12.3 [ ] Rotate buttons, compass and taps
+- Do: two round buttons (turn left, turn right) and a small compass showing where north is, beside the bottom row; taps on plots and ruins keep working in every view; the camera stays on the same spot of the island.
+- Commit: `T-V12.3: rotate buttons`
+
+### T-V12.4 [ ] [device] Rotate on the iPhone
+- Do: give the user steps (turn all four ways with the landmarks on the map, tap plots in each view, run a session, watch the workers), measure frame rate and battery, and record in `docs/device_tests.md`.
+- Commit: `T-V12.4: record rotation device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.
