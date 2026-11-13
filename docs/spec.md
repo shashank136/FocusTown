@@ -446,3 +446,10 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - A landmark session can be any length from 10 to 120 minutes. It risks no workers. When it finishes, its minutes are added to the landmark's progress (and count for XP and the streak as usual). The landmark is done at 240 minutes.
 - A session that fails (abandoned or left too long) damages the landmark: it loses one stage (20 minutes of progress, never below 0). Nothing else is lost.
 - It is not queued and leaves no ruin.
+
+### Landmarks unlock and screen (decided 2026-11-12)
+
+- Landmarks are earned: each one unlocks at a town level (the Eiffel Tower at Village, 300 focus minutes). Locked landmarks are shown with the level they unlock at. A landmark already started or built is not affected.
+- The Start focus sheet stays about time only (duration, looks, choose plot, extend land). Landmarks have their own Landmarks screen, opened by a button on the island (beside the recenter button, hidden while a session runs). It shows a card per landmark: a picture, its total time, and its state (locked, not started, stage N of 12, or built).
+- Starting or continuing a landmark opens a short sheet to pick the length of that session (10 to 120 minutes), then Start.
+- Each landmark has its own total time, so a smaller one can be shorter than the Eiffel Tower's 4 hours.

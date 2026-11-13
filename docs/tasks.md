@@ -1898,6 +1898,21 @@ Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Towe
 ### T-V8.6 [ ] [device] Landmark on the iPhone
 - Commit: `T-V8.6: record landmark device check`
 
+## Phase V9: landmarks unlock and their own screen (decided 2026-11-12)
+
+Rules are in `docs/spec.md` ("Landmarks unlock and screen"). Built in this order, each with its tests first:
+
+### T-V9.1 [ ] Unlock level and landmark state (pure)
+- `TownLevel` in its own file, `Landmark.unlockLevel`, `TownRules.landmarkState` (locked, no room, ready, in progress, built); starting needs the level.
+- Commit: `T-V9.1: landmark unlock`
+
+### T-V9.2 [ ] Landmarks screen and session sheet
+- The screen (cards with a picture, total time and state), the length sheet, the island button; the landmark row leaves the Start focus sheet.
+- Commit: `T-V9.2: landmarks screen`
+
+### T-V9.3 [ ] [device] Landmarks screen on the iPhone
+- Commit: `T-V9.3: record landmarks screen device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.
