@@ -55,6 +55,18 @@ void main() {
     }
   });
 
+  test('the ground of a garden is not grass: it is flowers, path or water', () {
+    for (var v = 0; v < kGardenLooks; v++) {
+      final w = VoxelWorld()..fill(10, 10, 0, 16, 16, 0, Blocks.grass);
+      buildGarden(w, 10, 10, v);
+      for (var x = 10; x <= 16; x++) {
+        for (var y = 10; y <= 16; y++) {
+          expect(w.get(x, y, 0), isNot(Blocks.grass), reason: 'garden $v');
+        }
+      }
+    }
+  });
+
   test('a garden parcel is drawn as a garden, not as forest', () {
     const garden = Parcel(-1, 3, garden: true);
     const forest = Parcel(-1, 3);

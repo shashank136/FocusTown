@@ -12,6 +12,15 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
   void flower(int dx, int dy, int i) =>
       w.set(ox + dx, oy + dy, 1, flowerColors[i % flowerColors.length]);
 
+  // The ground is a carpet of flowers in patches of colour, never grass; the
+  // paths and the water of each garden are laid over it.
+  for (var dx = 0; dx < 7; dx++) {
+    for (var dy = 0; dy < 7; dy++) {
+      final patch = (dx ~/ 2) + 2 * (dy ~/ 2) + look;
+      w.set(ox + dx, oy + dy, 0, flowerColors[patch % flowerColors.length]);
+    }
+  }
+
   switch (look % kGardenLooks) {
     case 0: // park: a cross of paths, two trees, a bench, flowers by the paths
       for (var i = 0; i < 7; i++) {
