@@ -12,12 +12,14 @@ import 'package:focus_town/game/render/plot_outline_painter.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/render/worker_painter.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
+import 'package:focus_town/game/workers/worker_model.dart';
 import 'package:focus_town/game/world/active_site.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
+import 'package:focus_town/game/world/view_rotation.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
 // The view starts on the plots nearest the crossing and on every building.
@@ -56,12 +58,33 @@ class TownRenderer {
   int _selectedSpan = 1;
   List<VisibleBlock> _previewBlocks = const [];
   (BuildingTier, int, int)? _previewKey;
+  ViewRotation _rotation = ViewRotation.none;
   int _worldVersion = 0;
   TownState? _town;
   ActiveSite? _site;
   Set<int> _regionPlots = {for (var i = 0; i < 6; i++) i};
   TownCamera? _camera;
   bool _fitted = false;
+
+  /// Which side the island is seen from.
+  ViewRotation get rotation => _rotation;
+
+  /// Shows the island from [rotation]; the next paint re-records the layer.
+  /// Everything the renderer is given (blocks, workers, particles, the
+  /// preview, the outlines, the camera's box) stays in world coordinates and
+  /// is turned here, on the way in.
+  void setRotation(ViewRotation rotation) {
+    if (rotation == _rotation) return;
+    _rotation = rotation;
+    _camera?.box = _box;
+    _previewKey = null;
+    _rebuild();
+    final preview = _preview;
+    if (preview != null) setPreview(preview);
+  }
+
+  /// The blocks that show a face, back to front, as drawn (a spy for tests).
+  List<VisibleBlock> get visibleBlocks => _visible ?? const [];
 
   /// The camera, once the first frame has been drawn.
   TownCamera? get camera => _camera;
@@ -103,7 +126,10 @@ class TownRenderer {
   void _rebuild() {
     final town = _town;
     if (town == null) return; // a site set early waits for the town
-    final visible = buildTownWorld(town, site: _site).sortedVisible();
+    final world = buildTownWorld(town, site: _site);
+    final visible =
+        (_rotation == ViewRotation.none ? world : _rotation.rotateWorld(world))
+            .sortedVisible();
     _visible = visible;
     _index = BlockIndex(visible);
     _worldVersion++;
@@ -114,16 +140,52 @@ class TownRenderer {
 
   /// The workers drawn on top of the town every frame (they never re-record
   /// the static layer).
-  // ignore: use_setters_to_change_properties, a command, not a property
-  void setWorkers(List<PlacedWorker> workers) => _workers = workers;
+  void setWorkers(List<PlacedWorker> workers) =>
+      _workers = _rotation == ViewRotation.none
+      ? workers
+      : [for (final w in workers) _turnedWorker(w)];
+
+  PlacedWorker _turnedWorker(PlacedWorker w) {
+    final (x, y) = _rotation.point(w.worker.x, w.worker.y);
+    final (fx, fy) = _rotation.point(
+      w.worker.facing.$1.toDouble(),
+      w.worker.facing.$2.toDouble(),
+    );
+    return PlacedWorker(
+      Worker(
+        x: x,
+        y: y,
+        shirt: w.worker.shirt,
+        facing: (fx.round(), fy.round()),
+      ),
+      w.pose,
+    );
+  }
 
   /// The particles currently drawn.
   List<Particle> get particles => _particles;
 
   /// Draws [particles] over the workers, at opacity [alpha] (0 to 1).
   void setParticles(List<Particle> particles, double alpha) {
-    _particles = particles;
+    _particles = _rotation == ViewRotation.none
+        ? particles
+        : [for (final p in particles) _turnedParticle(p)];
     _particleAlpha = alpha;
+  }
+
+  Particle _turnedParticle(Particle p) {
+    final (x, y) = _rotation.point(p.x, p.y);
+    final (vx, vy) = _rotation.point(p.vx, p.vy);
+    return Particle(
+      x: x,
+      y: y,
+      z: p.z,
+      vx: vx,
+      vy: vy,
+      vz: p.vz,
+      life: p.life,
+      color: p.color,
+    );
   }
 
   /// The plots drawn with an outline (the choose-a-plot mode).
@@ -162,7 +224,9 @@ class TownRenderer {
       stage: maxStage(preview.tier),
       look: preview.look,
     );
-    _previewBlocks = w.sortedVisible();
+    _previewBlocks =
+        (_rotation == ViewRotation.none ? w : _rotation.rotateWorld(w))
+            .sortedVisible();
   }
 
   /// Draws everything into [canvas], which is [size] big.
@@ -201,6 +265,7 @@ class TownRenderer {
         _selected,
         selectedSpan: _selectedSpan,
         parcels: parcels,
+        rotation: _rotation,
         tile: cam.tile,
         origin: cam.origin,
       );
@@ -251,11 +316,29 @@ class TownRenderer {
   // so the claimable land at the coast fits on screen too.
   Rect get _box {
     final b = islandBox(parcels);
-    return Rect.fromLTRB(
-      b.left - kPlotSize.toDouble(),
-      b.top - kPlotSize.toDouble(),
-      b.right + kPlotSize.toDouble(),
-      b.bottom + kPlotSize.toDouble(),
+    return _turned(
+      Rect.fromLTRB(
+        b.left - kPlotSize.toDouble(),
+        b.top - kPlotSize.toDouble(),
+        b.right + kPlotSize.toDouble(),
+        b.bottom + kPlotSize.toDouble(),
+      ),
+    );
+  }
+
+  // A rectangle of world tiles as it lies in the current view.
+  Rect _turned(Rect r) {
+    final (x, y, w, h) = _rotation.rect(
+      r.left.round(),
+      r.top.round(),
+      r.width.round(),
+      r.height.round(),
+    );
+    return Rect.fromLTWH(
+      x.toDouble(),
+      y.toDouble(),
+      w.toDouble(),
+      h.toDouble(),
     );
   }
 
@@ -263,11 +346,13 @@ class TownRenderer {
   Rect get unlockedRegion {
     final parcels = _town?.parcels ?? const <Parcel>[];
     final plots = [for (final i in _regionPlots) plotFor(i, parcels)];
-    return Rect.fromLTRB(
-      plots.map((p) => p.originX).reduce(math.min) - 4.0,
-      plots.map((p) => p.originY).reduce(math.min) - 4.0,
-      plots.map((p) => p.originX + kPlotSize).reduce(math.max) + 4.0,
-      plots.map((p) => p.originY + kPlotSize).reduce(math.max) + 4.0,
+    return _turned(
+      Rect.fromLTRB(
+        plots.map((p) => p.originX).reduce(math.min) - 4.0,
+        plots.map((p) => p.originY).reduce(math.min) - 4.0,
+        plots.map((p) => p.originX + kPlotSize).reduce(math.max) + 4.0,
+        plots.map((p) => p.originY + kPlotSize).reduce(math.max) + 4.0,
+      ),
     );
   }
 }

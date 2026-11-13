@@ -27,6 +27,7 @@ import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/road_network.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
+import 'package:focus_town/game/world/view_rotation.dart';
 
 /// The Flame game that draws the town and lets the user pan and zoom it.
 ///
@@ -193,7 +194,8 @@ class TownGame extends FlameGame
       ReadyPreview(tier, plot, 0.4 * show!.fade, look: _readyLook),
     );
     final top = maxStage(tier) + 4.0;
-    final at = project(plot.center.x, plot.center.y, top, cam.tile, cam.origin);
+    final (cx, cy) = renderer.rotation.point(plot.center.x, plot.center.y);
+    final at = project(cx, cy, top, cam.tile, cam.origin);
     readyLabel.value = at;
   }
 
@@ -286,9 +288,11 @@ class TownGame extends FlameGame
   int? plotAtScreen(Vec2 p) {
     final cam = renderer.camera;
     if (cam == null) return null;
-    final g = unprojectGround(p.x, p.y + cam.tile, cam.tile, cam.origin);
-    final x = g.x.floor();
-    final y = g.y.floor();
+    final screen = unprojectGround(p.x, p.y + cam.tile, cam.tile, cam.origin);
+    // Back from the view to the world the plots lie in.
+    final (wx, wy) = renderer.rotation.unpoint(screen.x, screen.y);
+    final x = wx.floor();
+    final y = wy.floor();
     // Choosing land: the outlined parcels are not plots yet.
     for (final i in renderer.plotOutlines.where((i) => i >= kLandBase)) {
       final plot = plotFor(i, renderer.parcels);
@@ -306,6 +310,25 @@ class TownGame extends FlameGame
   /// frame has not been drawn yet the glide starts as soon as it has.
   // ignore: use_setters_to_change_properties, a command, not a property
   void focusOnSite(Plot plot) => _siteToFocus = plot;
+
+  /// Turns the view by [by] quarter turns (1 or -1), keeping the camera on the
+  /// same spot of the island.
+  void rotate(int by) {
+    final old = renderer.rotation;
+    final next = ViewRotation(old.turns + by);
+    if (next == old) return;
+    final cam = renderer.camera;
+    final center = cam?.centerWorld;
+    renderer.setRotation(next);
+    if (cam != null && center != null) {
+      final (wx, wy) = old.unpoint(center.x, center.y);
+      final (nx, ny) = next.point(wx, wy);
+      cam.focusOn(Vec2(nx, ny));
+    }
+    // A glide began in the old view.
+    _transition = null;
+    _redraw = true;
+  }
 
   /// Glides out to show the whole island (choosing land).
   void showIsland() {
@@ -357,9 +380,10 @@ class TownGame extends FlameGame
     final site = _siteToFocus;
     if (site != null) {
       _siteToFocus = null;
+      final (sx, sy) = renderer.rotation.point(site.center.x, site.center.y);
       _transition = CameraTransition(
         from: cam.pose,
-        to: CameraPose(site.center, math.max(cam.tile, 14)),
+        to: CameraPose(Vec2(sx, sy), math.max(cam.tile, 14)),
       );
     }
     final t = _transition;

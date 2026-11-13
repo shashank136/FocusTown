@@ -1966,8 +1966,9 @@ Look at the island from the north, east, south or west (the view turns in steps 
 - Done: `lib/game/world/view_rotation.dart` (`ViewRotation`: tile, untile, point, unpoint, rect, rotateWorld, northOnScreen, facing). A turn maps a tile (x, y) to (-1 - y, x), a turn about the middle of the voxel range, so the rotated world always fits in -128..127.
 - Commit: `T-V12.1: view rotation`
 
-### T-V12.2 [ ] Draw the rotated world
+### T-V12.2 [x] Draw the rotated world
 - Do: `TownGame`/`TownRenderer` draw the world through the rotation: blocks, plot outlines, workers and their paths, particles, the camera's island box and site focus, the static layer rebuilt on a turn.
+- Done: `TownRenderer.setRotation` (blocks, preview, workers and their facing, particles, outlines, the camera's island box and region are turned on the way in) and `TownGame.rotate(by)` (keeps the camera on the same spot, ends a glide, turns the tap position back to the world). Tests: `test/game/rotated_view_test.dart`.
 - Commit: `T-V12.2: draw the rotated world`
 
 ### T-V12.3 [ ] Rotate buttons, compass and taps
