@@ -1925,7 +1925,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 - [x] Colosseum
 - [x] A way to see and test the landmarks on the map without waiting for the level or the time (debug screen: "Show every landmark on the map")
 - [x] A landmark takes the time from the session wheel: the session sheet offers "New building" or any landmark that can be worked on, and shows the whole stages the minutes make (leftover minutes count toward the next stage)
-- [x] Machu Picchu, Chichén Itzá, Petra and Christ the Redeemer (the Great Wall is left out for now)
+- [x] Chichén Itzá, Petra, Christ the Redeemer, the Easter Island Moai and the Space Needle (Machu Picchu was dropped, the Great Wall is left out for now)
 
 ## Phase L: App Store submission (after V2 and LA)
 

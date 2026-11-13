@@ -21,8 +21,10 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _statueOfLiberty(w, ox, oy, stage);
     case Landmark.colosseum:
       _colosseum(w, ox, oy, stage);
-    case Landmark.machuPicchu:
-      _machuPicchu(w, ox, oy, stage);
+    case Landmark.easterIsland:
+      _easterIsland(w, ox, oy, stage);
+    case Landmark.spaceNeedle:
+      _spaceNeedle(w, ox, oy, stage);
     case Landmark.chichenItza:
       _chichenItza(w, ox, oy, stage);
     case Landmark.petra:
@@ -345,74 +347,6 @@ void _colosseum(VoxelWorld w, int ox, int oy, int stage) {
   }
 }
 
-// Machu Picchu: four grass terraces with stone walls climbing to a tall peak
-// at the back, stone huts with plank roofs on the terraces, a temple, trees
-// and a flag. Stages: 1-4 the terraces, 5-7 the peak, 8-9 huts, 10 the temple,
-// 11 trees, 12 the flag.
-void _machuPicchu(VoxelWorld w, int ox, int oy, int stage) {
-  // Terrace [z] (1 to 4) covers 1 to [hi] on both axes; what is not covered
-  // by the terrace above shows grass, the rest is wall.
-  int hi(int z) => 12 - 2 * z;
-  void terrace(int z) {
-    for (var x = 1; x <= hi(z); x++) {
-      for (var y = 1; y <= hi(z); y++) {
-        final covered = z < 4 && x <= hi(z + 1) && y <= hi(z + 1);
-        w.set(ox + x, oy + y, z, covered ? Blocks.cobble : Blocks.grass);
-      }
-    }
-  }
-
-  for (var z = 1; z <= 4; z++) {
-    if (stage >= z) terrace(z);
-  }
-  // The peak: 3 x 3, then 2 x 2, then a point.
-  if (stage >= 5) w.fill(ox + 1, oy + 1, 5, ox + 3, oy + 3, 6, Blocks.stone);
-  if (stage >= 6) w.fill(ox + 1, oy + 1, 7, ox + 2, oy + 2, 8, Blocks.stone);
-  if (stage >= 7) w.fill(ox + 1, oy + 1, 9, ox + 1, oy + 1, 10, Blocks.stone);
-  // A hut: 2 x 2 stone walls and a plank roof, on the terrace below [z].
-  void hut(int x, int y, int z) {
-    w
-      ..fill(ox + x, oy + y, z, ox + x + 1, oy + y + 1, z, Blocks.cobble)
-      ..fill(
-        ox + x,
-        oy + y,
-        z + 1,
-        ox + x + 1,
-        oy + y + 1,
-        z + 1,
-        Blocks.plank,
-      );
-  }
-
-  if (stage >= 8) {
-    hut(9, 9, 2);
-    hut(9, 5, 2);
-    hut(5, 9, 2);
-  }
-  if (stage >= 9) {
-    hut(7, 7, 3);
-    hut(7, 3, 3);
-    hut(3, 7, 3);
-  }
-  if (stage >= 10) {
-    w
-      ..fill(ox + 5, oy + 5, 4, ox + 6, oy + 6, 5, Blocks.stone)
-      ..fill(ox + 5, oy + 5, 6, ox + 6, oy + 6, 6, Blocks.slate);
-  }
-  if (stage >= 11) {
-    for (final (x, y, z) in [(10, 2, 2), (2, 10, 2), (8, 2, 3), (2, 8, 3)]) {
-      w
-        ..set(ox + x, oy + y, z, Blocks.log)
-        ..set(ox + x, oy + y, z + 1, Blocks.leaves);
-    }
-  }
-  if (stage >= 12) {
-    w
-      ..set(ox + 1, oy + 1, 11, Blocks.log)
-      ..set(ox + 1, oy + 1, 12, Blocks.wool);
-  }
-}
-
 // Chichén Itzá, El Castillo: four stepped tiers (two levels each) with a
 // stair up the middle of every side, a small temple on top, serpent heads at
 // the foot of the stairs and a banner. Stages: 1-8 the tiers, one level each,
@@ -517,12 +451,13 @@ void _petra(VoxelWorld w, int ox, int oy, int stage) {
 }
 
 // Christ the Redeemer: a stepped mountain top, a tall marble pedestal, the
-// white figure in a long robe, arms stretched wide, and a head, with trees on
-// the slopes. Stages: 1-4 the mountain, 5-6 the pedestal, 7-8 the body,
-// 9-10 the arms, 11 the head, 12 the trees.
+// white figure in a long robe that flares at the feet, broad shoulders, arms
+// stretched wide with drooping sleeves and hands, a neck and a head, with
+// trees on the slopes. Stages: 1-4 the mountain, 5-6 the pedestal, 7 the
+// robe, 8 the torso, 9-10 the arms, 11 the head, 12 the trees.
 void _christRedeemer(VoxelWorld w, int ox, int oy, int stage) {
-  // Mountain layer [z] (1 to 4) covers 1+(z-1) to 10-(z-1); exposed cells are
-  // grass, the rest rock.
+  // Mountain layer [z] (1 to 4) covers z to 11-z; exposed cells are grass,
+  // the rest rock.
   for (var z = 1; z <= 4; z++) {
     if (stage < z) break;
     final lo = z;
@@ -534,17 +469,38 @@ void _christRedeemer(VoxelWorld w, int ox, int oy, int stage) {
       }
     }
   }
-  if (stage >= 5) w.fill(ox + 4, oy + 4, 5, ox + 7, oy + 7, 6, Blocks.marble);
-  if (stage >= 6) w.fill(ox + 4, oy + 4, 7, ox + 7, oy + 7, 8, Blocks.marble);
-  if (stage >= 7) w.fill(ox + 5, oy + 5, 9, ox + 6, oy + 6, 12, Blocks.marble);
-  if (stage >= 8) w.fill(ox + 5, oy + 5, 13, ox + 6, oy + 6, 15, Blocks.marble);
-  // The arms reach out along x at shoulder height.
-  if (stage >= 9) w.fill(ox + 1, oy + 5, 14, ox + 4, oy + 6, 14, Blocks.marble);
-  if (stage >= 10) {
-    w.fill(ox + 7, oy + 5, 14, ox + 10, oy + 6, 14, Blocks.marble);
+  if (stage >= 5) {
+    w.fill(ox + 3, oy + 3, 5, ox + 8, oy + 8, 6, Blocks.marble);
   }
+  if (stage >= 6) {
+    w.fill(ox + 4, oy + 4, 7, ox + 7, oy + 7, 9, Blocks.marble);
+  }
+  // The robe flares: 4 x 4 at the feet, 4 wide and 2 deep above.
+  if (stage >= 7) {
+    w
+      ..fill(ox + 4, oy + 4, 10, ox + 7, oy + 7, 10, Blocks.marble)
+      ..fill(ox + 4, oy + 5, 11, ox + 7, oy + 6, 13, Blocks.marble);
+  }
+  // The torso, broad at the shoulders, and a neck.
+  if (stage >= 8) {
+    w
+      ..fill(ox + 4, oy + 5, 14, ox + 7, oy + 6, 16, Blocks.marble)
+      ..fill(ox + 5, oy + 5, 17, ox + 6, oy + 6, 17, Blocks.marble);
+  }
+  // The arms: out at the shoulders, a sleeve hanging, a hand.
+  void arm(int from, int to, int hand) {
+    w
+      ..fill(ox + from, oy + 5, 15, ox + to, oy + 6, 16, Blocks.marble)
+      ..fill(ox + hand, oy + 5, 14, ox + hand, oy + 6, 15, Blocks.marble);
+  }
+
+  if (stage >= 9) arm(1, 3, 0);
+  if (stage >= 10) arm(8, 10, 11);
+  // The head, 2 x 2, with a nose.
   if (stage >= 11) {
-    w.fill(ox + 5, oy + 5, 16, ox + 6, oy + 6, 17, Blocks.marble);
+    w
+      ..fill(ox + 5, oy + 5, 18, ox + 6, oy + 6, 19, Blocks.marble)
+      ..set(ox + 5, oy + 7, 18, Blocks.marble);
   }
   if (stage >= 12) {
     for (final (x, y) in [(2, 8), (8, 2), (9, 9), (2, 2)]) {
@@ -552,5 +508,105 @@ void _christRedeemer(VoxelWorld w, int ox, int oy, int stage) {
         ..set(ox + x, oy + y, 2, Blocks.log)
         ..set(ox + x, oy + y, 3, Blocks.leaves);
     }
+  }
+}
+
+// The Easter Island Moai: a stone platform, a long stone head on a short
+// body with a heavy brow, a long nose, deep eyes, a mouth and a chin, a red
+// topknot, and two small heads beside it. The face is on the front.
+// Stages: 1-2 the platform, 3 the body, 4-6 the head, 7 the nose, 8 the
+// brow, 9 the eyes, 10 the mouth and chin, 11 the topknot, 12 the small ones.
+void _easterIsland(VoxelWorld w, int ox, int oy, int stage) {
+  if (stage >= 1) {
+    w.fill(ox + 1, oy + 2, 1, ox + 10, oy + 9, 1, Blocks.cobble);
+  }
+  if (stage >= 2) {
+    w.fill(ox + 2, oy + 3, 2, ox + 9, oy + 8, 2, Blocks.cobble);
+  }
+  if (stage >= 3) {
+    w.fill(ox + 4, oy + 4, 3, ox + 7, oy + 6, 6, Blocks.stone);
+  }
+  // The head: 4 wide, 3 deep, 8 tall.
+  if (stage >= 4) {
+    w.fill(ox + 4, oy + 4, 7, ox + 7, oy + 6, 9, Blocks.stone);
+  }
+  if (stage >= 5) {
+    w.fill(ox + 4, oy + 4, 10, ox + 7, oy + 6, 12, Blocks.stone);
+  }
+  if (stage >= 6) {
+    w.fill(ox + 4, oy + 4, 13, ox + 7, oy + 6, 14, Blocks.stone);
+  }
+  if (stage >= 7) {
+    w.fill(ox + 5, oy + 7, 8, ox + 6, oy + 7, 11, Blocks.stone);
+  }
+  if (stage >= 8) {
+    w.fill(ox + 4, oy + 7, 12, ox + 7, oy + 7, 12, Blocks.stone);
+  }
+  if (stage >= 9) {
+    w
+      ..set(ox + 4, oy + 7, 11, Blocks.char)
+      ..set(ox + 7, oy + 7, 11, Blocks.char);
+  }
+  if (stage >= 10) {
+    w
+      ..fill(ox + 5, oy + 7, 7, ox + 6, oy + 7, 7, Blocks.cobble)
+      ..fill(ox + 5, oy + 7, 6, ox + 6, oy + 7, 6, Blocks.stone);
+  }
+  if (stage >= 11) {
+    w.fill(ox + 5, oy + 5, 15, ox + 6, oy + 5, 16, Blocks.roof);
+  }
+  if (stage >= 12) {
+    for (final x in [2, 9]) {
+      w
+        ..fill(ox + x, oy + 6, 3, ox + x, oy + 6, 6, Blocks.stone)
+        ..set(ox + x, oy + 7, 5, Blocks.stone);
+    }
+  }
+}
+
+// The Space Needle: four legs that draw in to a waist, a white shaft, a
+// saucer with a glass band, a roof, a small upper deck and a spire with a
+// beacon. Stages: 1-2 the legs, 3 the waist, 4-5 the shaft, 6-7 the saucer,
+// 8 the glass, 9 the roof, 10 the deck, 11 the spire, 12 the beacon.
+void _spaceNeedle(VoxelWorld w, int ox, int oy, int stage) {
+  // Cells of the saucer: within [r] of the middle.
+  void disc(int z, double r, BlockMaterial m, {double hole = 0}) {
+    for (var x = 0; x < 12; x++) {
+      for (var y = 0; y < 12; y++) {
+        final d = math.sqrt(math.pow(x - 5.5, 2) + math.pow(y - 5.5, 2));
+        if (d <= r && d >= hole) w.set(ox + x, oy + y, z, m);
+      }
+    }
+  }
+
+  if (stage >= 1) {
+    for (final (x, y) in [(3, 3), (3, 7), (7, 3), (7, 7)]) {
+      w.fill(ox + x, oy + y, 1, ox + x + 1, oy + y + 1, 3, Blocks.marble);
+    }
+  }
+  if (stage >= 2) {
+    w.fill(ox + 4, oy + 4, 4, ox + 7, oy + 7, 5, Blocks.marble);
+  }
+  if (stage >= 3) {
+    w.fill(ox + 5, oy + 5, 6, ox + 6, oy + 6, 8, Blocks.marble);
+  }
+  if (stage >= 4) {
+    w.fill(ox + 5, oy + 5, 9, ox + 6, oy + 6, 12, Blocks.marble);
+  }
+  if (stage >= 5) {
+    w.fill(ox + 5, oy + 5, 13, ox + 6, oy + 6, 15, Blocks.marble);
+  }
+  if (stage >= 6) disc(16, 3.2, Blocks.marble);
+  if (stage >= 7) disc(17, 4.6, Blocks.marble);
+  if (stage >= 8) disc(18, 4.6, Blocks.glass, hole: 2.2);
+  if (stage >= 9) disc(19, 4.6, Blocks.plank);
+  if (stage >= 10) disc(20, 2.4, Blocks.glass);
+  if (stage >= 11) {
+    w
+      ..fill(ox + 5, oy + 5, 21, ox + 6, oy + 6, 21, Blocks.marble)
+      ..fill(ox + 5, oy + 5, 22, ox + 5, oy + 5, 25, Blocks.marble);
+  }
+  if (stage >= 12) {
+    w.fill(ox + 5, oy + 5, 26, ox + 5, oy + 5, 26, Blocks.wool);
   }
 }

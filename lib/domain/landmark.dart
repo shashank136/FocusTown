@@ -50,12 +50,20 @@ enum Landmark {
     unlockLevel: TownLevel.city,
   ),
 
-  /// Machu Picchu: 12 stages of 20 minutes each, from Village.
-  machuPicchu(
-    title: 'Machu Picchu',
+  /// The Easter Island Moai: 12 stages of 20 minutes each, from Village.
+  easterIsland(
+    title: 'Easter Island Moai',
     stages: 12,
     minutesPerStage: 20,
     unlockLevel: TownLevel.village,
+  ),
+
+  /// The Space Needle: 12 stages of 30 minutes each, from Town.
+  spaceNeedle(
+    title: 'Space Needle',
+    stages: 12,
+    minutesPerStage: 30,
+    unlockLevel: TownLevel.town,
   ),
 
   /// Chichén Itzá: 12 stages of 25 minutes each, from Town.

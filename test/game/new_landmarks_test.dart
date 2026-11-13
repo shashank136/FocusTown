@@ -20,7 +20,8 @@ BlockMaterial? _at(VoxelWorld w, int x, int y, int z) =>
 void main() {
   test('their lengths and levels', () {
     for (final (l, minutes, level) in [
-      (Landmark.machuPicchu, 20, TownLevel.village),
+      (Landmark.easterIsland, 20, TownLevel.village),
+      (Landmark.spaceNeedle, 30, TownLevel.town),
       (Landmark.chichenItza, 25, TownLevel.town),
       (Landmark.petra, 30, TownLevel.town),
       (Landmark.christRedeemer, 40, TownLevel.city),
@@ -31,15 +32,6 @@ void main() {
     }
     expect(Landmark.chichenItza.title, 'Chichén Itzá');
     expect(Landmark.christRedeemer.title, 'Christ the Redeemer');
-  });
-
-  test('Machu Picchu: grass terraces, a stone peak, huts, a flag', () {
-    expect(_at(_build(Landmark.machuPicchu, 1), 10, 10, 1), Blocks.grass);
-    expect(_at(_build(Landmark.machuPicchu, 4), 2, 2, 4), Blocks.grass);
-    expect(_at(_build(Landmark.machuPicchu, 6), 1, 1, 8), Blocks.stone);
-    expect(_at(_build(Landmark.machuPicchu, 7), 1, 1, 10), Blocks.stone);
-    expect(_at(_build(Landmark.machuPicchu, 8), 9, 9, 3), Blocks.plank);
-    expect(_at(_build(Landmark.machuPicchu, 12), 1, 1, 12), Blocks.wool);
   });
 
   test('Chichén Itzá: stepped tiers with stairs, a temple with a door', () {
@@ -63,14 +55,46 @@ void main() {
     expect(_at(_build(Landmark.petra, 8), 5, 4, 5), Blocks.travertine);
   });
 
-  test('Christ the Redeemer: a pedestal, a body, arms, then the head', () {
-    expect(_at(_build(Landmark.christRedeemer, 5), 4, 4, 5), Blocks.marble);
-    expect(_at(_build(Landmark.christRedeemer, 8), 5, 5, 15), Blocks.marble);
-    expect(_at(_build(Landmark.christRedeemer, 8), 2, 5, 14), isNull);
-    expect(_at(_build(Landmark.christRedeemer, 9), 2, 5, 14), Blocks.marble);
-    expect(_at(_build(Landmark.christRedeemer, 9), 9, 5, 14), isNull);
-    expect(_at(_build(Landmark.christRedeemer, 10), 9, 5, 14), Blocks.marble);
-    expect(_at(_build(Landmark.christRedeemer, 10), 5, 5, 17), isNull);
-    expect(_at(_build(Landmark.christRedeemer, 11), 5, 5, 17), Blocks.marble);
+  test(
+    'Christ the Redeemer: a flared robe, shoulders, arms, then the head',
+    () {
+      final robe = _build(Landmark.christRedeemer, 7);
+      expect(
+        _at(robe, 4, 4, 10),
+        Blocks.marble,
+      ); // the robe is wide at the feet
+      expect(_at(robe, 4, 4, 11), isNull); // and narrow above
+      expect(_at(_build(Landmark.christRedeemer, 8), 4, 5, 16), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 8), 2, 5, 16), isNull);
+      expect(_at(_build(Landmark.christRedeemer, 9), 2, 5, 16), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 9), 0, 5, 14), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 9), 9, 5, 16), isNull);
+      expect(_at(_build(Landmark.christRedeemer, 10), 9, 5, 16), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 10), 5, 5, 19), isNull);
+      expect(_at(_build(Landmark.christRedeemer, 11), 5, 5, 19), Blocks.marble);
+    },
+  );
+
+  test('Easter Island: a long head with a nose, deep eyes and a topknot', () {
+    expect(_at(_build(Landmark.easterIsland, 6), 4, 4, 14), Blocks.stone);
+    expect(_at(_build(Landmark.easterIsland, 6), 5, 7, 9), isNull);
+    expect(_at(_build(Landmark.easterIsland, 7), 5, 7, 9), Blocks.stone);
+    expect(_at(_build(Landmark.easterIsland, 8), 4, 7, 12), Blocks.stone);
+    expect(_at(_build(Landmark.easterIsland, 9), 4, 7, 11), Blocks.char);
+    expect(_at(_build(Landmark.easterIsland, 10), 5, 7, 7), Blocks.cobble);
+    expect(_at(_build(Landmark.easterIsland, 11), 5, 5, 15), Blocks.roof);
+    expect(_at(_build(Landmark.easterIsland, 12), 2, 6, 6), Blocks.stone);
+  });
+
+  test('Space Needle: legs, a waist, a shaft, a round saucer, a spire', () {
+    expect(_at(_build(Landmark.spaceNeedle, 1), 3, 3, 3), Blocks.marble);
+    expect(_at(_build(Landmark.spaceNeedle, 2), 4, 4, 5), Blocks.marble);
+    expect(_at(_build(Landmark.spaceNeedle, 3), 5, 5, 8), Blocks.marble);
+    expect(_at(_build(Landmark.spaceNeedle, 5), 5, 5, 15), Blocks.marble);
+    expect(_at(_build(Landmark.spaceNeedle, 7), 5, 5, 17), Blocks.marble);
+    expect(_at(_build(Landmark.spaceNeedle, 7), 0, 0, 17), isNull); // round
+    expect(_at(_build(Landmark.spaceNeedle, 8), 2, 5, 18), Blocks.glass);
+    expect(_at(_build(Landmark.spaceNeedle, 9), 2, 5, 19), Blocks.plank);
+    expect(_at(_build(Landmark.spaceNeedle, 12), 5, 5, 26), Blocks.wool);
   });
 }
