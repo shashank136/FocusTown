@@ -90,6 +90,10 @@ TownState _town({int xp = 300, List<TownBuilding> extra = const []}) =>
       buildings: [...TownState.initial().buildings, ...extra],
     );
 
+// The card of the landmark titled [title].
+Finder _card(String title) =>
+    find.ancestor(of: find.text(title), matching: find.byType(Card));
+
 void main() {
   testWidgets('a locked landmark says when it unlocks and has no button', (
     tester,
@@ -99,17 +103,22 @@ void main() {
     expect(find.text('About 4 hours over many sessions'), findsOneWidget);
     expect(
       find.text('Unlocks at Village (300 minutes of focus)'),
-      findsOneWidget,
+      findsNWidgets(2), // the Great Pyramid unlocks there too
     );
-    expect(find.widgetWithText(FilledButton, 'Start'), findsNothing);
+    expect(find.byType(FilledButton), findsNothing);
   });
 
   testWidgets('an unlocked landmark can be started with a chosen length', (
     tester,
   ) async {
     final c = await _open(tester, _town());
-    expect(find.text('Not started'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'Start'));
+    expect(find.text('Not started'), findsNWidgets(2));
+    await tester.tap(
+      find.descendant(
+        of: _card('Eiffel Tower'),
+        matching: find.widgetWithText(FilledButton, 'Start'),
+      ),
+    );
     await _settle(tester);
     await tester.tap(find.text('45 min'));
     await tester.pump();
@@ -117,6 +126,7 @@ void main() {
     await _settle(tester);
     final s = c.read(focusControllerProvider).requireValue.active!;
     expect(s.isLandmark, isTrue);
+    expect(s.landmark, Landmark.eiffel);
     expect(s.plannedMinutes, 45);
     // Back on the island, not on the screen.
     await _settle(tester);
@@ -131,10 +141,23 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Continue'), findsOneWidget);
   });
 
+  testWidgets('one landmark at a time: the others wait for it', (tester) async {
+    await _open(tester, _town(extra: [_eiffel(85, BuildingStatus.building)]));
+    expect(find.text('Finish the Eiffel Tower first.'), findsOneWidget);
+    // Only the landmark in progress has a button.
+    expect(find.byType(FilledButton), findsOneWidget);
+  });
+
   testWidgets('a finished landmark says it is built', (tester) async {
     await _open(tester, _town(extra: [_eiffel(240, BuildingStatus.complete)]));
     expect(find.text('Built'), findsOneWidget);
-    expect(find.byType(FilledButton), findsNothing);
+    expect(
+      find.descendant(
+        of: _card('Eiffel Tower'),
+        matching: find.byType(FilledButton),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('with no free block it says so', (tester) async {
@@ -156,7 +179,7 @@ void main() {
       find.text(
         'No free 2 x 2 block of plots. Extend your land or clear a plot.',
       ),
-      findsOneWidget,
+      findsNWidgets(2),
     );
     expect(find.byType(FilledButton), findsNothing);
   });

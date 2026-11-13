@@ -13,6 +13,9 @@ enum LandmarkState {
   /// Not unlocked yet: the town is below its level.
   locked,
 
+  /// Unlocked, but another landmark is being built: one at a time.
+  busy,
+
   /// Unlocked, but there is no free 2 x 2 block to start it on.
   noRoom,
 
@@ -246,8 +249,8 @@ class TownRules {
     return null;
   }
 
-  /// Where [landmark] stands for this town: not unlocked, unlocked but with no
-  /// free 2 x 2 block, ready to start, in progress, or built.
+  /// Where [landmark] stands for this town: not unlocked, waiting for another
+  /// landmark, with no free 2 x 2 block, ready to start, in progress, or built.
   static LandmarkState landmarkState(TownState town, Landmark landmark) {
     if (landmarkProject(town, landmark) != null) {
       return LandmarkState.inProgress;
@@ -256,6 +259,10 @@ class TownRules {
       return LandmarkState.built;
     }
     if (town.xp < landmark.unlockLevel.minXp) return LandmarkState.locked;
+    final other = town.buildings.any(
+      (b) => b.landmark != null && b.status == BuildingStatus.building,
+    );
+    if (other) return LandmarkState.busy;
     return nextFreePlot(town, BuildingTier.castle) == null
         ? LandmarkState.noRoom
         : LandmarkState.ready;

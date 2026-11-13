@@ -453,3 +453,17 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - The Start focus sheet stays about time only (duration, looks, choose plot, extend land). Landmarks have their own Landmarks screen, opened by a button on the island (beside the recenter button, hidden while a session runs). It shows a card per landmark: a picture, its total time, and its state (locked, not started, stage N of 12, or built).
 - Starting or continuing a landmark opens a short sheet to pick the length of that session (10 to 120 minutes), then Start.
 - Each landmark has its own total time, so a smaller one can be shorter than the Eiffel Tower's 4 hours.
+
+### The landmark list (decided 2026-11-12)
+
+Each landmark is 12 stages on a 2 x 2 block. Only one is in progress at a time (the others say "Finish the X first").
+
+| Landmark | Total time | Minutes per stage | Unlocks at |
+|---|---|---|---|
+| Great Pyramid | 2 hours | 10 | Village |
+| Eiffel Tower | 4 hours | 20 | Village |
+| Lighthouse of Alexandria | 3 hours | 15 | Village |
+| Pagoda | 4 hours | 20 | Town |
+| Taj Mahal | 5 hours | 25 | Town |
+| Statue of Liberty | 6 hours | 30 | Town |
+| Colosseum | 8 hours | 40 | City |

@@ -104,6 +104,35 @@ void main() {
     });
   });
 
+  test('only one landmark is built at a time', () {
+    final busy = _town([_project(40)]);
+    expect(
+      TownRules.landmarkState(busy, Landmark.greatPyramid),
+      LandmarkState.busy,
+    );
+    expect(TownRules.canStartLandmark(busy, Landmark.greatPyramid), isFalse);
+    // Once the first is finished the next can start.
+    final done = _town([
+      const TownBuilding(
+        id: 'landmark-eiffel',
+        tier: BuildingTier.castle,
+        status: BuildingStatus.complete,
+        plotIndex: 0,
+        landmark: Landmark.eiffel,
+        progress: 240,
+      ),
+    ]);
+    expect(
+      TownRules.landmarkState(done, Landmark.greatPyramid),
+      LandmarkState.ready,
+    );
+    // A landmark that is still locked stays locked, not busy.
+    expect(
+      TownRules.landmarkState(_town([_project(40)], 0), Landmark.greatPyramid),
+      LandmarkState.locked,
+    );
+  });
+
   test('a project is at the stage its minutes have reached, at most 12', () {
     expect(_project(0).stage, 0);
     expect(_project(19).stage, 0);

@@ -1913,6 +1913,18 @@ Rules are in `docs/spec.md` ("Landmarks unlock and screen"). Built in this order
 ### T-V9.3 [ ] [device] Landmarks screen on the iPhone
 - Commit: `T-V9.3: record landmarks screen device check`
 
+## Phase V10: more landmarks (decided 2026-11-12)
+
+One landmark at a time, each with its tests first (stage by stage layout, inside 12 x 12, its own look), then commit and push. The list and times are in `docs/spec.md` ("The landmark list").
+
+- [x] Great Pyramid (also: only one landmark in progress at a time)
+- [ ] Lighthouse of Alexandria
+- [ ] Pagoda
+- [ ] Taj Mahal
+- [ ] Statue of Liberty
+- [ ] Colosseum
+- [ ] A way to see and test the landmarks on the map without waiting for the level or the time
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.

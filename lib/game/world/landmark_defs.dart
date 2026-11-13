@@ -7,6 +7,8 @@ import 'package:focus_town/game/world/voxel_world.dart';
 /// plots, one tile in from the edge (the outer tile is the road).
 void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
   switch (landmark) {
+    case Landmark.greatPyramid:
+      _greatPyramid(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -44,4 +46,37 @@ void _eiffel(VoxelWorld w, int ox, int oy, int stage) {
       ..set(ox + 5, oy + 5, 23, Blocks.wool);
   }
   if (stage >= 12) w.fill(ox + 5, oy + 5, 24, ox + 5, oy + 5, 26, Blocks.log);
+}
+
+// The Great Pyramid: a stepped pyramid, one level per stage (11 levels, each
+// step two levels high and two tiles narrower), then a gold cap and two
+// pillars at the entrance on the last stage.
+void _greatPyramid(VoxelWorld w, int ox, int oy, int stage) {
+  for (var z = 1; z <= 11 && z <= stage; z++) {
+    final inset = (z - 1) ~/ 2;
+    final size = 12 - 2 * inset;
+    w.fill(
+      ox + inset,
+      oy + inset,
+      z,
+      ox + inset + size - 1,
+      oy + inset + size - 1,
+      z,
+      Blocks.plank,
+    );
+  }
+  // The entrance, 2 wide and 2 deep, is open from the start.
+  for (final x in [5, 6]) {
+    for (final y in [10, 11]) {
+      w
+        ..remove(ox + x, oy + y, 1)
+        ..remove(ox + x, oy + y, 2);
+    }
+  }
+  if (stage >= 12) {
+    w
+      ..fill(ox + 5, oy + 5, 12, ox + 6, oy + 6, 12, Blocks.wool)
+      ..fill(ox + 3, oy + 11, 3, ox + 3, oy + 11, 4, Blocks.stone)
+      ..fill(ox + 8, oy + 11, 3, ox + 8, oy + 11, 4, Blocks.stone);
+  }
 }

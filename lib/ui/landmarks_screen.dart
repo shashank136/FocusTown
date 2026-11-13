@@ -59,6 +59,7 @@ class _Card extends ConsumerWidget {
         'Unlocks at ${_capital(level.name)} (${level.minXp} minutes of focus)',
         null,
       ),
+      LandmarkState.busy => ('Finish the ${_inProgress(town)} first.', null),
       LandmarkState.noRoom => (
         'No free 2 x 2 block of plots. Extend your land or clear a plot.',
         null,
@@ -141,6 +142,14 @@ class _Card extends ConsumerWidget {
     }
   }
 }
+
+// The title of the landmark being built, for the ones that wait for it.
+String _inProgress(TownState town) => town.buildings
+    .firstWhere(
+      (b) => b.landmark != null && b.status == BuildingStatus.building,
+    )
+    .landmark!
+    .title;
 
 String _capital(String s) => '${s[0].toUpperCase()}${s.substring(1)}';
 
