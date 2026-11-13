@@ -225,6 +225,19 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(town: town));
   }
 
+  /// Sets the town's focus minutes (XP) to [minutes]. A testing aid, reached
+  /// from the debug screen, to reach a town level without waiting; not while a
+  /// session is running.
+  Future<void> setFocusMinutes(int minutes) async {
+    final current = await future;
+    if (current.active != null) {
+      throw StateError('A session is running');
+    }
+    final town = current.town.copyWith(xp: minutes);
+    await ref.read(townRepositoryProvider).saveTown(town);
+    state = AsyncData(current.copyWith(town: town));
+  }
+
   /// Starts a land session that claims [parcel] when it completes. Nothing is
   /// at risk: if it fails, nothing changes.
   Future<void> startLand(Parcel parcel) => _once(() async {

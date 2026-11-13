@@ -133,4 +133,33 @@ void main() {
     final town = c.read(focusControllerProvider).requireValue.town;
     expect(town.buildings.where((b) => b.landmark != null), isEmpty);
   });
+
+  testWidgets('the debug screen can set the focus minutes', (tester) async {
+    await _db
+        .into(_db.towns)
+        .insert(
+          townToRow(TownState.initial().copyWith(xp: 84))
+              .copyWith(id: const Value(1), createdAt: const Value(0)),
+        );
+    await _db.batch(
+      (b) => b.insertAll(
+        _db.buildings,
+        buildingsToRows(TownState.initial(), now: _clock.nowWall()),
+      ),
+    );
+    final c = _container();
+    await c.read(focusControllerProvider.future);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: DebugScreen()),
+      ),
+    );
+    await tester.pump();
+    final finder = find.text('Town 1500');
+    await tester.scrollUntilVisible(finder, 200);
+    await tester.tap(finder);
+    await tester.pump();
+    expect(c.read(focusControllerProvider).requireValue.town.xp, 1500);
+  });
 }

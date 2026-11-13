@@ -59,6 +59,17 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     }
   }
 
+  Future<void> _setFocusMinutes(int minutes) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(focusControllerProvider.notifier).setFocusMinutes(minutes);
+      // The controller refuses with a StateError while a session runs.
+      // ignore: avoid_catching_errors
+    } on StateError catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+
   Future<void> _requestPermission() async {
     await ref.read(notifierProvider).requestPermission();
     await _refreshPermission();
@@ -113,6 +124,25 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
               value: ref.watch(landmarkShowcaseProvider),
               onChanged: (_) =>
                   ref.read(landmarkShowcaseProvider.notifier).toggle(),
+            ),
+            Text(
+              'Focus minutes: '
+              '${ref.watch(focusControllerProvider).value?.town.xp ?? 0}',
+            ),
+            Wrap(
+              spacing: 8,
+              children: [
+                for (final (name, minutes) in [
+                  ('Camp', 0),
+                  ('Village', 300),
+                  ('Town', 1500),
+                  ('City', 6000),
+                ])
+                  OutlinedButton(
+                    onPressed: () => unawaited(_setFocusMinutes(minutes)),
+                    child: Text('$name $minutes'),
+                  ),
+              ],
             ),
             OutlinedButton(
               onPressed: () => unawaited(_resetLandmark()),

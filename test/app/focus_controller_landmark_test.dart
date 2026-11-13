@@ -206,4 +206,20 @@ void main() {
     final (_, n) = await ready(xp: 299);
     await expectLater(n.startLandmark(Landmark.eiffel, 30), throwsStateError);
   });
+
+  test('the debug tool sets the focus minutes and saves them', () async {
+    final (c, n) = await ready(xp: 84);
+    await n.setFocusMinutes(1500);
+    expect(_state(c).town.xp, 1500);
+    final saved = await _db.select(_db.towns).getSingle();
+    expect(saved.xp, 1500);
+    await n.setFocusMinutes(0);
+    expect(_state(c).town.xp, 0);
+  });
+
+  test('the focus minutes cannot be set while a session is running', () async {
+    final (_, n) = await ready();
+    await n.startLandmark(Landmark.eiffel, 30);
+    await expectLater(n.setFocusMinutes(1500), throwsStateError);
+  });
 }
