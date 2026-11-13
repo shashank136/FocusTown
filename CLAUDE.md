@@ -17,7 +17,7 @@ Focus Town is a mobile app where a block-style isometric town is built by small 
 
 ## Repo status
 
-The Flutter project exists and is built task by task. Phases A to C are done: the pure domain rules, the drift database and `TownRepository`, the `FocusController`, lifecycle events (Flutter fallback plus an iOS Swift bridge) and away-warning notifications (iOS only; the Android tasks are deferred). Phase D has reached its first visible milestone: the app launches into the isometric block town (`HomeScreen`, a Flame `TownGame`, `lib/game/`), and the debug screen stays reachable by a bug button at the top-left (debug builds). The camera works (drag, pinch, wheel, double-tap, glide to the build site, recenter button). Workers and the build animations are still to come. The Handoff notes at the top of `docs/tasks.md` name the current task; check them and `git log` rather than relying on this paragraph for progress.
+The Flutter project is built task by task from `docs/tasks.md`. Phases A to E and the forgiveness/return phase V2 (ruin repair, weekly emergency pause) are done and have passed on a physical iPhone; workers and live construction are in `lib/game`. Android work is deferred. The Handoff notes at the top of `docs/tasks.md` name the current task (TestFlight, then App Store submission); check them and `git log` rather than relying on this paragraph for progress.
 
 ## Commands
 
@@ -28,6 +28,8 @@ Valid once the project exists (T-01.1):
 - `flutter analyze`
 - `flutter test` (all), `flutter test test/domain/some_test.dart` (one file), `flutter test --plain-name "case name"` (one case)
 - `flutter test integration_test` (needs a device or simulator)
+- `make check` runs `flutter analyze` and `flutter test`. CI (`.github/workflows/check.yml`) runs `flutter test --exclude-tags golden`, because goldens are generated on macOS; run them locally and regenerate with `flutter test --update-goldens` (then look at the PNGs).
+- After changing a drift table: bump `currentSchemaVersion` in `lib/data/database.dart`, run `dart run drift_dev schema dump lib/data/database.dart drift_schemas/` and `dart run drift_dev schema generate drift_schemas/ test/generated_migrations/`, then extend `test/data/migration_test.dart`. Keep every `drift_schema_vN.json`.
 - `flutter run` (device or simulator)
 
 ## Running the app on the iOS simulator
@@ -47,6 +49,15 @@ Driving the UI from the shell (XcodeBuildMCP 2.7.0, registered as the MCP server
 - Each action uses up the snapshot, so run `snapshot-ui` before every `touch`.
 - The slider has no element ref, so it cannot be driven this way.
 - `xcrun simctl io <id> screenshot <file>` saves a screenshot.
+
+## Architecture (big picture)
+
+- Data flow: platform lifecycle events -> `LifecycleRouter` (`lib/platform`, serialises events and decides lock vs background) -> `FocusController` (`lib/app`, Riverpod notifier holding `FocusState`) -> pure `SessionEngine`/`TownRules` in `lib/domain` -> `TownRepository` (`lib/data`, drift) persists. `lib/app/providers.dart` is the single wiring point (clock, database, repository, controller, lifecycle source, notifier); tests override these providers.
+- Lifecycle sources: `NativeLifecycleSource` talks to the Swift bridge (`ios/Runner/FocusLifecyclePlugin.swift`), `ResilientLifecycleSource` falls back to `FallbackLifecycleSource` (Flutter `AppLifecycleState`). On iPhone the lock event arrives just before the background event, so the router treats a background right after a lock as part of the lock.
+- Rendering: `lib/game` is a Flame `TownGame` that paints a `VoxelWorld` built by `town_world_builder.dart` from the domain `Town`; `lib/game/render` are custom painters with a static-layer cache, `frame_limiter.dart` caps fps, and `render_guard.dart` stops drawing when the app is backgrounded or covered. The game reads domain state; it never writes it.
+- `lib/ui/home_screen.dart` is the entry screen; `debug_screen.dart` (bug button, debug builds) exposes the controller, event log and fake-time tools.
+- Time: `lib/domain/clock.dart` provides wall clock plus monotonic uptime (`native_uptime_clock.dart` on device); `lib/domain/testing` and `lib/platform/testing` hold the fakes.
+- `docs/device_tests.md` records results of the manual iPhone checks that the `[device]` tasks require.
 
 ## Workflow rules
 
