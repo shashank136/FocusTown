@@ -68,6 +68,17 @@ void main() {
     }
   });
 
+  test('there is nothing green in a garden: no leaves, no grass', () {
+    for (var v = 0; v < kGardenLooks; v++) {
+      final w = VoxelWorld();
+      buildGarden(w, 10, 10, v);
+      for (final b in w.blocks) {
+        expect(b.material, isNot(Blocks.leaves), reason: 'garden $v');
+        expect(b.material, isNot(Blocks.grass), reason: 'garden $v');
+      }
+    }
+  });
+
   test('a garden parcel is drawn as a garden, not as forest', () {
     const garden = Parcel(-1, 3, garden: true);
     const forest = Parcel(-1, 3);
