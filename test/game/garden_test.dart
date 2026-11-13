@@ -106,6 +106,67 @@ void main() {
     }
   });
 
+  test('the trees in and around a garden are cherry blossom, not green', () {
+    const cell = Parcel(5, 5, garden: true);
+    final w = buildTownWorld(_town(const [cell]));
+    final ox = parcelOrigin(5);
+    final oy = parcelOrigin(5);
+    var cherry = 0;
+    // A tree top hides what lies up to three tiles behind it, so the trees in
+    // the garden and the 3 tiles in front of it (towards the viewer) blossom.
+    for (final b in w.blocks) {
+      if (b.x >= ox && b.x < ox + 10 && b.y >= oy && b.y < oy + 10) {
+        expect(
+          b.material,
+          isNot(Blocks.leaves),
+          reason: '${b.x},${b.y},${b.z}',
+        );
+        if (cherryBlossoms.contains(b.material)) cherry++;
+      }
+    }
+    expect(cherry, greaterThan(0));
+    // The forest elsewhere stays green.
+    expect(w.blocks.where((b) => b.material == Blocks.leaves), isNotEmpty);
+  });
+
+  test('the garden trees themselves are cherry trees', () {
+    for (final v in [0, 2]) {
+      final w = VoxelWorld();
+      buildGarden(w, 10, 10, v);
+      final tops = w.blocks.where((b) => b.z >= 3).toList();
+      expect(tops, isNotEmpty);
+      for (final b in tops.where((b) => b.material != Blocks.wool)) {
+        expect(cherryBlossoms, contains(b.material), reason: 'garden $v');
+      }
+    }
+  });
+
+  test('while a garden session runs its square is already a garden', () {
+    const cell = Parcel(5, 5, garden: true);
+    final session = Session(
+      id: 'g',
+      plannedMinutes: 15,
+      tier: BuildingTier.hut,
+      workersAssigned: 0,
+      state: SessionState.running,
+      startedAt: TimeStamp(DateTime(2026), Duration.zero),
+      land: cell,
+    );
+    final w = buildTownWorld(_town(const []), active: session);
+    final ox = parcelOrigin(5);
+    final oy = parcelOrigin(5);
+    expect(flowerColors, contains(w.get(ox + 3, oy + 3, 0)));
+    for (final b in w.blocks) {
+      if (b.z >= 3 && b.x >= ox && b.x < ox + 7 && b.y >= oy && b.y < oy + 7) {
+        expect(
+          b.material,
+          isNot(Blocks.leaves),
+          reason: '${b.x},${b.y},${b.z}',
+        );
+      }
+    }
+  });
+
   test('a land session shows its parcel as ground while it runs', () {
     final session = Session(
       id: 'l',

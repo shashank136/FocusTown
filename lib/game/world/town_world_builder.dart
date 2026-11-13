@@ -122,7 +122,18 @@ VoxelWorld buildTownWorld(
       }
     }
   }
+  // A garden being made is a garden from the start: its square is cleared of
+  // forest too.
+  final making = active?.land;
+  final gardens = [
+    ...town.parcels.where((p) => p.garden),
+    if (making != null && making.garden) making,
+  ];
   final inUse = {...TownRules.occupied(town)};
+  if (making != null && making.garden) {
+    final base = kBaseCells.indexOf((making.gx, making.gy));
+    if (base >= 0) inUse.add(base);
+  }
   if (sitePlot != null) {
     inUse.addAll(
       footprintOf(building!.tier, sitePlot.index, town.parcels) ??
@@ -135,8 +146,24 @@ VoxelWorld buildTownWorld(
     if (w.has(x, y, 0)) w.set(x, y, 0, Blocks.path);
   }
   buildScenery(w);
-  buildForest(w, cleared: inUse, parcels: town.parcels);
-  for (final p in town.parcels.where((p) => p.garden)) {
+  // A tree top hides what lies up to three tiles behind it, so the trees in a
+  // garden and the ones just in front of it (towards the viewer) are cherry
+  // trees in bloom, so they do not hide the garden with green.
+  buildForest(
+    w,
+    cleared: inUse,
+    parcels: town.parcels,
+    blossomZones: [
+      for (final p in gardens)
+        (
+          parcelOrigin(p.gx) - 1,
+          parcelOrigin(p.gy) - 1,
+          parcelOrigin(p.gx) + kPlotSize + 4,
+          parcelOrigin(p.gy) + kPlotSize + 4,
+        ),
+    ],
+  );
+  for (final p in gardens) {
     buildGarden(
       w,
       parcelOrigin(p.gx),

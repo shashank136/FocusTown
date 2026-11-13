@@ -28,8 +28,8 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
           ..set(ox + 3, oy + i, 0, Blocks.path)
           ..set(ox + i, oy + 3, 0, Blocks.path);
       }
-      _tree(w, ox + 1, oy + 1, Blocks.flowerPink);
-      _tree(w, ox + 5, oy + 5, Blocks.flowerViolet);
+      _tree(w, ox + 1, oy + 1, cherryBlossoms[0]);
+      _tree(w, ox + 5, oy + 5, cherryBlossoms[1]);
       w.fill(ox + 5, oy + 1, 1, ox + 5, oy + 2, 1, Blocks.plank);
       var i = 0;
       for (final (dx, dy) in [
@@ -72,12 +72,7 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       }
     case 2: // orchard: four fruit trees, flowers in the grass
       for (final (dx, dy) in [(1, 1), (5, 1), (1, 5), (5, 5)]) {
-        _tree(
-          w,
-          ox + dx,
-          oy + dy,
-          (dx + dy) % 4 == 2 ? Blocks.flowerPink : Blocks.flowerYellow,
-        );
+        _tree(w, ox + dx, oy + dy, cherryBlossoms[(dx + dy) % 4 == 2 ? 1 : 0]);
         w.set(ox + dx + 1, oy + dy, 3, Blocks.wool); // an apple
       }
       var i = 0;
@@ -110,7 +105,8 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
   }
 }
 
-// A small blossom tree whose canopy stays inside the 3 x 3 around its trunk.
+// A small cherry tree in bloom whose canopy stays inside the 3 x 3 around its
+// trunk.
 void _tree(VoxelWorld w, int x, int y, BlockMaterial canopy) {
   w.fill(x, y, 1, x, y, 2, Blocks.log);
   for (var dx = -1; dx <= 1; dx++) {

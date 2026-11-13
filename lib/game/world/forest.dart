@@ -14,8 +14,19 @@ void buildForest(
   VoxelWorld w, {
   required Set<int> cleared,
   List<Parcel> parcels = const [],
+  List<(int, int, int, int)> blossomZones = const [],
   int seed = 11,
 }) {
+  // Trees in and just in front of a garden blossom instead of leafing, so
+  // they do not hide it with green: [blossomZones] give the tile range
+  // (x0, y0, x1, y1) of their trunks.
+  void tree(int x, int y) {
+    final blossom = blossomZones.any(
+      (a) => x >= a.$1 && x <= a.$3 && y >= a.$2 && y <= a.$4,
+    );
+    _lowTree(w, x, y, blossom ? cherryBlossoms[(x + y) % 2] : null);
+  }
+
   final plots = [
     ...kPlots,
     for (var i = 0; i < parcels.where((p) => !p.garden).length; i++)
@@ -26,7 +37,7 @@ void buildForest(
     final fixed = _roadSideTrees(plot);
     if (fixed != null) {
       for (final (dx, dy) in fixed) {
-        _lowTree(w, plot.originX + dx, plot.originY + dy);
+        tree(plot.originX + dx, plot.originY + dy);
       }
       continue;
     }
@@ -41,19 +52,21 @@ void buildForest(
       (5, 5),
     ]..shuffle(random);
     for (final (dx, dy) in corners.take(3 + random.nextInt(2))) {
-      _lowTree(w, plot.originX + dx, plot.originY + dy);
+      tree(plot.originX + dx, plot.originY + dy);
     }
   }
 }
 
 // A squat tree (4 blocks tall against 6): tall canopies hide the roads and
 // paths behind them in the isometric view.
-void _lowTree(VoxelWorld w, int x, int y) {
+void _lowTree(VoxelWorld w, int x, int y, [BlockMaterial? canopy]) {
   w.fill(x, y, 1, x, y, 2, Blocks.log);
   for (var dx = -1; dx <= 1; dx++) {
     for (var dy = -1; dy <= 1; dy++) {
-      w.set(x + dx, y + dy, 3, Blocks.leaves);
-      if (dx.abs() + dy.abs() < 2) w.set(x + dx, y + dy, 4, Blocks.leaves);
+      w.set(x + dx, y + dy, 3, canopy ?? Blocks.leaves);
+      if (dx.abs() + dy.abs() < 2) {
+        w.set(x + dx, y + dy, 4, canopy ?? Blocks.leaves);
+      }
     }
   }
 }
