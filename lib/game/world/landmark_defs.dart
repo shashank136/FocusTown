@@ -260,8 +260,9 @@ void _statueOfLiberty(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 12) w.fill(ox + 7, oy + 4, 25, ox + 7, oy + 4, 26, Blocks.wool);
 }
 
-// The Colosseum, round and ruined on the front side: a ring of three tiers of arches, each closed by a
-// solid band, an attic with windows, seating terraces inside that step up
+// The Colosseum, round and ruined on the front side: a ring of three tiers of
+// arches, each closed by a solid band, an attic with windows, seating
+// terraces inside that step up
 // toward the wall, a sand arena with a podium and banners on top. The arches
 // are every other of 20 slices; the gate on the front is open from the start.
 // Stages: 1 floor, 2-7 the tiers (arches, then band), 8 attic, 9-10 seating,
