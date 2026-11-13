@@ -268,6 +268,31 @@ class TownRules {
         : LandmarkState.ready;
   }
 
+  /// A look-only copy of [town] for the debug screen: the island cleared and
+  /// every landmark standing finished, each on its own 2 x 2 block (the
+  /// stored town is never changed).
+  static TownState landmarkShowcase(TownState town) {
+    var show = town.copyWith(buildings: const []);
+    for (final l in Landmark.values) {
+      final anchor = nextFreePlot(show, BuildingTier.castle);
+      if (anchor == null) break;
+      show = show.copyWith(
+        buildings: [
+          ...show.buildings,
+          TownBuilding(
+            id: 'showcase-${l.name}',
+            tier: BuildingTier.castle,
+            status: BuildingStatus.complete,
+            plotIndex: anchor,
+            landmark: l,
+            progress: l.totalMinutes,
+          ),
+        ],
+      );
+    }
+    return show;
+  }
+
   /// Whether the user may work on [landmark]: it is in progress, or it is
   /// unlocked, not built and a free 2 x 2 block is there to start it on.
   static bool canStartLandmark(TownState town, Landmark landmark) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/domain/elapsed.dart';
@@ -101,6 +102,17 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
               value: ref.watch(shortSessionsProvider),
               onChanged: (_) =>
                   ref.read(shortSessionsProvider.notifier).toggle(),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Show every landmark on the map'),
+              subtitle: const Text(
+                'Clears the island on screen and shows all landmarks '
+                'finished. Nothing is saved.',
+              ),
+              value: ref.watch(landmarkShowcaseProvider),
+              onChanged: (_) =>
+                  ref.read(landmarkShowcaseProvider.notifier).toggle(),
             ),
             OutlinedButton(
               onPressed: () => unawaited(_resetLandmark()),

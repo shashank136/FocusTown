@@ -4,12 +4,14 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/tip.dart';
@@ -143,6 +145,18 @@ void main() {
   testWidgets('the initial stored town reaches the game', (tester) async {
     await _pump(tester);
     expect(_game.towns, isNotEmpty);
+    expect(_game.towns.last, TownState.initial());
+  });
+
+  testWidgets('the landmark showcase puts every landmark on the map', (
+    tester,
+  ) async {
+    final c = await _pump(tester);
+    c.read(landmarkShowcaseProvider.notifier).toggle();
+    await tester.pump();
+    expect(_game.towns.last.buildings.map((b) => b.landmark), Landmark.values);
+    c.read(landmarkShowcaseProvider.notifier).toggle();
+    await tester.pump();
     expect(_game.towns.last, TownState.initial());
   });
 

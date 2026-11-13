@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/tips.dart';
@@ -88,6 +89,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       }
       _syncPlacement();
     }, fireImmediately: true);
+    // Debug: show every landmark finished (a copy; nothing is saved).
+    ref.listenManual(landmarkShowcaseProvider, (prev, next) {
+      final town = ref.read(focusControllerProvider).value?.town;
+      if (town == null) return;
+      _game.setTown(next ? TownRules.landmarkShowcase(town) : town);
+      if (next) _game.showIsland();
+    });
     ref.listenManual(placementProvider, (prev, next) {
       _syncPlacement();
       // Choosing land: step back to see the coast.

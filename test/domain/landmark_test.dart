@@ -258,4 +258,28 @@ void main() {
       expect(nothing.buildings.single.progress, 0);
     });
   });
+
+  group('landmarkShowcase', () {
+    test('shows every landmark finished, on separate blocks', () {
+      const hut = TownBuilding(
+        id: 'h',
+        tier: BuildingTier.hut,
+        status: BuildingStatus.complete,
+        plotIndex: 0,
+      );
+      final town = TownState.initial().copyWith(buildings: [hut]);
+      final show = TownRules.landmarkShowcase(town);
+      final marks = show.buildings.where((b) => b.landmark != null).toList();
+      expect(marks.map((b) => b.landmark), Landmark.values);
+      expect(marks.every((b) => b.status == BuildingStatus.complete), isTrue);
+      expect(marks.every((b) => b.stage == Landmark.values[0].stages), isTrue);
+      final plots = {
+        for (final b in marks)
+          ...footprintOf(b.tier, b.plotIndex, town.parcels)!,
+      };
+      expect(plots.length, 4 * marks.length);
+      // The real town is untouched.
+      expect(town.buildings, [hut]);
+    });
+  });
 }
