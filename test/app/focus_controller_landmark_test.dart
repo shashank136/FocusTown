@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +7,7 @@ import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/database.dart';
+import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
@@ -45,7 +47,23 @@ void main() {
     addTearDown(_db.close);
   });
 
-  Future<(ProviderContainer, FocusController)> ready() async {
+  // A town at Village level, so landmarks are unlocked.
+  Future<(ProviderContainer, FocusController)> ready({int xp = 300}) async {
+    final seed = TownState.initial().copyWith(xp: xp);
+    await _db.transaction(() async {
+      await _db
+          .into(_db.towns)
+          .insert(
+            townToRow(seed)
+                .copyWith(id: const Value(1), createdAt: const Value(0)),
+          );
+      await _db.batch(
+        (b) => b.insertAll(
+          _db.buildings,
+          buildingsToRows(seed, now: _clock.nowWall()),
+        ),
+      );
+    });
     final c = _container();
     await c.read(focusControllerProvider.future);
     return (c, c.read(focusControllerProvider.notifier));
@@ -87,7 +105,7 @@ void main() {
     expect(r.landmarkStage, 2);
     expect(r.landmarkFinished, isFalse);
     expect(r.xpGained, 45);
-    expect(_state(c).town.xp, 45);
+    expect(_state(c).town.xp, 345);
   });
 
   test('the next session continues the same project', () async {
@@ -182,5 +200,10 @@ void main() {
     final (_, n) = await ready();
     await n.startLandmark(Landmark.eiffel, 30);
     await expectLater(n.resetLandmark(Landmark.eiffel), throwsStateError);
+  });
+
+  test('a landmark that is not unlocked cannot be started', () async {
+    final (_, n) = await ready(xp: 299);
+    await expectLater(n.startLandmark(Landmark.eiffel, 30), throwsStateError);
   });
 }

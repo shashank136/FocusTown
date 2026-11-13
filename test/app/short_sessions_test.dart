@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,10 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/database.dart';
+import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
+import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/platform/testing/fake_live_status_sink.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/debug_screen.dart';
@@ -98,6 +101,18 @@ void main() {
   });
 
   testWidgets('the debug screen can reset the Eiffel Tower', (tester) async {
+    await _db
+        .into(_db.towns)
+        .insert(
+          townToRow(TownState.initial().copyWith(xp: 300))
+              .copyWith(id: const Value(1), createdAt: const Value(0)),
+        );
+    await _db.batch(
+      (b) => b.insertAll(
+        _db.buildings,
+        buildingsToRows(TownState.initial(), now: _clock.nowWall()),
+      ),
+    );
     final c = _container();
     await c.read(focusControllerProvider.future);
     final n = c.read(focusControllerProvider.notifier);

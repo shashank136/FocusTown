@@ -6,6 +6,7 @@ import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_level.dart';
 import 'package:focus_town/domain/town_rules.dart';
 
 TimeStamp _at(int s) => TimeStamp(
@@ -24,13 +25,15 @@ TownBuilding _project(int progress, {int plot = 0}) => TownBuilding(
   progress: progress,
 );
 
-TownState _town([List<TownBuilding> buildings = const []]) => TownState(
-  workers: 3,
-  plotsUnlocked: 6,
-  buildings: buildings,
-  queue: const [],
-  inRecoveryMode: false,
-);
+TownState _town([List<TownBuilding> buildings = const [], int xp = 300]) =>
+    TownState(
+      workers: 3,
+      plotsUnlocked: 6,
+      buildings: buildings,
+      queue: const [],
+      inRecoveryMode: false,
+      xp: xp,
+    );
 
 Session _session(int minutes, {SessionState? state}) {
   final s = SessionEngine.startLandmark(
@@ -48,6 +51,57 @@ void main() {
     expect(Landmark.eiffel.minutesPerStage, 20);
     expect(Landmark.eiffel.totalMinutes, 240);
     expect(Landmark.eiffel.title, 'Eiffel Tower');
+  });
+
+  test('the Eiffel Tower unlocks at Village', () {
+    expect(Landmark.eiffel.unlockLevel, TownLevel.village);
+  });
+
+  group('unlocking', () {
+    test('a new landmark needs the level; a started one does not', () {
+      expect(
+        TownRules.canStartLandmark(_town(const [], 299), Landmark.eiffel),
+        isFalse,
+      );
+      expect(TownRules.canStartLandmark(_town(), Landmark.eiffel), isTrue);
+      final started = _town([_project(40)], 0);
+      expect(TownRules.canStartLandmark(started, Landmark.eiffel), isTrue);
+    });
+
+    test('the state of a landmark for the screen', () {
+      LandmarkState state(TownState t) =>
+          TownRules.landmarkState(t, Landmark.eiffel);
+      expect(state(_town(const [], 0)), LandmarkState.locked);
+      expect(state(_town()), LandmarkState.ready);
+      expect(state(_town([_project(40)])), LandmarkState.inProgress);
+      expect(
+        state(
+          _town([
+            const TownBuilding(
+              id: 'landmark-eiffel',
+              tier: BuildingTier.castle,
+              status: BuildingStatus.complete,
+              plotIndex: 0,
+              landmark: Landmark.eiffel,
+              progress: 240,
+            ),
+          ]),
+        ),
+        LandmarkState.built,
+      );
+      final crowded = _town([
+        for (var gx = 0; gx < 8; gx++)
+          for (var gy = 0; gy < 8; gy++)
+            if ((gx + gy).isEven)
+              TownBuilding(
+                id: 'h$gx$gy',
+                tier: BuildingTier.hut,
+                status: BuildingStatus.complete,
+                plotIndex: _plot(gx, gy),
+              ),
+      ]);
+      expect(state(crowded), LandmarkState.noRoom);
+    });
   });
 
   test('a project is at the stage its minutes have reached, at most 12', () {

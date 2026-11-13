@@ -8,6 +8,24 @@ import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
+/// Where a landmark stands for a town.
+enum LandmarkState {
+  /// Not unlocked yet: the town is below its level.
+  locked,
+
+  /// Unlocked, but there is no free 2 x 2 block to start it on.
+  noRoom,
+
+  /// Unlocked and can be started.
+  ready,
+
+  /// Being built over several sessions.
+  inProgress,
+
+  /// Finished.
+  built,
+}
+
 /// Pure town rules: each function reads a [TownState] and returns a result.
 class TownRules {
   new _();
@@ -228,12 +246,26 @@ class TownRules {
     return null;
   }
 
-  /// Whether the user may work on [landmark]: it is in progress, or it has
-  /// not been built and a free 2 x 2 block is there to start it on.
+  /// Where [landmark] stands for this town: not unlocked, unlocked but with no
+  /// free 2 x 2 block, ready to start, in progress, or built.
+  static LandmarkState landmarkState(TownState town, Landmark landmark) {
+    if (landmarkProject(town, landmark) != null) {
+      return LandmarkState.inProgress;
+    }
+    if (town.buildings.any((b) => b.landmark == landmark)) {
+      return LandmarkState.built;
+    }
+    if (town.xp < landmark.unlockLevel.minXp) return LandmarkState.locked;
+    return nextFreePlot(town, BuildingTier.castle) == null
+        ? LandmarkState.noRoom
+        : LandmarkState.ready;
+  }
+
+  /// Whether the user may work on [landmark]: it is in progress, or it is
+  /// unlocked, not built and a free 2 x 2 block is there to start it on.
   static bool canStartLandmark(TownState town, Landmark landmark) {
-    if (landmarkProject(town, landmark) != null) return true;
-    if (town.buildings.any((b) => b.landmark == landmark)) return false;
-    return nextFreePlot(town, BuildingTier.castle) != null;
+    final state = landmarkState(town, landmark);
+    return state == LandmarkState.inProgress || state == LandmarkState.ready;
   }
 
   /// Starts [landmark] on the block anchored at plot [anchor]. Null when that

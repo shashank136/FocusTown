@@ -259,7 +259,10 @@ void main() {
     });
 
     testWidgets('the label says what is being done, not "hut"', (tester) async {
-      final c = await _pump(tester);
+      final c = await _pump(
+        tester,
+        town: TownState.initial().copyWith(xp: 300),
+      );
       await tester.runAsync(() async {
         final n = c.read(focusControllerProvider.notifier);
         await n.abandon();

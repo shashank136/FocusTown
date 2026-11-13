@@ -1,12 +1,20 @@
+import 'package:focus_town/domain/town_level.dart';
+
 /// A big building that takes several sessions to build.
 enum Landmark {
-  /// The Eiffel Tower: 12 stages of 20 minutes each.
-  eiffel(title: 'Eiffel Tower', stages: 12, minutesPerStage: 20);
+  /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
+  eiffel(
+    title: 'Eiffel Tower',
+    stages: 12,
+    minutesPerStage: 20,
+    unlockLevel: TownLevel.village,
+  );
 
   new({
     required this.title,
     required this.stages,
     required this.minutesPerStage,
+    required this.unlockLevel,
   });
 
   /// Its name.
@@ -17,6 +25,9 @@ enum Landmark {
 
   /// Minutes of finished sessions each stage needs.
   final int minutesPerStage;
+
+  /// The town level that unlocks it.
+  final TownLevel unlockLevel;
 
   /// Minutes in all.
   int get totalMinutes => stages * minutesPerStage;

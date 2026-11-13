@@ -1902,7 +1902,7 @@ Rules are in `docs/spec.md` ("Landmarks"). The first landmark is the Eiffel Towe
 
 Rules are in `docs/spec.md` ("Landmarks unlock and screen"). Built in this order, each with its tests first:
 
-### T-V9.1 [ ] Unlock level and landmark state (pure)
+### T-V9.1 [x] Unlock level and landmark state (pure)
 - `TownLevel` in its own file, `Landmark.unlockLevel`, `TownRules.landmarkState` (locked, no room, ready, in progress, built); starting needs the level.
 - Commit: `T-V9.1: landmark unlock`
 
