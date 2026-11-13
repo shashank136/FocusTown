@@ -36,6 +36,9 @@ TownBuilding _eiffel(int progress, BuildingStatus status) => TownBuilding(
 );
 
 Future<ProviderContainer> _open(WidgetTester tester, TownState seed) async {
+  // Tall, so the lazy list builds every card (there are several landmarks).
+  await tester.binding.setSurfaceSize(const Size(400, 3000));
+  addTearDown(() => tester.binding.setSurfaceSize(null));
   _clock = FakeClock();
   _db = AppDatabase(NativeDatabase.memory());
   addTearDown(_db.close);
@@ -105,7 +108,13 @@ void main() {
   ) async {
     await _open(tester, _town(xp: 100));
     expect(find.text('Eiffel Tower'), findsOneWidget);
-    expect(find.text('About 4 hours over many sessions'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: _card('Eiffel Tower'),
+        matching: find.text('About 4 hours over many sessions'),
+      ),
+      findsOneWidget,
+    );
     expect(
       find.text('Unlocks at Village (300 minutes of focus)'),
       findsNWidgets(
