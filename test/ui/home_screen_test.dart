@@ -22,6 +22,7 @@ import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/platform/power_state.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/home_screen.dart';
+import 'package:focus_town/ui/landmarks_screen.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
 
 /// A game that remembers every town it was given.
@@ -322,6 +323,25 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     await tester.pump(const Duration(seconds: 2));
     expect(find.byKey(const ValueKey('ready-label')), findsNothing);
+  });
+
+  group('landmarks button', () {
+    testWidgets('opens the Landmarks screen when idle', (tester) async {
+      await _pump(tester);
+      await tester.tap(find.byTooltip('Landmarks'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byType(LandmarksScreen), findsOneWidget);
+    });
+
+    testWidgets('is hidden while a session runs or a plot is chosen', (
+      tester,
+    ) async {
+      final c = await _pump(tester);
+      c.read(placementProvider.notifier).begin(10);
+      await tester.pump();
+      expect(find.byTooltip('Landmarks'), findsNothing);
+    });
   });
 
   group('choose land', () {

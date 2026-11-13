@@ -133,11 +133,19 @@ Install the release build in place (`xcrun devicectl device install app ...`), t
 
 Switch on **Short test sessions** in the debug screen first (a very short landmark session counts as a whole stage).
 
-- [ ] Start focus shows "Eiffel Tower: not started" and a "Work on the Eiffel Tower" button.
-- [ ] Pressing it starts a session (no workers at risk, no pause button, label "Building the Eiffel Tower"); a free 2 x 2 block now holds the tower with a road around it.
+- [x] (Moved in Phase V9: the Start focus sheet no longer has it; use the Landmarks button on the island, bottom left.)
+- [ ] Pressing Start on the card starts a session (no workers at risk, no pause button, label "Building the Eiffel Tower"); a free 2 x 2 block now holds the tower with a road around it.
 - [ ] While it runs, the tower grows live; when it ends you see "Eiffel Tower: stage N of 12".
 - [ ] Each finished session adds a stage; the setup sheet shows the progress ("stage N of 12 (X of 240 minutes)").
 - [ ] Abandoning a landmark session says "Eiffel Tower damaged" and the tower loses one stage; no workers are lost.
 - [ ] After 12 stages: "Eiffel Tower finished!", the tower stands complete, and the button is gone.
+
+## Landmarks screen on the iPhone (T-V9.3, to do, built 2026-11-12)
+
+- [ ] A Landmarks button (columns icon) sits at the bottom left of the island and is hidden while a session runs.
+- [ ] Below Village level (300 focus minutes) the Eiffel Tower card shows "Unlocks at Village (300 minutes of focus)" and no button; at Village it says "Not started" with Start.
+- [ ] Start asks for a session length (10 to 120 minutes), then starts the session and returns to the island.
+- [ ] In progress it shows "Stage N of 12 (X of 240 minutes)" and Continue; when built it says "Built".
+- [ ] The Start focus sheet no longer shows anything about the landmark.
 
 ## Android

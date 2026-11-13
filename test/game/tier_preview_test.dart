@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/game/render/tier_preview.dart';
 
 Future<Uint8List> _rgba(WidgetTester t, ui.Image image) async {
@@ -92,6 +93,27 @@ void main() {
       () => renderTierPreview(BuildingTier.castle),
     ))!;
     expect(await _rgba(tester, castle), isNot(await _rgba(tester, hut)));
+  });
+
+  testWidgets('a landmark has a picture that fills the frame', (tester) async {
+    final image = (await tester.runAsync(
+      () => renderLandmarkPreview(Landmark.eiffel),
+    ))!;
+    expect(image.width, 96);
+    expect(image.height, 96);
+    final px = await _rgba(tester, image);
+    expect(_opaque(px), greaterThan(200));
+    // The tower is tall: it reaches well toward the top of the picture.
+    var top = 96;
+    for (var y = 0; y < 96 && top == 96; y++) {
+      for (var x = 0; x < 96; x++) {
+        if (px[(y * 96 + x) * 4 + 3] > 0) {
+          top = y;
+          break;
+        }
+      }
+    }
+    expect(top, lessThan(24));
   });
 
   testWidgets('a second look draws differently from the classic look', (

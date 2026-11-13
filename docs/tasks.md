@@ -1906,7 +1906,7 @@ Rules are in `docs/spec.md` ("Landmarks unlock and screen"). Built in this order
 - `TownLevel` in its own file, `Landmark.unlockLevel`, `TownRules.landmarkState` (locked, no room, ready, in progress, built); starting needs the level.
 - Commit: `T-V9.1: landmark unlock`
 
-### T-V9.2 [ ] Landmarks screen and session sheet
+### T-V9.2 [x] Landmarks screen and session sheet
 - The screen (cards with a picture, total time and state), the length sheet, the island button; the landmark row leaves the Start focus sheet.
 - Commit: `T-V9.2: landmarks screen`
 

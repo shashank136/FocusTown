@@ -8,7 +8,6 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/session_setup.dart';
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
-import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
@@ -157,7 +156,6 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
                 textAlign: TextAlign.center,
               ),
             ),
-          _landmarkRow(town, minutes),
           const SizedBox(height: 12),
           Wrap(
             alignment: WrapAlignment.center,
@@ -187,45 +185,6 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         ],
       ),
     );
-  }
-
-  // The landmark: its progress, and a button to work on it for [minutes].
-  Widget _landmarkRow(TownState town, int minutes) {
-    const landmark = Landmark.eiffel;
-    if (town.inRecoveryMode || !TownRules.canStartLandmark(town, landmark)) {
-      return const SizedBox.shrink();
-    }
-    final project = TownRules.landmarkProject(town, landmark);
-    final status = project == null
-        ? '${landmark.title}: not started'
-        : '${landmark.title}: stage ${project.stage} of ${landmark.stages} '
-              '(${project.progress} of ${landmark.totalMinutes} minutes)';
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Column(
-        children: [
-          Text(status, textAlign: TextAlign.center),
-          OutlinedButton(
-            onPressed: () => unawaited(_startLandmark(landmark, minutes)),
-            child: Text('Work on the ${landmark.title}'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _startLandmark(Landmark landmark, int minutes) async {
-    final messenger = ScaffoldMessenger.of(context);
-    final navigator = Navigator.of(context);
-    try {
-      await ref
-          .read(focusControllerProvider.notifier)
-          .startLandmark(landmark, minutes);
-      await ref.read(townRepositoryProvider).saveLastDuration(minutes);
-      navigator.pop();
-    } on Object catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('$e')));
-    }
   }
 
   // Why there is no room for a [tier] now, and what makes some.

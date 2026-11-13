@@ -13,6 +13,7 @@ import 'package:focus_town/domain/beta_stats.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/focus_stats.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
@@ -196,6 +197,12 @@ final tierPreviewProvider =
     FutureProvider.family<ui.Image, (BuildingTier, int)>(
       (ref, key) => renderTierPreview(key.$1, look: key.$2),
     );
+
+/// The picture of each landmark, finished, drawn once.
+// ignore: specify_nonobvious_property_types, the family type is not exported
+final landmarkPreviewProvider = FutureProvider.family<ui.Image, Landmark>(
+  (ref, landmark) => renderLandmarkPreview(landmark),
+);
 
 /// How many sessions were stored; recounted whenever the session state
 /// changes, so a new session or a result shows up at once.

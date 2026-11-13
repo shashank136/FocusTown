@@ -2,13 +2,38 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/game/render/block_painter.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
+import 'package:focus_town/game/world/landmark_defs.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
+
+/// A small picture of the finished [landmark] on a patch of grass, fitted to
+/// the [size] x [size] picture (a tall tower fills its height).
+Future<Image> renderLandmarkPreview(Landmark landmark, {int size = 96}) {
+  final world = VoxelWorld()
+    ..fill(0, 0, 0, 2 * kPlotSize - 1, 2 * kPlotSize - 1, 0, Blocks.grass);
+  buildLandmark(world, landmark, 1, 1, landmark.stages);
+  final (blocks, length, box) = _measure(world);
+  final tile = 0.8 * size / length;
+  final origin = Vec2(
+    size / 2 - (box.$1 + box.$2) / 2 * tile,
+    size / 2 - (box.$3 + box.$4) / 2 * tile,
+  );
+  final recorder = PictureRecorder();
+  paintBlocks(
+    Canvas(recorder),
+    blocks,
+    tile: tile,
+    origin: origin,
+    viewSize: Size(size.toDouble(), size.toDouble()),
+  );
+  return recorder.endRecording().toImage(size, size);
+}
 
 /// A small picture of [tier]'s finished building on a patch of grass, drawn
 /// with the town's own painter on a transparent background. The building's
@@ -56,6 +81,14 @@ Future<Image> renderTierPreview(
   final world = VoxelWorld()
     ..fill(0, 0, 0, side - 1, side - 1, 0, Blocks.grass);
   buildTier(world, tier, 0, 0, stage: maxStage(tier), look: look);
+  return _measure(world);
+}
+
+// The sorted blocks of [world], its longest side at tile size 1, and its
+// outline as (minX, maxX, minY, maxY).
+(List<VisibleBlock>, double, (double, double, double, double)) _measure(
+  VoxelWorld world,
+) {
   final blocks = world.sortedVisible();
   var minX = double.infinity;
   var maxX = -double.infinity;

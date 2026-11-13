@@ -20,6 +20,7 @@ import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 import 'package:focus_town/ui/hud.dart';
+import 'package:focus_town/ui/landmarks_screen.dart';
 import 'package:focus_town/ui/result_dialogs.dart';
 import 'package:focus_town/ui/session_panel.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
@@ -437,6 +438,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   ),
           ),
+          // The landmarks (hidden while a session runs or a plot is chosen).
+          if (active == null && placement == null)
+            SafeArea(
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: IconButton(
+                  tooltip: 'Landmarks',
+                  icon: const Icon(Icons.account_balance),
+                  color: Colors.black54,
+                  iconSize: 28,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LandmarksScreen(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           SafeArea(
             child: Align(
               alignment: Alignment.bottomRight,

@@ -248,6 +248,11 @@ void main() {
     expect(find.byType(SessionSetupSheet), findsNothing);
   });
 
+  testWidgets('the sheet is about time: no landmark in it', (tester) async {
+    await _open(tester, seed: TownState.initial().copyWith(xp: 300));
+    expect(find.textContaining('Eiffel'), findsNothing);
+  });
+
   testWidgets('Extend land… starts choosing land', (tester) async {
     final c = await _open(tester);
     await tester.tap(find.text('Extend land…'));
