@@ -1919,7 +1919,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 
 - [x] Great Pyramid (also: only one landmark in progress at a time)
 - [x] Lighthouse of Alexandria
-- [ ] Pagoda
+- [x] Pagoda
 - [ ] Taj Mahal
 - [ ] Statue of Liberty
 - [ ] Colosseum

@@ -11,6 +11,8 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _greatPyramid(w, ox, oy, stage);
     case Landmark.lighthouse:
       _lighthouse(w, ox, oy, stage);
+    case Landmark.pagoda:
+      _pagoda(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -110,5 +112,51 @@ void _lighthouse(VoxelWorld w, int ox, int oy, int stage) {
     w
       ..fill(ox + 4, oy + 4, 23, ox + 7, oy + 7, 23, Blocks.slate)
       ..fill(ox + 5, oy + 5, 24, ox + 6, oy + 6, 25, Blocks.wool);
+  }
+}
+
+// The Pagoda: five tiers narrowing as they rise, each a wooden wall (two
+// levels) under a wider red roof (one level), then a spire. A tier takes two
+// stages (walls, then roof); the door in the first tier is open from the start.
+void _pagoda(VoxelWorld w, int ox, int oy, int stage) {
+  // (wall inset, wall size, roof inset) of each tier.
+  const tiers = [(2, 8, 1), (3, 6, 2), (3, 6, 2), (4, 4, 3), (4, 4, 3)];
+  for (var t = 0; t < tiers.length; t++) {
+    final (inset, size, roofInset) = tiers[t];
+    final z = 3 * t + 1;
+    if (stage >= 2 * t + 1) {
+      for (final level in [z, z + 1]) {
+        w.ring(ox + inset, oy + inset, size, size, level, Blocks.plank);
+      }
+    }
+    if (stage >= 2 * t + 2) {
+      final side = 12 - 2 * roofInset;
+      w.fill(
+        ox + roofInset,
+        oy + roofInset,
+        z + 2,
+        ox + roofInset + side - 1,
+        oy + roofInset + side - 1,
+        z + 2,
+        Blocks.roof,
+      );
+    }
+  }
+  for (final x in [5, 6]) {
+    for (final z in [1, 2]) {
+      w.remove(ox + x, oy + 9, z);
+    }
+  }
+  // Stage 11: the spire. Stage 12: a gold finial and the upturned eaves.
+  if (stage >= 11) {
+    w
+      ..fill(ox + 5, oy + 5, 16, ox + 6, oy + 6, 16, Blocks.plank)
+      ..fill(ox + 5, oy + 5, 17, ox + 5, oy + 5, 19, Blocks.log);
+  }
+  if (stage >= 12) {
+    w.set(ox + 5, oy + 5, 20, Blocks.wool);
+    for (final (x, y) in [(1, 1), (10, 1), (1, 10), (10, 10)]) {
+      w.set(ox + x, oy + y, 4, Blocks.wool);
+    }
   }
 }

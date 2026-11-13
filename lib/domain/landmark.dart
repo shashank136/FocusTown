@@ -18,6 +18,14 @@ enum Landmark {
     unlockLevel: TownLevel.village,
   ),
 
+  /// The Pagoda: 12 stages of 20 minutes each, from Town.
+  pagoda(
+    title: 'Pagoda',
+    stages: 12,
+    minutesPerStage: 20,
+    unlockLevel: TownLevel.town,
+  ),
+
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
   eiffel(
     title: 'Eiffel Tower',
