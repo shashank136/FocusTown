@@ -53,6 +53,13 @@ void main() {
     expect(_colosseum(8).get(_ox + 0, _oy + 5, 7), Blocks.char);
   });
 
+  test('the front wall has fallen: only the lowest tier stands there', () {
+    final w = _colosseum(12);
+    expect(_has(w, 10, 9, 2), isTrue);
+    expect(_has(w, 10, 9, 3), isFalse);
+    expect(_has(w, 0, 5, 3), isTrue); // the back still stands
+  });
+
   test('the main gate on the front is open from the start', () {
     for (var s = 1; s <= 12; s++) {
       for (final z in [1, 2]) {
@@ -69,7 +76,7 @@ void main() {
     expect(_has(_colosseum(10), 3, 3, 3), isTrue);
     expect(_has(_colosseum(10), 5, 5, 2), isFalse);
     expect(_has(_colosseum(11), 5, 5, 2), isTrue);
-    for (final (x, y) in [(5, 0), (6, 11), (0, 5), (11, 6)]) {
+    for (final (x, y) in [(5, 0), (0, 5), (2, 1), (9, 1)]) {
       expect(_has(_colosseum(11), x, y, 9), isFalse);
       expect(_colosseum(12).get(_ox + x, _oy + y, 9), Blocks.wool);
     }

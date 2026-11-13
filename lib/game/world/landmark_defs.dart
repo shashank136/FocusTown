@@ -260,7 +260,7 @@ void _statueOfLiberty(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 12) w.fill(ox + 7, oy + 4, 25, ox + 7, oy + 4, 26, Blocks.wool);
 }
 
-// The Colosseum, round: a ring of three tiers of arches, each closed by a
+// The Colosseum, round and ruined on the front side: a ring of three tiers of arches, each closed by a
 // solid band, an attic with windows, seating terraces inside that step up
 // toward the wall, a sand arena with a podium and banners on top. The arches
 // are every other of 20 slices; the gate on the front is open from the start.
@@ -276,12 +276,20 @@ void _colosseum(VoxelWorld w, int ox, int oy, int stage) {
     return (a / (2 * math.pi) * 20).floor().isEven;
   }
 
+  // The wall facing the viewer has fallen, as the real one has: only the
+  // lowest tier stands there.
+  bool fallen(int x, int y) {
+    final a = math.atan2(y - 5.5, x - 5.5) + math.pi;
+    return (a / (2 * math.pi) * 20).floor().clamp(11, 13) ==
+        (a / (2 * math.pi) * 20).floor();
+  }
+
   // Every wall cell at [z] (a solid band), or the pillars with a dark opening
   // in each arch.
   void ring(int z, {bool solid = false}) {
     for (var x = 0; x < 12; x++) {
       for (var y = 0; y < 12; y++) {
-        if (!inWall(x, y)) continue;
+        if (!inWall(x, y) || (z > 2 && fallen(x, y))) continue;
         final arch = archSlice(x, y) && !solid;
         w.set(ox + x, oy + y, z, arch ? Blocks.char : Blocks.travertine);
       }
@@ -322,7 +330,7 @@ void _colosseum(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 10) inside(2.8, 3.7, 3, Blocks.stone);
   if (stage >= 11) inside(0, 1.2, 2, Blocks.plank);
   if (stage >= 12) {
-    for (final (x, y) in [(5, 0), (6, 11), (0, 5), (11, 6)]) {
+    for (final (x, y) in [(5, 0), (0, 5), (2, 1), (9, 1)]) {
       w.set(ox + x, oy + y, 9, Blocks.wool);
     }
   }
