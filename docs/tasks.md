@@ -1931,8 +1931,9 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 
 Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 
-### T-V11.1 [ ] District rules (pure)
+### T-V11.1 [x] District rules (pure)
 - Do: `District` rules in `lib/domain`: the four directions, the 64 parcels of a district split into 8 rows from the island's edge outward, which directions have room inside the world edge, skipping parcels already claimed, 8 stages of 60 minutes, progress from minutes, failure loses only the minutes toward the next row, unlock at City, at most 3 districts, one in progress.
+- Done: `lib/domain/district.dart` (sides, `DistrictProject`, `districtRow`, `districtFits`) and `TownRules.districtState`, `beginDistrict`, `applyDistrictMinutes`, `applyDistrictFailed`; `TownState` has `districts` and `districtProject` (not stored yet: T-V11.2). Districts are laid out as arms of the starting island, so on a side the next district follows the last outward. Tests: `test/domain/district_test.dart`.
 - Commit: `T-V11.1: district rules`
 
 ### T-V11.2 [ ] Storage

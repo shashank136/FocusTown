@@ -3,6 +3,7 @@
 
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -123,9 +124,12 @@ class TownState {
     this.emergencyPauses = 1,
     this.emergencyWeek,
     List<Parcel> parcels = const [],
+    List<DistrictSide> districts = const [],
+    this.districtProject,
   }) : buildings = List.unmodifiable(buildings),
        queue = List.unmodifiable(queue),
-       parcels = List.unmodifiable(parcels);
+       parcels = List.unmodifiable(parcels),
+       districts = List.unmodifiable(districts);
 
   /// The starting town.
   // ignore: unnecessary_type_name_in_constructor, shorthand not valid for factories
@@ -153,6 +157,12 @@ class TownState {
   /// Land claimed beyond the starting island, in claim order. Parcel `i` is
   /// plot `64 + i`.
   final List<Parcel> parcels;
+
+  /// The districts finished, in the order they were built.
+  final List<DistrictSide> districts;
+
+  /// The district being built, or null.
+  final DistrictProject? districtProject;
 
   /// Living workers.
   final int workers;
@@ -195,6 +205,9 @@ class TownState {
     int? emergencyPauses,
     LocalDate? emergencyWeek,
     List<Parcel>? parcels,
+    List<DistrictSide>? districts,
+    DistrictProject? districtProject,
+    bool clearDistrictProject = false,
   }) => TownState(
     workers: workers ?? this.workers,
     plotsUnlocked: plotsUnlocked ?? this.plotsUnlocked,
@@ -208,6 +221,10 @@ class TownState {
     emergencyPauses: emergencyPauses ?? this.emergencyPauses,
     emergencyWeek: emergencyWeek ?? this.emergencyWeek,
     parcels: parcels ?? this.parcels,
+    districts: districts ?? this.districts,
+    districtProject: clearDistrictProject
+        ? null
+        : districtProject ?? this.districtProject,
   );
 
   @override
@@ -224,7 +241,9 @@ class TownState {
       other.lastPlotGrantDate == lastPlotGrantDate &&
       other.emergencyPauses == emergencyPauses &&
       other.emergencyWeek == emergencyWeek &&
-      _sameItems(other.parcels, parcels);
+      _sameItems(other.parcels, parcels) &&
+      _sameItems(other.districts, districts) &&
+      other.districtProject == districtProject;
 
   @override
   int get hashCode => Object.hash(
@@ -240,6 +259,8 @@ class TownState {
     emergencyPauses,
     emergencyWeek,
     Object.hashAll(parcels),
+    Object.hashAll(districts),
+    districtProject,
   );
 
   // Pure Dart: no collection package, so compare lists by hand.

@@ -1,12 +1,37 @@
 import 'dart:math';
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_level.dart';
+
+/// Where a district side stands for a town: not unlocked, waiting for the
+/// district being built, at the limit, with no room on that side, ready to
+/// start, or in progress.
+enum DistrictState {
+  /// Below the town level that unlocks districts.
+  locked,
+
+  /// Another district is being built.
+  busy,
+
+  /// The most districts a town can have are built.
+  limit,
+
+  /// The next district on this side would leave the world.
+  noRoom,
+
+  /// Can be started.
+  ready,
+
+  /// This is the district being built.
+  inProgress,
+}
 
 /// Where a landmark stands for a town.
 enum LandmarkState {
@@ -371,6 +396,71 @@ class TownRules {
     final l = session.landmark;
     if (l == null) return town;
     return _withProgress(town, l, (p) => max(0, p - l.minutesPerStage));
+  }
+
+  /// Where a district on [side] stands for [town].
+  static DistrictState districtState(TownState town, DistrictSide side) {
+    final project = town.districtProject;
+    if (project != null) {
+      return project.side == side
+          ? DistrictState.inProgress
+          : DistrictState.busy;
+    }
+    if (town.xp < TownLevel.city.minXp) return DistrictState.locked;
+    if (town.districts.length >= kMaxDistricts) return DistrictState.limit;
+    return districtFits(side, town.districts.where((d) => d == side).length)
+        ? DistrictState.ready
+        : DistrictState.noRoom;
+  }
+
+  /// Starts a district on [side]. Null when it cannot be started.
+  static TownState? beginDistrict(TownState town, DistrictSide side) =>
+      districtState(town, side) == DistrictState.ready
+      ? town.copyWith(districtProject: DistrictProject(side, 0))
+      : null;
+
+  /// Adds [minutes] to the district being built: every row the minutes
+  /// finish becomes land at once (parcels already claimed are skipped and
+  /// stay as they are), and the district is done at [kDistrictMinutes].
+  static TownState applyDistrictMinutes(TownState town, int minutes) {
+    final project = town.districtProject;
+    if (project == null) return town;
+    final index = town.districts.where((d) => d == project.side).length;
+    final progress = min(project.progress + minutes, kDistrictMinutes);
+    final owned = {for (final p in town.parcels) (p.gx, p.gy)};
+    final added = [
+      for (
+        var r = project.rows;
+        r < DistrictProject(project.side, progress).rows;
+        r++
+      )
+        for (final p in districtRow(project.side, index, r))
+          if (!owned.contains((p.gx, p.gy))) p,
+    ];
+    final parcels = [...town.parcels, ...added];
+    return progress >= kDistrictMinutes
+        ? town.copyWith(
+            parcels: parcels,
+            districts: [...town.districts, project.side],
+            clearDistrictProject: true,
+          )
+        : town.copyWith(
+            parcels: parcels,
+            districtProject: DistrictProject(project.side, progress),
+          );
+  }
+
+  /// Applies a failed district session: the minutes toward the next row are
+  /// lost. Rows already built stay, because buildings may stand on them.
+  static TownState applyDistrictFailed(TownState town) {
+    final project = town.districtProject;
+    if (project == null) return town;
+    return town.copyWith(
+      districtProject: DistrictProject(
+        project.side,
+        project.rows * kMinutesPerDistrictRow,
+      ),
+    );
   }
 
   /// Moves queued buildings onto free plots, oldest first.
