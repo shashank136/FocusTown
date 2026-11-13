@@ -21,6 +21,14 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _statueOfLiberty(w, ox, oy, stage);
     case Landmark.colosseum:
       _colosseum(w, ox, oy, stage);
+    case Landmark.machuPicchu:
+      _machuPicchu(w, ox, oy, stage);
+    case Landmark.chichenItza:
+      _chichenItza(w, ox, oy, stage);
+    case Landmark.petra:
+      _petra(w, ox, oy, stage);
+    case Landmark.christRedeemer:
+      _christRedeemer(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -333,6 +341,216 @@ void _colosseum(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 12) {
     for (final (x, y) in [(5, 0), (0, 5), (2, 1), (9, 1)]) {
       w.set(ox + x, oy + y, 9, Blocks.wool);
+    }
+  }
+}
+
+// Machu Picchu: four grass terraces with stone walls climbing to a tall peak
+// at the back, stone huts with plank roofs on the terraces, a temple, trees
+// and a flag. Stages: 1-4 the terraces, 5-7 the peak, 8-9 huts, 10 the temple,
+// 11 trees, 12 the flag.
+void _machuPicchu(VoxelWorld w, int ox, int oy, int stage) {
+  // Terrace [z] (1 to 4) covers 1 to [hi] on both axes; what is not covered
+  // by the terrace above shows grass, the rest is wall.
+  int hi(int z) => 12 - 2 * z;
+  void terrace(int z) {
+    for (var x = 1; x <= hi(z); x++) {
+      for (var y = 1; y <= hi(z); y++) {
+        final covered = z < 4 && x <= hi(z + 1) && y <= hi(z + 1);
+        w.set(ox + x, oy + y, z, covered ? Blocks.cobble : Blocks.grass);
+      }
+    }
+  }
+
+  for (var z = 1; z <= 4; z++) {
+    if (stage >= z) terrace(z);
+  }
+  // The peak: 3 x 3, then 2 x 2, then a point.
+  if (stage >= 5) w.fill(ox + 1, oy + 1, 5, ox + 3, oy + 3, 6, Blocks.stone);
+  if (stage >= 6) w.fill(ox + 1, oy + 1, 7, ox + 2, oy + 2, 8, Blocks.stone);
+  if (stage >= 7) w.fill(ox + 1, oy + 1, 9, ox + 1, oy + 1, 10, Blocks.stone);
+  // A hut: 2 x 2 stone walls and a plank roof, on the terrace below [z].
+  void hut(int x, int y, int z) {
+    w
+      ..fill(ox + x, oy + y, z, ox + x + 1, oy + y + 1, z, Blocks.cobble)
+      ..fill(
+        ox + x,
+        oy + y,
+        z + 1,
+        ox + x + 1,
+        oy + y + 1,
+        z + 1,
+        Blocks.plank,
+      );
+  }
+
+  if (stage >= 8) {
+    hut(9, 9, 2);
+    hut(9, 5, 2);
+    hut(5, 9, 2);
+  }
+  if (stage >= 9) {
+    hut(7, 7, 3);
+    hut(7, 3, 3);
+    hut(3, 7, 3);
+  }
+  if (stage >= 10) {
+    w
+      ..fill(ox + 5, oy + 5, 4, ox + 6, oy + 6, 5, Blocks.stone)
+      ..fill(ox + 5, oy + 5, 6, ox + 6, oy + 6, 6, Blocks.slate);
+  }
+  if (stage >= 11) {
+    for (final (x, y, z) in [(10, 2, 2), (2, 10, 2), (8, 2, 3), (2, 8, 3)]) {
+      w
+        ..set(ox + x, oy + y, z, Blocks.log)
+        ..set(ox + x, oy + y, z + 1, Blocks.leaves);
+    }
+  }
+  if (stage >= 12) {
+    w
+      ..set(ox + 1, oy + 1, 11, Blocks.log)
+      ..set(ox + 1, oy + 1, 12, Blocks.wool);
+  }
+}
+
+// Chichén Itzá, El Castillo: four stepped tiers (two levels each) with a
+// stair up the middle of every side, a small temple on top, serpent heads at
+// the foot of the stairs and a banner. Stages: 1-8 the tiers, one level each,
+// 9 the temple, 10 its roof, 11 the serpents, 12 the banner.
+void _chichenItza(VoxelWorld w, int ox, int oy, int stage) {
+  // Tier [t] (0 to 3) covers 1+t to 10-t; its edge cells in the middle of a
+  // side are the stair.
+  void level(int t, int z) {
+    final lo = 1 + t;
+    final hi = 10 - t;
+    for (var x = lo; x <= hi; x++) {
+      for (var y = lo; y <= hi; y++) {
+        final edge = x == lo || x == hi || y == lo || y == hi;
+        final mid = (x == 5 || x == 6) || (y == 5 || y == 6);
+        w.set(ox + x, oy + y, z, edge && mid ? Blocks.plank : Blocks.cobble);
+      }
+    }
+  }
+
+  for (var s = 1; s <= 8; s++) {
+    if (stage >= s) level((s - 1) ~/ 2, s);
+  }
+  if (stage >= 9) {
+    w
+      ..fill(ox + 4, oy + 4, 9, ox + 7, oy + 7, 10, Blocks.stone)
+      ..remove(ox + 5, oy + 7, 9)
+      ..remove(ox + 6, oy + 7, 9)
+      ..remove(ox + 5, oy + 7, 10)
+      ..remove(ox + 6, oy + 7, 10);
+  }
+  if (stage >= 10) {
+    w.fill(ox + 4, oy + 4, 11, ox + 7, oy + 7, 11, Blocks.cobble);
+  }
+  if (stage >= 11) {
+    for (final (x, y) in [
+      (5, 0),
+      (6, 0),
+      (5, 11),
+      (6, 11),
+      (0, 5),
+      (0, 6),
+      (11, 5),
+      (11, 6),
+    ]) {
+      w.set(ox + x, oy + y, 1, Blocks.char);
+    }
+  }
+  if (stage >= 12) {
+    w
+      ..fill(ox + 5, oy + 5, 12, ox + 5, oy + 5, 13, Blocks.log)
+      ..set(ox + 5, oy + 5, 14, Blocks.wool);
+  }
+}
+
+// Petra, the Treasury: a rose-red cliff wall, three blocks thick, with a hall
+// and an upper round chamber cut into its front, a portico of columns and a
+// pediment standing before it, steps and a palm on each side. The cut cells
+// are never built. Stages: 1-5 the cliff, 6 columns, 7 the door, 8 the
+// pediment, 9 the upper columns, 10 the urn, 11 the steps, 12 the palms.
+void _petra(VoxelWorld w, int ox, int oy, int stage) {
+  bool cut(int x, int y, int z) =>
+      (x >= 3 && x <= 8 && y == 3 && z <= 4) ||
+      (x >= 5 && x <= 6 && y == 2 && z <= 3) ||
+      (x >= 4 && x <= 7 && y == 3 && z >= 6 && z <= 8);
+  for (var s = 1; s <= 5; s++) {
+    if (stage < s) break;
+    for (var x = 1; x <= 10; x++) {
+      for (var y = 1; y <= 3; y++) {
+        for (var z = 2 * s - 1; z <= 2 * s; z++) {
+          if (!cut(x, y, z)) w.set(ox + x, oy + y, z, Blocks.rose);
+        }
+      }
+    }
+  }
+  if (stage >= 6) {
+    for (final x in [3, 5, 6, 8]) {
+      w.fill(ox + x, oy + 4, 1, ox + x, oy + 4, 4, Blocks.travertine);
+    }
+  }
+  if (stage >= 7) w.fill(ox + 5, oy + 2, 1, ox + 6, oy + 2, 3, Blocks.char);
+  if (stage >= 8) {
+    w.fill(ox + 2, oy + 4, 5, ox + 9, oy + 4, 5, Blocks.travertine);
+  }
+  if (stage >= 9) {
+    for (final x in [4, 7]) {
+      w.fill(ox + x, oy + 4, 6, ox + x, oy + 4, 8, Blocks.travertine);
+    }
+  }
+  if (stage >= 10) {
+    w.fill(ox + 5, oy + 3, 6, ox + 6, oy + 3, 7, Blocks.travertine);
+  }
+  if (stage >= 11) {
+    w.fill(ox + 3, oy + 5, 1, ox + 8, oy + 6, 1, Blocks.cobble);
+  }
+  if (stage >= 12) {
+    for (final x in [1, 10]) {
+      w
+        ..fill(ox + x, oy + 5, 1, ox + x, oy + 5, 3, Blocks.log)
+        ..set(ox + x, oy + 5, 4, Blocks.leaves);
+    }
+  }
+}
+
+// Christ the Redeemer: a stepped mountain top, a tall marble pedestal, the
+// white figure in a long robe, arms stretched wide, and a head, with trees on
+// the slopes. Stages: 1-4 the mountain, 5-6 the pedestal, 7-8 the body,
+// 9-10 the arms, 11 the head, 12 the trees.
+void _christRedeemer(VoxelWorld w, int ox, int oy, int stage) {
+  // Mountain layer [z] (1 to 4) covers 1+(z-1) to 10-(z-1); exposed cells are
+  // grass, the rest rock.
+  for (var z = 1; z <= 4; z++) {
+    if (stage < z) break;
+    final lo = z;
+    final hi = 11 - z;
+    for (var x = lo; x <= hi; x++) {
+      for (var y = lo; y <= hi; y++) {
+        final covered = z < 4 && x > lo && x < hi && y > lo && y < hi;
+        w.set(ox + x, oy + y, z, covered ? Blocks.stone : Blocks.grass);
+      }
+    }
+  }
+  if (stage >= 5) w.fill(ox + 4, oy + 4, 5, ox + 7, oy + 7, 6, Blocks.marble);
+  if (stage >= 6) w.fill(ox + 4, oy + 4, 7, ox + 7, oy + 7, 8, Blocks.marble);
+  if (stage >= 7) w.fill(ox + 5, oy + 5, 9, ox + 6, oy + 6, 12, Blocks.marble);
+  if (stage >= 8) w.fill(ox + 5, oy + 5, 13, ox + 6, oy + 6, 15, Blocks.marble);
+  // The arms reach out along x at shoulder height.
+  if (stage >= 9) w.fill(ox + 1, oy + 5, 14, ox + 4, oy + 6, 14, Blocks.marble);
+  if (stage >= 10) {
+    w.fill(ox + 7, oy + 5, 14, ox + 10, oy + 6, 14, Blocks.marble);
+  }
+  if (stage >= 11) {
+    w.fill(ox + 5, oy + 5, 16, ox + 6, oy + 6, 17, Blocks.marble);
+  }
+  if (stage >= 12) {
+    for (final (x, y) in [(2, 8), (8, 2), (9, 9), (2, 2)]) {
+      w
+        ..set(ox + x, oy + y, 2, Blocks.log)
+        ..set(ox + x, oy + y, 3, Blocks.leaves);
     }
   }
 }

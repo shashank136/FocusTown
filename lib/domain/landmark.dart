@@ -50,6 +50,38 @@ enum Landmark {
     unlockLevel: TownLevel.city,
   ),
 
+  /// Machu Picchu: 12 stages of 20 minutes each, from Village.
+  machuPicchu(
+    title: 'Machu Picchu',
+    stages: 12,
+    minutesPerStage: 20,
+    unlockLevel: TownLevel.village,
+  ),
+
+  /// Chichén Itzá: 12 stages of 25 minutes each, from Town.
+  chichenItza(
+    title: 'Chichén Itzá',
+    stages: 12,
+    minutesPerStage: 25,
+    unlockLevel: TownLevel.town,
+  ),
+
+  /// Petra: 12 stages of 30 minutes each, from Town.
+  petra(
+    title: 'Petra',
+    stages: 12,
+    minutesPerStage: 30,
+    unlockLevel: TownLevel.town,
+  ),
+
+  /// Christ the Redeemer: 12 stages of 40 minutes each, from City.
+  christRedeemer(
+    title: 'Christ the Redeemer',
+    stages: 12,
+    minutesPerStage: 40,
+    unlockLevel: TownLevel.city,
+  ),
+
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
   eiffel(
     title: 'Eiffel Tower',

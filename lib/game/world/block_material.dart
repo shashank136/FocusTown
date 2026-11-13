@@ -95,9 +95,15 @@ abstract final class Blocks {
 
   /// Pale limestone (the Colosseum).
   static final travertine = BlockMaterial.of(0xe6d8ae, 0xcbb98c);
+
+  /// Rose-red sandstone (Petra).
+  static final rose = BlockMaterial.of(0xd98f78, 0xb97058);
+
+  /// White marble (Christ the Redeemer).
+  static final marble = BlockMaterial.of(0xf6f4ee, 0xdcd8cc);
 }
 
-/// All 16 block types.
+/// All 18 block types.
 final List<BlockMaterial> allBlocks = [
   Blocks.grass,
   Blocks.dirt,
@@ -115,6 +121,8 @@ final List<BlockMaterial> allBlocks = [
   Blocks.char,
   Blocks.copper,
   Blocks.travertine,
+  Blocks.rose,
+  Blocks.marble,
 ];
 
 /// One flat color shaded for the three visible faces (workers).

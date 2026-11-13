@@ -467,3 +467,7 @@ Each landmark is 12 stages on a 2 x 2 block. Only one is in progress at a time (
 | Taj Mahal | 5 hours | 25 | Town |
 | Statue of Liberty | 6 hours | 30 | Town |
 | Colosseum | 8 hours | 40 | City |
+| Machu Picchu | 4 hours | 20 | Village |
+| Chichén Itzá | 5 hours | 25 | Town |
+| Petra | 6 hours | 30 | Town |
+| Christ the Redeemer | 8 hours | 40 | City |
