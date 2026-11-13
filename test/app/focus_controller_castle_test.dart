@@ -7,6 +7,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
@@ -19,11 +20,15 @@ late FakeClock _clock;
 int _at(int gx, int gy) => plotAtCell(gx, gy, const [])!;
 
 // A town with the workers and plots for a castle and a hut in the way.
-Future<ProviderContainer> _ready({List<TownBuilding> extra = const []}) async {
+Future<ProviderContainer> _ready({
+  List<TownBuilding> extra = const [],
+  int xp = 0,
+}) async {
   final seed = TownState.initial().copyWith(
     workers: 8,
     plotsUnlocked: 12,
     buildings: extra,
+    xp: xp,
   );
   await _db.transaction(() async {
     await _db
@@ -112,5 +117,32 @@ void main() {
       ..begin(10)
       ..select(_at(0, 0));
     expect(c.read(placementProvider)!.plot, _at(0, 0));
+  });
+
+  test('a landmark is placed on the free block the user chooses', () async {
+    final hut = TownBuilding(
+      id: 'h',
+      tier: BuildingTier.hut,
+      status: BuildingStatus.complete,
+      plotIndex: _at(1, 1),
+    );
+    final c = await _ready(extra: [hut], xp: 300);
+    final p = c.read(placementProvider.notifier)
+      ..begin(60, landmark: Landmark.eiffel)
+      ..select(_at(0, 0)); // the hut stands in this block
+    expect(c.read(placementProvider)!.plot, isNull);
+    p.select(_at(0, 4));
+    expect(c.read(placementProvider)!.plot, _at(0, 4));
+    expect(c.read(placementProvider)!.tier, BuildingTier.castle);
+    await p.confirm();
+    final town = c.read(focusControllerProvider).requireValue.town;
+    final project = town.buildings.singleWhere(
+      (b) => b.landmark == Landmark.eiffel,
+    );
+    expect(project.plotIndex, _at(0, 4));
+    final s = c.read(focusControllerProvider).requireValue.active!;
+    expect(s.landmark, Landmark.eiffel);
+    expect(s.plannedMinutes, 60);
+    expect(c.read(placementProvider), isNull);
   });
 }

@@ -482,7 +482,6 @@ void main() {
       await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
       await tester.pump();
       expect(find.text('Adds 3 stages'), findsOneWidget);
-      expect(find.text('Choose plot…'), findsNothing);
       await tester.tap(find.widgetWithText(FilledButton, 'Start'));
       await _settle(tester);
       final s = c.read(focusControllerProvider).requireValue.active!;
@@ -518,6 +517,37 @@ void main() {
         c.read(focusControllerProvider).requireValue.active!.landmark,
         Landmark.lighthouse,
       );
+    });
+
+    testWidgets('a landmark not started yet can have its place chosen', (
+      tester,
+    ) async {
+      final c = await _open(tester, seed: village(), lastDuration: 60);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
+      await tester.pump();
+      await tester.tap(find.text('Choose plot…'));
+      await _settle(tester);
+      final p = c.read(placementProvider)!;
+      expect(p.landmark, Landmark.eiffel);
+      expect(p.minutes, 60);
+    });
+
+    testWidgets('a landmark already started stays where it is', (tester) async {
+      const eiffel = TownBuilding(
+        id: 'landmark-eiffel',
+        tier: BuildingTier.castle,
+        status: BuildingStatus.building,
+        plotIndex: 0,
+        landmark: Landmark.eiffel,
+        progress: 40,
+      );
+      final seed = village().copyWith(
+        buildings: [...village().buildings, eiffel],
+      );
+      await _open(tester, seed: seed);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
+      await tester.pump();
+      expect(find.text('Choose plot…'), findsNothing);
     });
 
     testWidgets('every unlocked landmark is a choice, new building first', (

@@ -4,6 +4,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
@@ -19,6 +20,7 @@ class Placement {
     this.land = false,
     this.garden = false,
     this.look,
+    this.landmark,
   });
 
   /// Planned minutes of the session to start.
@@ -36,6 +38,13 @@ class Placement {
   /// The look of the building the user chose, or null.
   final int? look;
 
+  /// The landmark the time goes into, or null for an ordinary building.
+  final Landmark? landmark;
+
+  /// The size of what is being placed: a landmark stands on a castle's block.
+  BuildingTier get tier =>
+      landmark != null ? BuildingTier.castle : BuildingTier.forMinutes(minutes);
+
   @override
   bool operator ==(Object other) =>
       other is Placement &&
@@ -43,10 +52,11 @@ class Placement {
       other.plot == plot &&
       other.land == land &&
       other.garden == garden &&
-      other.look == look;
+      other.look == look &&
+      other.landmark == landmark;
 
   @override
-  int get hashCode => Object.hash(minutes, plot, land, garden, look);
+  int get hashCode => Object.hash(minutes, plot, land, garden, look, landmark);
 }
 
 /// The choose-a-plot step between "Start" and a running session.
@@ -54,12 +64,12 @@ class PlacementController extends Notifier<Placement?> {
   @override
   Placement? build() => null;
 
-  /// Starts choosing a plot for a session of [minutes] building [look].
-  /// Ignored while a session is running.
-  void begin(int minutes, {int? look}) {
+  /// Starts choosing a plot for a session of [minutes] building [look], or
+  /// the block for [landmark]. Ignored while a session is running.
+  void begin(int minutes, {int? look, Landmark? landmark}) {
     final focus = ref.read(focusControllerProvider).value;
     if (focus == null || focus.active != null) return;
-    state = Placement(minutes, look: look);
+    state = Placement(minutes, look: look, landmark: landmark);
   }
 
   /// Starts choosing land to claim. Ignored while a session is running.
@@ -93,11 +103,7 @@ class PlacementController extends Notifier<Placement?> {
     if (current.land) {
       final n = claimableParcels(focus.town.parcels).length;
       if (i < kLandBase || i - kLandBase >= n) return;
-    } else if (!TownRules.isPlotFree(
-      focus.town,
-      i,
-      BuildingTier.forMinutes(current.minutes),
-    )) {
+    } else if (!TownRules.isPlotFree(focus.town, i, current.tier)) {
       return;
     }
     state = Placement(
@@ -106,6 +112,7 @@ class PlacementController extends Notifier<Placement?> {
       land: current.land,
       garden: current.garden,
       look: current.look,
+      landmark: current.landmark,
     );
   }
 
@@ -123,6 +130,12 @@ class PlacementController extends Notifier<Placement?> {
       final town = ref.read(focusControllerProvider).requireValue.town;
       final p = claimableParcels(town.parcels)[plot - kLandBase];
       await controller.startLand(Parcel(p.gx, p.gy, garden: current.garden));
+    } else if (current.landmark != null) {
+      await controller.startLandmark(
+        current.landmark!,
+        current.minutes,
+        plotIndex: plot,
+      );
     } else {
       await controller.start(
         current.minutes,

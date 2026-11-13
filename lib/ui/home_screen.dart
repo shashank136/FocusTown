@@ -9,7 +9,6 @@ import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/tips.dart';
-import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/tip.dart';
@@ -185,18 +184,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             }
           : {
               for (var i = 0; i < TownRules.plotCountOf(town); i++)
-                if (TownRules.isPlotFree(
-                  town,
-                  i,
-                  BuildingTier.forMinutes(placement.minutes),
-                ))
-                  i,
+                if (TownRules.isPlotFree(town, i, placement.tier)) i,
             },
       placement?.plot,
-      span:
-          placement != null &&
-              !placement.land &&
-              plotsOf(BuildingTier.forMinutes(placement.minutes)) == 4
+      span: placement != null && !placement.land && plotsOf(placement.tier) == 4
           ? 2
           : 1,
     );
@@ -374,6 +365,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             placement.land
                                 ? 'Choose land for your '
                                       '${placement.minutes}-minute session'
+                                : placement.landmark != null
+                                ? 'Choose a place for the '
+                                      '${placement.landmark!.title}'
                                 : 'Choose a plot for your '
                                       '${placement.minutes}-minute build',
                           ),

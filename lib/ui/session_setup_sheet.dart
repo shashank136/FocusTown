@@ -143,7 +143,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           ),
           const SizedBox(height: 8),
           if (landmark != null)
-            ..._landmarkPart(landmark, minutes)
+            ..._landmarkPart(town, landmark, minutes)
           else
             ..._buildingPart(town, option, minutes),
         ],
@@ -177,7 +177,8 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
   // The time goes into [landmark]: how many whole stages it makes, and the
   // minutes left over, which count toward the next stage. Nothing is at risk
   // but progress.
-  List<Widget> _landmarkPart(Landmark landmark, int minutes) {
+  List<Widget> _landmarkPart(TownState town, Landmark landmark, int minutes) {
+    final started = TownRules.landmarkProject(town, landmark) != null;
     final stages = minutes ~/ landmark.minutesPerStage;
     final rest = minutes % landmark.minutesPerStage;
     final text = stages > 0 && rest > 0
@@ -194,9 +195,22 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: 12),
-      FilledButton(
-        onPressed: () => unawaited(_startLandmark(landmark, minutes)),
-        child: const Text('Start'),
+      Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        children: [
+          // A landmark already started stays where it stands.
+          if (!started)
+            TextButton(
+              onPressed: () => _choosePlot(minutes, landmark: landmark),
+              child: const Text('Choose plot…'),
+            ),
+          FilledButton(
+            onPressed: () => unawaited(_startLandmark(landmark, minutes)),
+            child: const Text('Start'),
+          ),
+        ],
       ),
     ];
   }
@@ -349,9 +363,11 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     Navigator.of(context).pop();
   }
 
-  void _choosePlot(int minutes) {
+  void _choosePlot(int minutes, {Landmark? landmark}) {
     unawaited(ref.read(townRepositoryProvider).saveLastDuration(minutes));
-    ref.read(placementProvider.notifier).begin(minutes, look: _look);
+    ref
+        .read(placementProvider.notifier)
+        .begin(minutes, look: _look, landmark: landmark);
     Navigator.of(context).pop();
   }
 }
