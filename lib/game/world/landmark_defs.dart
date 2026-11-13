@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
@@ -203,102 +205,125 @@ void _tajMahal(VoxelWorld w, int ox, int oy, int stage) {
   if (stage >= 11) w.fill(ox + 4, oy + 8, 1, ox + 7, oy + 10, 1, Blocks.water);
 }
 
-// The Statue of Liberty: a two-step square base, a pedestal with a door and a
-// ledge, then the green statue: robe, torso, head, a crown with rays, the
-// raised arm with a torch, and a tablet. One part per stage.
+// The Statue of Liberty: a star-shaped fort base, a stepped pedestal with a
+// door and a ledge, then the copper-green lady: a wide robe, a torso, a head
+// with a crown of rays, the raised arm with a gold torch and its flame, and a
+// tablet on the other side. One part per stage.
 void _statueOfLiberty(VoxelWorld w, int ox, int oy, int stage) {
-  if (stage >= 1) w.fill(ox + 1, oy + 1, 1, ox + 10, oy + 10, 1, Blocks.stone);
-  if (stage >= 2) w.fill(ox + 2, oy + 2, 2, ox + 9, oy + 9, 2, Blocks.stone);
-  // The pedestal, 4 x 4: two levels at stage 3, two at stage 4.
-  if (stage >= 3) w.fill(ox + 4, oy + 4, 3, ox + 7, oy + 7, 4, Blocks.cobble);
-  if (stage >= 4) w.fill(ox + 4, oy + 4, 5, ox + 7, oy + 7, 6, Blocks.cobble);
+  // The fort: a 10 x 10 square with its corners cut off.
+  if (stage >= 1) {
+    for (var x = 1; x <= 10; x++) {
+      for (var y = 1; y <= 10; y++) {
+        final cut = (x < 3 || x > 8) && (y < 3 || y > 8);
+        if (!cut) w.set(ox + x, oy + y, 1, Blocks.stone);
+      }
+    }
+  }
+  if (stage >= 2) w.fill(ox + 2, oy + 3, 2, ox + 9, oy + 8, 2, Blocks.cobble);
+  if (stage >= 2) w.fill(ox + 3, oy + 2, 2, ox + 8, oy + 9, 2, Blocks.cobble);
+  // The pedestal, 6 x 6 and then 4 x 4, with a door at the front.
+  if (stage >= 3) w.fill(ox + 3, oy + 3, 3, ox + 8, oy + 8, 4, Blocks.stone);
+  if (stage >= 4) w.fill(ox + 4, oy + 4, 5, ox + 7, oy + 7, 8, Blocks.stone);
   if (stage >= 3) {
     for (final x in [5, 6]) {
       for (final z in [3, 4]) {
-        w.remove(ox + x, oy + 7, z);
+        w.remove(ox + x, oy + 8, z);
       }
     }
   }
-  if (stage >= 5) w.fill(ox + 3, oy + 3, 7, ox + 8, oy + 8, 7, Blocks.plank);
-  // The statue is 2 x 2 at the middle: robe, torso, head.
-  if (stage >= 6) w.fill(ox + 5, oy + 5, 8, ox + 6, oy + 6, 11, Blocks.leaves);
-  if (stage >= 7) w.fill(ox + 5, oy + 5, 12, ox + 6, oy + 6, 14, Blocks.leaves);
-  if (stage >= 8) w.fill(ox + 5, oy + 5, 15, ox + 6, oy + 6, 16, Blocks.leaves);
+  if (stage >= 5) w.fill(ox + 3, oy + 3, 9, ox + 8, oy + 8, 9, Blocks.cobble);
+  // The robe widens to the feet; the torso and the head are 2 x 2.
+  if (stage >= 6) {
+    w
+      ..fill(ox + 4, oy + 4, 10, ox + 7, oy + 7, 11, Blocks.copper)
+      ..fill(ox + 5, oy + 5, 12, ox + 6, oy + 6, 13, Blocks.copper);
+  }
+  if (stage >= 7) w.fill(ox + 5, oy + 5, 14, ox + 6, oy + 6, 17, Blocks.copper);
+  if (stage >= 8) w.fill(ox + 5, oy + 5, 18, ox + 6, oy + 6, 19, Blocks.copper);
+  // The crown: rays around the head.
   if (stage >= 9) {
-    for (final (x, y) in [(4, 5), (7, 6), (5, 7), (6, 4)]) {
-      w.set(ox + x, oy + y, 16, Blocks.wool);
+    for (final (x, y) in [(4, 5), (4, 6), (7, 5), (7, 6), (5, 4), (6, 7)]) {
+      w.set(ox + x, oy + y, 20, Blocks.plank);
     }
-    w.fill(ox + 5, oy + 5, 17, ox + 6, oy + 6, 17, Blocks.leaves);
+    w.fill(ox + 5, oy + 5, 20, ox + 6, oy + 6, 20, Blocks.copper);
   }
-  // The raised arm, the tablet, the torch and its flame.
+  // The raised arm.
   if (stage >= 10) {
-    w.fill(ox + 7, oy + 5, 14, ox + 7, oy + 5, 18, Blocks.leaves);
+    w.fill(ox + 7, oy + 4, 15, ox + 7, oy + 4, 23, Blocks.copper);
   }
+  // The torch and the tablet.
   if (stage >= 11) {
     w
-      ..set(ox + 7, oy + 5, 19, Blocks.log)
-      ..set(ox + 4, oy + 6, 13, Blocks.plank);
+      ..fill(ox + 7, oy + 4, 24, ox + 7, oy + 4, 24, Blocks.plank)
+      ..fill(ox + 4, oy + 7, 14, ox + 4, oy + 7, 15, Blocks.plank);
   }
-  if (stage >= 12) w.fill(ox + 7, oy + 5, 20, ox + 7, oy + 5, 21, Blocks.wool);
+  if (stage >= 12) w.fill(ox + 7, oy + 4, 25, ox + 7, oy + 4, 26, Blocks.wool);
 }
 
-// The Colosseum: a ring (a 12 x 12 square without its four corner cells) of
-// three tiers of arches, each closed by a solid band, an attic with windows,
-// seating terraces inside, a podium in the arena and banners on top. The
-// arches are every other cell; the main gate on the front is open from the
-// start. Stages: 1 floor, 2-7 the tiers (arches, then band), 8 attic,
-// 9-10 terraces, 11 podium, 12 banners.
+// The Colosseum, round: a ring of three tiers of arches, each closed by a
+// solid band, an attic with windows, seating terraces inside that step up
+// toward the wall, a sand arena with a podium and banners on top. The arches
+// are every other of 20 slices; the gate on the front is open from the start.
+// Stages: 1 floor, 2-7 the tiers (arches, then band), 8 attic, 9-10 seating,
+// 11 podium, 12 banners.
 void _colosseum(VoxelWorld w, int ox, int oy, int stage) {
-  bool onRing(int x, int y) {
-    final edge = x == 0 || x == 11 || y == 0 || y == 11;
-    final corner = (x == 0 || x == 11) && (y == 0 || y == 11);
-    return edge && !corner;
+  double dist(int x, int y) =>
+      math.sqrt(math.pow(x - 5.5, 2) + math.pow(y - 5.5, 2));
+  bool inWall(int x, int y) => dist(x, y) > 4.8 && dist(x, y) <= 5.9;
+  // True for the cells of the arches, every other slice of the ring.
+  bool archSlice(int x, int y) {
+    final a = math.atan2(y - 5.5, x - 5.5) + math.pi;
+    return (a / (2 * math.pi) * 20).floor().isEven;
   }
 
-  // Every ring cell at [z] (a solid band), or only the pillars (even cells)
-  // between arches, with [window] in the arches when given.
-  void ring(int z, {bool solid = false, BlockMaterial? window}) {
+  // Every wall cell at [z] (a solid band), or the pillars with a dark opening
+  // in each arch.
+  void ring(int z, {bool solid = false}) {
     for (var x = 0; x < 12; x++) {
       for (var y = 0; y < 12; y++) {
-        if (!onRing(x, y)) continue;
-        final arch = (x + y).isOdd && !solid;
-        if (arch && window == null) continue;
-        w.set(ox + x, oy + y, z, arch ? window! : Blocks.stone);
+        if (!inWall(x, y)) continue;
+        final arch = archSlice(x, y) && !solid;
+        w.set(ox + x, oy + y, z, arch ? Blocks.char : Blocks.travertine);
       }
     }
   }
 
-  if (stage >= 1) w.fill(ox + 2, oy + 2, 1, ox + 9, oy + 9, 1, Blocks.plank);
-  // Three tiers: arches over two levels (stage 2, 4, 6), a band (3, 5, 7).
-  for (var tier = 0; tier < 3; tier++) {
-    final base = 3 * tier + 1;
-    if (stage >= 2 * tier + 2) {
-      ring(base);
-      ring(base + 1);
+  // Cells inside the wall: [from] to [to] away from the middle.
+  void inside(double from, double to, int top, BlockMaterial m) {
+    for (var x = 0; x < 12; x++) {
+      for (var y = 0; y < 12; y++) {
+        final d = dist(x, y);
+        if (d >= from && d < to) {
+          w.fill(ox + x, oy + y, 1, ox + x, oy + y, top, m);
+        }
+      }
     }
-    if (stage >= 2 * tier + 3) ring(base + 2, solid: true);
+  }
+
+  if (stage >= 1) inside(0, 4.8, 1, Blocks.path);
+  // Three tiers: arches (stage 2, 4, 6), then a band (3, 5, 7).
+  for (var tier = 0; tier < 3; tier++) {
+    final base = 2 * tier + 1;
+    if (stage >= 2 * tier + 2) ring(base);
+    if (stage >= 2 * tier + 3) ring(base + 1, solid: true);
   }
   if (stage >= 8) {
-    ring(10, window: Blocks.glass);
-    ring(11, window: Blocks.glass);
+    ring(7);
+    ring(8);
   }
   // The gate on the front.
   for (final z in [1, 2]) {
-    w
-      ..remove(ox + 5, oy + 11, z)
-      ..remove(ox + 6, oy + 11, z);
+    for (final x in [5, 6]) {
+      w.remove(ox + x, oy + 11, z);
+    }
   }
-  // Seating terraces inside: three stepped rings.
-  if (stage >= 9) w.ring(ox + 2, oy + 2, 8, 8, 2, Blocks.cobble);
-  if (stage >= 10) {
-    w
-      ..ring(ox + 3, oy + 3, 6, 6, 3, Blocks.cobble)
-      ..ring(ox + 4, oy + 4, 4, 4, 4, Blocks.cobble);
-  }
-  if (stage >= 11) w.fill(ox + 5, oy + 5, 2, ox + 6, oy + 6, 2, Blocks.stone);
+  // Seating inside: terraces that rise toward the wall.
+  if (stage >= 9) inside(3.7, 4.8, 5, Blocks.travertine);
+  if (stage >= 10) inside(2.8, 3.7, 3, Blocks.stone);
+  if (stage >= 11) inside(0, 1.2, 2, Blocks.plank);
   if (stage >= 12) {
-    for (final (x, y) in [(1, 0), (10, 0), (1, 11), (10, 11)]) {
-      w.set(ox + x, oy + y, 12, Blocks.wool);
+    for (final (x, y) in [(5, 0), (6, 11), (0, 5), (11, 6)]) {
+      w.set(ox + x, oy + y, 9, Blocks.wool);
     }
   }
 }

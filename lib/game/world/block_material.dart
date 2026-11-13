@@ -89,9 +89,15 @@ abstract final class Blocks {
 
   /// Charred wood.
   static final char = BlockMaterial.of(0x4a4038, 0x3b332d);
+
+  /// Weathered copper (the green of the Statue of Liberty).
+  static final copper = BlockMaterial.of(0x6fc7ae, 0x4fa38c);
+
+  /// Pale limestone (the Colosseum).
+  static final travertine = BlockMaterial.of(0xe6d8ae, 0xcbb98c);
 }
 
-/// All 14 block types.
+/// All 16 block types.
 final List<BlockMaterial> allBlocks = [
   Blocks.grass,
   Blocks.dirt,
@@ -107,6 +113,8 @@ final List<BlockMaterial> allBlocks = [
   Blocks.water,
   Blocks.wool,
   Blocks.char,
+  Blocks.copper,
+  Blocks.travertine,
 ];
 
 /// One flat color shaded for the three visible faces (workers).

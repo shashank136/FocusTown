@@ -27,35 +27,30 @@ void main() {
 
   test('the arena floor comes first, the wall after it', () {
     expect(_has(_colosseum(1), 5, 5, 1), isTrue);
-    expect(_has(_colosseum(1), 0, 2, 1), isFalse);
-    expect(_has(_colosseum(2), 0, 2, 1), isTrue);
+    expect(_has(_colosseum(1), 0, 5, 1), isFalse);
+    expect(_has(_colosseum(2), 0, 5, 1), isTrue);
   });
 
-  test(
-    'the wall is a rounded ring: no corner cell, arches between pillars',
-    () {
-      final w = _colosseum(2);
-      expect(_has(w, 0, 0, 1), isFalse); // the corner is cut
-      expect(_has(w, 1, 0, 1), isFalse); // an arch (odd cell)
-      expect(_has(w, 2, 0, 1), isTrue); // a pillar (even cell)
-      expect(_has(w, 3, 0, 1), isFalse);
-      expect(_has(w, 3, 0, 2), isFalse); // arches are two levels high
-    },
-  );
+  test('the wall is round: no corner cell, dark arches between pillars', () {
+    final w = _colosseum(2);
+    expect(_has(w, 0, 0, 1), isFalse); // the corner is cut
+    expect(_has(w, 1, 1, 1), isFalse);
+    expect(w.get(_ox + 0, _oy + 6, 1), Blocks.travertine); // a pillar
+    expect(w.get(_ox + 0, _oy + 5, 1), Blocks.char); // an arch
+  });
 
   test('a solid band closes each tier of arches', () {
-    expect(_has(_colosseum(2), 3, 0, 3), isFalse);
-    expect(_has(_colosseum(3), 3, 0, 3), isTrue);
-    expect(_has(_colosseum(4), 3, 0, 5), isFalse);
-    expect(_has(_colosseum(4), 2, 0, 4), isTrue); // tier 2 pillars
-    expect(_has(_colosseum(5), 3, 0, 6), isTrue);
-    expect(_has(_colosseum(7), 3, 0, 9), isTrue);
+    expect(_has(_colosseum(2), 0, 5, 2), isFalse);
+    expect(_colosseum(3).get(_ox + 0, _oy + 5, 2), Blocks.travertine);
+    expect(_colosseum(4).get(_ox + 0, _oy + 5, 3), Blocks.char); // tier 2
+    expect(_colosseum(5).get(_ox + 0, _oy + 5, 4), Blocks.travertine);
+    expect(_colosseum(7).get(_ox + 0, _oy + 5, 6), Blocks.travertine);
   });
 
-  test('the attic on top has windows', () {
-    expect(_has(_colosseum(7), 2, 0, 10), isFalse);
-    expect(_colosseum(8).get(_ox + 2, _oy + 0, 10), Blocks.stone);
-    expect(_colosseum(8).get(_ox + 3, _oy + 0, 10), Blocks.glass);
+  test('the attic on top has dark windows', () {
+    expect(_has(_colosseum(7), 0, 6, 7), isFalse);
+    expect(_colosseum(8).get(_ox + 0, _oy + 6, 7), Blocks.travertine);
+    expect(_colosseum(8).get(_ox + 0, _oy + 5, 7), Blocks.char);
   });
 
   test('the main gate on the front is open from the start', () {
@@ -68,16 +63,15 @@ void main() {
   });
 
   test('seating terraces, a podium, then banners', () {
-    expect(_has(_colosseum(8), 2, 2, 2), isFalse);
-    expect(_has(_colosseum(9), 2, 2, 2), isTrue);
+    expect(_has(_colosseum(8), 1, 4, 5), isFalse);
+    expect(_has(_colosseum(9), 1, 4, 5), isTrue); // the top terrace
     expect(_has(_colosseum(9), 3, 3, 3), isFalse);
     expect(_has(_colosseum(10), 3, 3, 3), isTrue);
-    expect(_has(_colosseum(10), 4, 4, 4), isTrue);
     expect(_has(_colosseum(10), 5, 5, 2), isFalse);
     expect(_has(_colosseum(11), 5, 5, 2), isTrue);
-    for (final (x, y) in [(1, 0), (10, 0), (1, 11), (10, 11)]) {
-      expect(_has(_colosseum(11), x, y, 12), isFalse);
-      expect(_colosseum(12).get(_ox + x, _oy + y, 12), Blocks.wool);
+    for (final (x, y) in [(5, 0), (6, 11), (0, 5), (11, 6)]) {
+      expect(_has(_colosseum(11), x, y, 9), isFalse);
+      expect(_colosseum(12).get(_ox + x, _oy + y, 9), Blocks.wool);
     }
   });
 }
