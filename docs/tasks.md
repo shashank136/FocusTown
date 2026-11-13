@@ -1920,7 +1920,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 - [x] Great Pyramid (also: only one landmark in progress at a time)
 - [x] Lighthouse of Alexandria
 - [x] Pagoda
-- [ ] Taj Mahal
+- [x] Taj Mahal
 - [ ] Statue of Liberty
 - [ ] Colosseum
 - [ ] A way to see and test the landmarks on the map without waiting for the level or the time

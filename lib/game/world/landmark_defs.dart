@@ -13,6 +13,8 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _lighthouse(w, ox, oy, stage);
     case Landmark.pagoda:
       _pagoda(w, ox, oy, stage);
+    case Landmark.tajMahal:
+      _tajMahal(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -159,4 +161,40 @@ void _pagoda(VoxelWorld w, int ox, int oy, int stage) {
       w.set(ox + x, oy + y, 4, Blocks.wool);
     }
   }
+}
+
+// The Taj Mahal: a two-step marble platform, a hall with a door and a flat
+// roof, a dome with a finial, four minarets at the platform corners and a
+// pool in front (the +y side). Stages: 1-2 platform, 3-4 hall, 5-6 minarets,
+// 7 roof, 8-9 dome, 10 finial, 11 pool, 12 minaret caps.
+void _tajMahal(VoxelWorld w, int ox, int oy, int stage) {
+  if (stage >= 1) w.fill(ox + 1, oy, 1, ox + 10, oy + 7, 1, Blocks.stone);
+  if (stage >= 2) w.fill(ox + 2, oy + 1, 2, ox + 9, oy + 6, 2, Blocks.stone);
+  // The hall: a 6 x 4 ring, two levels per stage.
+  for (var z = 3; z <= 6 && z <= stage * 2 - 2; z++) {
+    w.ring(ox + 3, oy + 2, 6, 4, z, Blocks.stone);
+  }
+  if (stage >= 3) {
+    for (final x in [5, 6]) {
+      for (final z in [3, 4]) {
+        w.remove(ox + x, oy + 5, z);
+      }
+    }
+  }
+  // The minarets: four columns at the corners, from the first platform level.
+  final top = stage >= 6 ? 10 : (stage >= 5 ? 6 : 0);
+  for (final (x, y) in [(1, 0), (10, 0), (1, 7), (10, 7)]) {
+    if (top >= 2) w.fill(ox + x, oy + y, 2, ox + x, oy + y, top, Blocks.stone);
+    if (stage >= 12) w.set(ox + x, oy + y, 11, Blocks.wool);
+  }
+  if (stage >= 7) w.fill(ox + 3, oy + 2, 7, ox + 8, oy + 5, 7, Blocks.stone);
+  // The dome: a 4 x 4 drum, then narrower.
+  if (stage >= 8) w.fill(ox + 4, oy + 2, 8, ox + 7, oy + 5, 9, Blocks.stone);
+  if (stage >= 9) w.fill(ox + 5, oy + 3, 10, ox + 6, oy + 4, 11, Blocks.stone);
+  if (stage >= 10) {
+    w
+      ..fill(ox + 5, oy + 3, 12, ox + 5, oy + 3, 13, Blocks.log)
+      ..set(ox + 5, oy + 3, 14, Blocks.wool);
+  }
+  if (stage >= 11) w.fill(ox + 4, oy + 8, 1, ox + 7, oy + 10, 1, Blocks.water);
 }

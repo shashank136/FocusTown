@@ -25,14 +25,11 @@ class _FocusTownAppState extends ConsumerState<FocusTownApp> {
     super.initState();
     final router = ref.read(lifecycleRouterProvider);
     // Forwards a held app switch once the 500 ms lock window has passed.
-    _flushTimer = Timer.periodic(
-      const Duration(milliseconds: 100),
-      (_) {
-        final source = ref.read(lifecycleSourceProvider);
-        if (source is ResilientLifecycleSource) source.check();
-        unawaited(router.flushExpired());
-      },
-    );
+    _flushTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      final source = ref.read(lifecycleSourceProvider);
+      if (source is ResilientLifecycleSource) source.check();
+      unawaited(router.flushExpired());
+    });
   }
 
   @override

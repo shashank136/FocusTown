@@ -24,8 +24,9 @@ final tipsProvider = AsyncNotifierProvider<Tips, Set<Tip>>(Tips.new);
 /// notification permission, until they dismiss it.
 final FutureProvider<bool> notificationNoteProvider =
     FutureProvider.autoDispose<bool>((ref) async {
-  if (!await ref.read(townRepositoryProvider).isOnboardingDone()) return false;
-  if (await ref.read(notifierProvider).hasPermission()) return false;
-  final tips = ref.read(tipsProvider.notifier);
-  return await tips.shouldShow(Tip.notificationNote);
-});
+      if (!await ref.read(townRepositoryProvider).isOnboardingDone())
+        return false;
+      if (await ref.read(notifierProvider).hasPermission()) return false;
+      final tips = ref.read(tipsProvider.notifier);
+      return await tips.shouldShow(Tip.notificationNote);
+    });
