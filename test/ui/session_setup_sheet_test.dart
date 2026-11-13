@@ -12,6 +12,7 @@ import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -44,6 +45,7 @@ Future<ProviderContainer> _open(
   TownState? seed,
   int? lastDuration,
   TownRepository Function(AppDatabase, Clock)? repo,
+  Landmark? landmark,
 }) async {
   _clock = FakeClock();
   _db = AppDatabase(NativeDatabase.memory());
@@ -84,7 +86,7 @@ Future<ProviderContainer> _open(
                 onPressed: () => showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
-                  builder: (_) => const SessionSetupSheet(),
+                  builder: (_) => SessionSetupSheet(landmark: landmark),
                 ),
                 child: const Text('open'),
               ),
@@ -246,11 +248,6 @@ void main() {
     expect(c.read(focusControllerProvider).requireValue.active, isNull);
     expect(await c.read(townRepositoryProvider).lastDurationMinutes(), 20);
     expect(find.byType(SessionSetupSheet), findsNothing);
-  });
-
-  testWidgets('the sheet is about time: no landmark in it', (tester) async {
-    await _open(tester, seed: TownState.initial().copyWith(xp: 300));
-    expect(find.textContaining('Eiffel'), findsNothing);
   });
 
   testWidgets('Extend land… starts choosing land', (tester) async {
@@ -472,6 +469,92 @@ void main() {
       // Three rows tall: the centre row plus one faded row each side.
       expect(tester.getSize(find.byType(ListWheelScrollView)).height, 112);
       expect(wheel.overAndUnderCenterOpacity, lessThanOrEqualTo(0.4));
+    });
+  });
+
+  group('landmarks', () {
+    TownState village() => TownState.initial().copyWith(xp: 300);
+
+    testWidgets('the wheel time can go into a landmark, in whole stages', (
+      tester,
+    ) async {
+      final c = await _open(tester, seed: village(), lastDuration: 60);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
+      await tester.pump();
+      expect(find.text('Adds 3 stages'), findsOneWidget);
+      expect(find.text('Choose plot…'), findsNothing);
+      await tester.tap(find.widgetWithText(FilledButton, 'Start'));
+      await _settle(tester);
+      final s = c.read(focusControllerProvider).requireValue.active!;
+      expect(s.landmark, Landmark.eiffel);
+      expect(s.plannedMinutes, 60);
+    });
+
+    testWidgets('minutes that are not a whole stage carry over, and say so', (
+      tester,
+    ) async {
+      await _open(tester, seed: village(), lastDuration: 25);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
+      await tester.pump();
+      expect(find.text('Adds 1 stage and 5 min toward the next'), findsOne);
+      _jumpTo(tester, 10);
+      await tester.pump();
+      expect(find.text('Adds 10 min toward the next stage'), findsOne);
+    });
+
+    testWidgets('opened for a landmark it starts on that landmark', (
+      tester,
+    ) async {
+      final c = await _open(
+        tester,
+        seed: village(),
+        lastDuration: 40,
+        landmark: Landmark.lighthouse,
+      );
+      expect(find.text('Adds 2 stages and 10 min toward the next'), findsOne);
+      await tester.tap(find.widgetWithText(FilledButton, 'Start'));
+      await _settle(tester);
+      expect(
+        c.read(focusControllerProvider).requireValue.active!.landmark,
+        Landmark.lighthouse,
+      );
+    });
+
+    testWidgets('every unlocked landmark is a choice, new building first', (
+      tester,
+    ) async {
+      await _open(tester, seed: village());
+      final ready = Landmark.values.where((l) => l.unlockLevel.minXp <= 300);
+      expect(find.byType(ChoiceChip), findsNWidgets(ready.length + 1));
+      expect(find.widgetWithText(ChoiceChip, 'New building'), findsOneWidget);
+      // The default is still a normal building.
+      expect(find.text('house'), findsOneWidget);
+    });
+
+    testWidgets('with one landmark in progress, only it is offered', (
+      tester,
+    ) async {
+      const eiffel = TownBuilding(
+        id: 'landmark-eiffel',
+        tier: BuildingTier.castle,
+        status: BuildingStatus.building,
+        plotIndex: 0,
+        landmark: Landmark.eiffel,
+        progress: 40,
+      );
+      final seed = village().copyWith(
+        buildings: [...village().buildings, eiffel],
+      );
+      await _open(tester, seed: seed);
+      expect(find.byType(ChoiceChip), findsNWidgets(2));
+      expect(find.widgetWithText(ChoiceChip, 'Eiffel Tower'), findsOneWidget);
+    });
+
+    testWidgets('with no landmark unlocked there is no choice to make', (
+      tester,
+    ) async {
+      await _open(tester);
+      expect(find.byType(ChoiceChip), findsNothing);
     });
   });
 }

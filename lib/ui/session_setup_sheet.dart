@@ -8,6 +8,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/session_setup.dart';
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
@@ -21,7 +22,10 @@ const _recoveryBanner =
 /// risk, then start (on the next free plot) or choose the plot first.
 class SessionSetupSheet extends ConsumerStatefulWidget {
   /// Creates the sheet.
-  const new({super.key});
+  const new({this.landmark, super.key});
+
+  /// The landmark to put the time into, or null for a new building.
+  final Landmark? landmark;
 
   @override
   ConsumerState<SessionSetupSheet> createState() => _SessionSetupSheetState();
@@ -34,6 +38,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
   FixedExtentScrollController? _wheel;
   int? _selected; // minutes
   int _look = 0; // the look of the building, 0 is the classic one
+  late Landmark? _landmark = widget.landmark;
 
   @override
   void dispose() {
@@ -67,6 +72,11 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     );
     final option = options.firstWhere((o) => o.minutes == minutes);
     final theme = Theme.of(context);
+    final landmarks = [
+      for (final l in Landmark.values)
+        if (TownRules.canStartLandmark(town, l)) l,
+    ];
+    final landmark = landmarks.contains(_landmark) ? _landmark : null;
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -78,6 +88,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
                 child: Text(_recoveryBanner, style: theme.textTheme.bodyMedium),
               ),
             ),
+          if (landmarks.isNotEmpty) _target(landmarks, landmark),
           SizedBox(
             height: 112,
             child: Stack(
@@ -131,60 +142,116 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(option.tier.name, style: theme.textTheme.titleMedium),
-          _looks(option.tier),
-          if (option.workersAtRisk > 0)
-            Text(
-              'Risks ${option.workersAtRisk} '
-              'worker${option.workersAtRisk == 1 ? '' : 's'}',
-            ),
-          if (option.workersGained > 0)
-            Text(
-              '+${option.workersGained} '
-              'worker${option.workersGained == 1 ? '' : 's'} if you finish',
-            ),
-          if (option.reason != null)
-            Text(
-              option.reason!,
-              style: TextStyle(color: theme.colorScheme.error),
-            ),
-          if (TownRules.nextFreePlot(town, option.tier) == null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                _roomNote(town, option.tier),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          const SizedBox(height: 12),
-          Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            children: [
-              TextButton(
-                onPressed:
-                    option.enabled &&
-                        TownRules.nextFreePlot(town, option.tier) != null
-                    ? () => _choosePlot(minutes)
-                    : null,
-                child: const Text('Choose plot…'),
-              ),
-              TextButton(
-                onPressed: _extendLand,
-                child: const Text('Extend land…'),
-              ),
-              FilledButton(
-                onPressed: option.enabled
-                    ? () => unawaited(_start(minutes))
-                    : null,
-                child: const Text('Start'),
-              ),
-            ],
-          ),
+          if (landmark != null)
+            ..._landmarkPart(landmark, minutes)
+          else
+            ..._buildingPart(town, option, minutes),
         ],
       ),
     );
+  }
+
+  // What to build with the time: a new building, or one of the landmarks
+  // that can be worked on now.
+  Widget _target(List<Landmark> landmarks, Landmark? chosen) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      children: [
+        ChoiceChip(
+          label: const Text('New building'),
+          selected: chosen == null,
+          onSelected: (_) => setState(() => _landmark = null),
+        ),
+        for (final l in landmarks)
+          ChoiceChip(
+            label: Text(l.title),
+            selected: chosen == l,
+            onSelected: (_) => setState(() => _landmark = l),
+          ),
+      ],
+    ),
+  );
+
+  // The time goes into [landmark]: how many whole stages it makes, and the
+  // minutes left over, which count toward the next stage. Nothing is at risk
+  // but progress.
+  List<Widget> _landmarkPart(Landmark landmark, int minutes) {
+    final stages = minutes ~/ landmark.minutesPerStage;
+    final rest = minutes % landmark.minutesPerStage;
+    final text = stages > 0 && rest > 0
+        ? 'Adds $stages stage${stages == 1 ? '' : 's'} and $rest min toward '
+              'the next'
+        : stages > 0
+        ? 'Adds $stages stage${stages == 1 ? '' : 's'}'
+        : 'Adds $rest min toward the next stage';
+    return [
+      Text(landmark.title, style: Theme.of(context).textTheme.titleMedium),
+      Text(text),
+      const Text(
+        'Nothing is at risk but progress: leaving costs one stage.',
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 12),
+      FilledButton(
+        onPressed: () => unawaited(_startLandmark(landmark, minutes)),
+        child: const Text('Start'),
+      ),
+    ];
+  }
+
+  List<Widget> _buildingPart(
+    TownState town,
+    DurationOption option,
+    int minutes,
+  ) {
+    final theme = Theme.of(context);
+    return [
+      Text(option.tier.name, style: theme.textTheme.titleMedium),
+      _looks(option.tier),
+      if (option.workersAtRisk > 0)
+        Text(
+          'Risks ${option.workersAtRisk} '
+          'worker${option.workersAtRisk == 1 ? '' : 's'}',
+        ),
+      if (option.workersGained > 0)
+        Text(
+          '+${option.workersGained} '
+          'worker${option.workersGained == 1 ? '' : 's'} if you finish',
+        ),
+      if (option.reason != null)
+        Text(option.reason!, style: TextStyle(color: theme.colorScheme.error)),
+      if (TownRules.nextFreePlot(town, option.tier) == null)
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            _roomNote(town, option.tier),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      const SizedBox(height: 12),
+      Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        children: [
+          TextButton(
+            onPressed:
+                option.enabled &&
+                    TownRules.nextFreePlot(town, option.tier) != null
+                ? () => _choosePlot(minutes)
+                : null,
+            child: const Text('Choose plot…'),
+          ),
+          TextButton(onPressed: _extendLand, child: const Text('Extend land…')),
+          FilledButton(
+            onPressed: option.enabled ? () => unawaited(_start(minutes)) : null,
+            child: const Text('Start'),
+          ),
+        ],
+      ),
+    ];
   }
 
   // Why there is no room for a [tier] now, and what makes some.
@@ -258,6 +325,20 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           .start(minutes, look: _look);
       await ref.read(townRepositoryProvider).saveLastDuration(minutes);
       navigator.pop();
+    } on Object catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
+  Future<void> _startLandmark(Landmark landmark, int minutes) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    try {
+      await ref
+          .read(focusControllerProvider.notifier)
+          .startLandmark(landmark, minutes);
+      await ref.read(townRepositoryProvider).saveLastDuration(minutes);
+      navigator.pop(true);
     } on Object catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('$e')));
     }

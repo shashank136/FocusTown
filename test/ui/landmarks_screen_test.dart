@@ -136,14 +136,14 @@ void main() {
       ),
     );
     await _settle(tester);
-    await tester.tap(find.text('45 min'));
-    await tester.pump();
+    // The same sheet as the island's, already on this landmark.
+    expect(find.text('Adds 1 stage and 5 min toward the next'), findsOne);
     await tester.tap(find.widgetWithText(FilledButton, 'Start').last);
     await _settle(tester);
     final s = c.read(focusControllerProvider).requireValue.active!;
     expect(s.isLandmark, isTrue);
     expect(s.landmark, Landmark.eiffel);
-    expect(s.plannedMinutes, 45);
+    expect(s.plannedMinutes, 25);
     // Back on the island, not on the screen.
     await _settle(tester);
     expect(find.byType(LandmarksScreen), findsNothing);

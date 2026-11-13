@@ -1924,6 +1924,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 - [x] Statue of Liberty
 - [x] Colosseum
 - [x] A way to see and test the landmarks on the map without waiting for the level or the time (debug screen: "Show every landmark on the map")
+- [x] A landmark takes the time from the session wheel: the session sheet offers "New building" or any landmark that can be worked on, and shows the whole stages the minutes make (leftover minutes count toward the next stage)
 
 ## Phase L: App Store submission (after V2 and LA)
 
