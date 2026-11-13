@@ -101,9 +101,21 @@ abstract final class Blocks {
 
   /// White marble (Christ the Redeemer).
   static final marble = BlockMaterial.of(0xf6f4ee, 0xdcd8cc);
+
+  /// Yellow flowers.
+  static final flowerYellow = BlockMaterial.of(0xf7d62e, 0xd9b81c);
+
+  /// Pink flowers.
+  static final flowerPink = BlockMaterial.of(0xf47fb2, 0xd5648f);
+
+  /// Violet flowers.
+  static final flowerViolet = BlockMaterial.of(0x9b6fe3, 0x7d54c2);
+
+  /// Blue flowers.
+  static final flowerBlue = BlockMaterial.of(0x58a6f2, 0x4088d4);
 }
 
-/// All 18 block types.
+/// All 22 block types.
 final List<BlockMaterial> allBlocks = [
   Blocks.grass,
   Blocks.dirt,
@@ -123,6 +135,19 @@ final List<BlockMaterial> allBlocks = [
   Blocks.travertine,
   Blocks.rose,
   Blocks.marble,
+  Blocks.flowerYellow,
+  Blocks.flowerPink,
+  Blocks.flowerViolet,
+  Blocks.flowerBlue,
+];
+
+/// The colours of the flowers in a garden: red, yellow, pink, violet, blue.
+final List<BlockMaterial> flowerColors = [
+  Blocks.wool,
+  Blocks.flowerYellow,
+  Blocks.flowerPink,
+  Blocks.flowerViolet,
+  Blocks.flowerBlue,
 ];
 
 /// One flat color shaded for the three visible faces (workers).

@@ -4,6 +4,7 @@ import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/garden.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
@@ -35,6 +36,23 @@ void main() {
       worlds.add(_blocks(w));
     }
     expect(worlds.toSet(), hasLength(kGardenLooks));
+  });
+
+  test('every garden is colourful: flowers of at least four colours', () {
+    for (var v = 0; v < kGardenLooks; v++) {
+      final w = VoxelWorld();
+      buildGarden(w, 10, 10, v);
+      final flowers = [
+        for (final b in w.blocks)
+          if (flowerColors.contains(b.material)) b.material,
+      ];
+      expect(flowers.length, greaterThanOrEqualTo(8), reason: 'garden $v');
+      expect(
+        flowers.toSet().length,
+        greaterThanOrEqualTo(4),
+        reason: 'garden $v',
+      );
+    }
   });
 
   test('a garden parcel is drawn as a garden, not as forest', () {
