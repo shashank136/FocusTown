@@ -183,7 +183,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 kLandBase + i,
             }
           : {
-              for (var i = 0; i < TownRules.plotCountOf(town); i++)
+              for (
+                var i = 0;
+                i <
+                    (placement.garden
+                        ? kBaseCells.length
+                        : TownRules.plotCountOf(town));
+                i++
+              )
                 if (TownRules.isPlotFree(town, i, placement.tier)) i,
             },
       placement?.plot,
@@ -365,6 +372,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             placement.land
                                 ? 'Choose land for your '
                                       '${placement.minutes}-minute session'
+                                : placement.garden
+                                ? 'Choose a forest square to turn into a '
+                                      'garden (${placement.minutes} minutes)'
                                 : placement.landmark != null
                                 ? 'Choose a place for the '
                                       '${placement.landmark!.title}'

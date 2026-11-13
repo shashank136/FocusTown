@@ -250,6 +250,16 @@ void main() {
     expect(find.byType(SessionSetupSheet), findsNothing);
   });
 
+  testWidgets('Make garden… starts choosing a forest square', (tester) async {
+    final c = await _open(tester);
+    await tester.tap(find.text('Make garden…'));
+    await _settle(tester);
+    final placement = c.read(placementProvider)!;
+    expect(placement.garden, isTrue);
+    expect(placement.land, isFalse);
+    expect(placement.minutes, 15);
+  });
+
   testWidgets('Extend land… starts choosing land', (tester) async {
     final c = await _open(tester);
     await tester.tap(find.text('Extend land…'));

@@ -259,6 +259,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             child: const Text('Choose plot…'),
           ),
           TextButton(onPressed: _extendLand, child: const Text('Extend land…')),
+          TextButton(onPressed: _makeGarden, child: const Text('Make garden…')),
           FilledButton(
             onPressed: option.enabled ? () => unawaited(_start(minutes)) : null,
             child: const Text('Start'),
@@ -356,6 +357,11 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     } on Object catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('$e')));
     }
+  }
+
+  void _makeGarden() {
+    ref.read(placementProvider.notifier).beginGarden();
+    Navigator.of(context).pop();
   }
 
   void _extendLand() {

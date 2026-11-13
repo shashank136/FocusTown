@@ -50,7 +50,11 @@ List<(int, int)> _sortedCells() {
 /// (open sea, unclaimed land, or a garden).
 int? plotAtCell(int gx, int gy, List<Parcel> parcels) {
   final base = kBaseCells.indexOf((gx, gy));
-  if (base >= 0) return base;
+  if (base >= 0) {
+    // A square of the island that was turned into a garden is no plot.
+    final garden = parcels.any((p) => p.garden && p.gx == gx && p.gy == gy);
+    return garden ? null : base;
+  }
   var k = kBaseCells.length;
   for (final p in parcels) {
     if (p.garden) continue;

@@ -66,10 +66,14 @@ class TownRules {
   static int plotCountOf(TownState town) =>
       plotCount + town.parcels.where((p) => !p.garden).length;
 
-  /// The plots covered by the buildings and ruins of [town].
+  /// The plots covered by the buildings and ruins of [town], and the squares
+  /// of the island that were turned into gardens.
   static Set<int> occupied(TownState town) => {
     for (final b in town.buildings)
       ...(footprintOf(b.tier, b.plotIndex, town.parcels) ?? [b.plotIndex]),
+    for (final p in town.parcels)
+      if (p.garden && kBaseCells.contains((p.gx, p.gy)))
+        kBaseCells.indexOf((p.gx, p.gy)),
   };
 
   /// Whether the town may still take a building of [tier]: some block of free
@@ -251,10 +255,27 @@ class TownRules {
   /// for the first, 5 more for every 4, at most 90.
   static int landMinutes(int claimed) => min(90, 25 + 5 * (claimed ~/ 4));
 
-  /// Whether [parcel] touches the island and nobody has claimed it.
-  static bool canClaim(TownState town, Parcel parcel) =>
-      claimableParcels(town.parcels)
-          .any((p) => p.gx == parcel.gx && p.gy == parcel.gy);
+  /// Minutes it takes to turn a forest square of the island into a garden.
+  static const gardenMinutes = 15;
+
+  /// Minutes of the land session for [parcel]: [gardenMinutes] for a square of
+  /// the island, else [landMinutes].
+  static int landMinutesFor(TownState town, Parcel parcel) =>
+      _isIsland(parcel) ? gardenMinutes : landMinutes(town.parcels.length);
+
+  static bool _isIsland(Parcel p) => kBaseCells.contains((p.gx, p.gy));
+
+  /// Whether [parcel] can be claimed: land that touches the island and
+  /// nobody has claimed, or a free forest square of the island that is to
+  /// become a garden.
+  static bool canClaim(TownState town, Parcel parcel) {
+    if (_isIsland(parcel)) {
+      return parcel.garden &&
+          !occupied(town).contains(kBaseCells.indexOf((parcel.gx, parcel.gy)));
+    }
+    return claimableParcels(town.parcels)
+        .any((p) => p.gx == parcel.gx && p.gy == parcel.gy);
+  }
 
   /// Applies a completed land [session]: its parcel becomes part of the island.
   /// A parcel that cannot be claimed any more changes nothing.

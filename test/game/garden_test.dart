@@ -6,6 +6,7 @@ import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/garden.dart';
+import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
@@ -74,6 +75,24 @@ void main() {
     final f = buildTownWorld(_town([forest]));
     expect(_blocks(g), isNot(_blocks(f)));
     expect(g.get(-4, 24, 0), isNotNull); // ground
+  });
+
+  test('a forest square turned into a garden is a garden, not forest', () {
+    const cell = Parcel(5, 5, garden: true);
+    final w = buildTownWorld(_town(const [cell]));
+    final ox = parcelOrigin(5);
+    final oy = parcelOrigin(5);
+    expect(flowerColors, contains(w.get(ox + 3, oy + 3, 0)));
+    // No forest tree stands in it (a tree canopy is at height 3 or more).
+    for (final b in w.blocks) {
+      if (b.z >= 3 && b.x >= ox && b.x < ox + 7 && b.y >= oy && b.y < oy + 7) {
+        expect(
+          b.material,
+          isNot(Blocks.leaves),
+          reason: '${b.x},${b.y},${b.z}',
+        );
+      }
+    }
   });
 
   test('a land session shows its parcel as ground while it runs', () {

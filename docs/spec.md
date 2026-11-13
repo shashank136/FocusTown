@@ -423,6 +423,12 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - A land session claims one parcel when it completes. It costs no workers and leaves no ruin if it fails. Its length is 25 minutes for the first parcel, 5 more for every 4 parcels claimed, at most 90.
 - Not in this version: gardens as buildable things, the globe, the showcase, a low-detail island view.
 
+## Gardens on forest squares (decided 2026-11-12)
+
+- A free forest square of the starting island can be turned into a garden for good: a land session of 15 minutes ("Make garden…" on the session sheet), nothing at risk. It is the same land session as claiming land, with a parcel that lies inside the starting island.
+- The square must have nothing on it (no building and no ruin) and not be a garden already. Once done it is no plot any more: nothing can be built on it, and a castle or landmark block cannot include it. The number of plots stays 64 plus the claimed non-garden parcels.
+- A garden is colourful: the ground is a carpet of flowers (never grass) and each garden look adds trees, paths or water, and flowers in five colours.
+
 ## Districts: growing the island in blocks of 64 (Phase V11, decided 2026-11-12)
 
 - A district is an 8 x 8 block of plots (64) added on one side (north, east, south or west) of the island. It is built as a project over several sessions, like a landmark, and replaces the idea of claiming land a square at a time for big growth. The single-square "Extend land" session stays for small gaps and for keeping space between buildings.

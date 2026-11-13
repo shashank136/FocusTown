@@ -6,6 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 
@@ -82,6 +83,14 @@ class PlacementController extends Notifier<Placement?> {
     );
   }
 
+  /// Starts choosing a forest square of the island to turn into a garden.
+  /// Ignored while a session is running.
+  void beginGarden() {
+    final focus = ref.read(focusControllerProvider).value;
+    if (focus == null || focus.active != null) return;
+    state = const Placement(TownRules.gardenMinutes, garden: true);
+  }
+
   /// Makes the land being claimed a garden, or a plot again.
   void toggleGarden() {
     final current = state;
@@ -103,7 +112,8 @@ class PlacementController extends Notifier<Placement?> {
     if (current.land) {
       final n = claimableParcels(focus.town.parcels).length;
       if (i < kLandBase || i - kLandBase >= n) return;
-    } else if (!TownRules.isPlotFree(focus.town, i, current.tier)) {
+    } else if (!TownRules.isPlotFree(focus.town, i, current.tier) ||
+        (current.garden && i >= kBaseCells.length)) {
       return;
     }
     state = Placement(
@@ -130,6 +140,9 @@ class PlacementController extends Notifier<Placement?> {
       final town = ref.read(focusControllerProvider).requireValue.town;
       final p = claimableParcels(town.parcels)[plot - kLandBase];
       await controller.startLand(Parcel(p.gx, p.gy, garden: current.garden));
+    } else if (current.garden) {
+      final cell = kBaseCells[plot];
+      await controller.startLand(Parcel(cell.$1, cell.$2, garden: true));
     } else if (current.landmark != null) {
       await controller.startLandmark(
         current.landmark!,

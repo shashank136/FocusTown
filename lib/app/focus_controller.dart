@@ -252,7 +252,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     final built = SessionEngine.startLand(
       id: 's${now.wall.microsecondsSinceEpoch}',
       parcel: parcel,
-      minutes: TownRules.landMinutes(current.town.parcels.length),
+      minutes: TownRules.landMinutesFor(current.town, parcel),
       now: now,
     );
     final session = _testLength(built);
