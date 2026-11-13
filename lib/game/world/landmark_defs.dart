@@ -15,6 +15,8 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _pagoda(w, ox, oy, stage);
     case Landmark.tajMahal:
       _tajMahal(w, ox, oy, stage);
+    case Landmark.statueOfLiberty:
+      _statueOfLiberty(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -197,4 +199,43 @@ void _tajMahal(VoxelWorld w, int ox, int oy, int stage) {
       ..set(ox + 5, oy + 3, 14, Blocks.wool);
   }
   if (stage >= 11) w.fill(ox + 4, oy + 8, 1, ox + 7, oy + 10, 1, Blocks.water);
+}
+
+// The Statue of Liberty: a two-step square base, a pedestal with a door and a
+// ledge, then the green statue: robe, torso, head, a crown with rays, the
+// raised arm with a torch, and a tablet. One part per stage.
+void _statueOfLiberty(VoxelWorld w, int ox, int oy, int stage) {
+  if (stage >= 1) w.fill(ox + 1, oy + 1, 1, ox + 10, oy + 10, 1, Blocks.stone);
+  if (stage >= 2) w.fill(ox + 2, oy + 2, 2, ox + 9, oy + 9, 2, Blocks.stone);
+  // The pedestal, 4 x 4: two levels at stage 3, two at stage 4.
+  if (stage >= 3) w.fill(ox + 4, oy + 4, 3, ox + 7, oy + 7, 4, Blocks.cobble);
+  if (stage >= 4) w.fill(ox + 4, oy + 4, 5, ox + 7, oy + 7, 6, Blocks.cobble);
+  if (stage >= 3) {
+    for (final x in [5, 6]) {
+      for (final z in [3, 4]) {
+        w.remove(ox + x, oy + 7, z);
+      }
+    }
+  }
+  if (stage >= 5) w.fill(ox + 3, oy + 3, 7, ox + 8, oy + 8, 7, Blocks.plank);
+  // The statue is 2 x 2 at the middle: robe, torso, head.
+  if (stage >= 6) w.fill(ox + 5, oy + 5, 8, ox + 6, oy + 6, 11, Blocks.leaves);
+  if (stage >= 7) w.fill(ox + 5, oy + 5, 12, ox + 6, oy + 6, 14, Blocks.leaves);
+  if (stage >= 8) w.fill(ox + 5, oy + 5, 15, ox + 6, oy + 6, 16, Blocks.leaves);
+  if (stage >= 9) {
+    for (final (x, y) in [(4, 5), (7, 6), (5, 7), (6, 4)]) {
+      w.set(ox + x, oy + y, 16, Blocks.wool);
+    }
+    w.fill(ox + 5, oy + 5, 17, ox + 6, oy + 6, 17, Blocks.leaves);
+  }
+  // The raised arm, the tablet, the torch and its flame.
+  if (stage >= 10) {
+    w.fill(ox + 7, oy + 5, 14, ox + 7, oy + 5, 18, Blocks.leaves);
+  }
+  if (stage >= 11) {
+    w
+      ..set(ox + 7, oy + 5, 19, Blocks.log)
+      ..set(ox + 4, oy + 6, 13, Blocks.plank);
+  }
+  if (stage >= 12) w.fill(ox + 7, oy + 5, 20, ox + 7, oy + 5, 21, Blocks.wool);
 }

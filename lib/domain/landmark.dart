@@ -34,6 +34,14 @@ enum Landmark {
     unlockLevel: TownLevel.town,
   ),
 
+  /// The Statue of Liberty: 12 stages of 30 minutes each, from Town.
+  statueOfLiberty(
+    title: 'Statue of Liberty',
+    stages: 12,
+    minutesPerStage: 30,
+    unlockLevel: TownLevel.town,
+  ),
+
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
   eiffel(
     title: 'Eiffel Tower',
