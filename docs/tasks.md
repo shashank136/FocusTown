@@ -1961,8 +1961,9 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 
 Look at the island from the north, east, south or west (the view turns in steps of 90 degrees). The game keeps its world as it is; the view rotates the (x, y) of everything that is drawn or tapped around the middle of the island. Each task: tests first, then commit.
 
-### T-V12.1 [ ] View rotation (pure)
+### T-V12.1 [x] View rotation (pure)
 - Do: a `ViewRotation` (four turns) in `lib/game/world`: map a tile or a point to the rotated view and back, rotate a block list, plus the compass name of the side that faces the viewer. Tests: four turns are the identity, a turn then its inverse are the identity, a block and its neighbours keep their order of depth.
+- Done: `lib/game/world/view_rotation.dart` (`ViewRotation`: tile, untile, point, unpoint, rect, rotateWorld, northOnScreen, facing). A turn maps a tile (x, y) to (-1 - y, x), a turn about the middle of the voxel range, so the rotated world always fits in -128..127.
 - Commit: `T-V12.1: view rotation`
 
 ### T-V12.2 [ ] Draw the rotated world
