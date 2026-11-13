@@ -1927,6 +1927,34 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 - [x] A landmark takes the time from the session wheel: the session sheet offers "New building" or any landmark that can be worked on, and shows the whole stages the minutes make (leftover minutes count toward the next stage)
 - [x] Chichén Itzá, Petra, Christ the Redeemer, the Easter Island Moai and the Space Needle (Machu Picchu was dropped, the Great Wall is left out for now)
 
+## Phase V11: districts, growing the island in blocks of 64 (decided 2026-11-12)
+
+Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
+
+### T-V11.1 [ ] District rules (pure)
+- Do: `District` rules in `lib/domain`: the four directions, the 64 parcels of a district split into 8 rows from the island's edge outward, which directions have room inside the world edge, skipping parcels already claimed, 8 stages of 60 minutes, progress from minutes, failure loses only the minutes toward the next row, unlock at City, at most 3 districts, one in progress.
+- Commit: `T-V11.1: district rules`
+
+### T-V11.2 [ ] Storage
+- Do: the district project and the count of districts built in the town (schema version 10, dump and generate migrations, extend the migration test).
+- Commit: `T-V11.2: store districts`
+
+### T-V11.3 [ ] Start and finish a district session
+- Do: a district session like a landmark session in `SessionEngine` and `FocusController` (minutes from the wheel, whole stages, a finished row becomes parcels, a failed session never takes land back), plus Live Activity text.
+- Commit: `T-V11.3: district sessions`
+
+### T-V11.4 [ ] Choose it in the session sheet
+- Do: an "Expand island" choice in the session sheet beside New building and the landmarks, with the direction picker (only directions with room), the rows the time makes, and the row about to be built highlighted on the island.
+- Commit: `T-V11.4: expand island in the session sheet`
+
+### T-V11.5 [ ] Debug aid and docs
+- Do: show a full district in the debug screen without waiting, and record the rules in the docs.
+- Commit: `T-V11.5: district test aid`
+
+### T-V11.6 [ ] [device] Districts on the iPhone
+- Do: give the user steps (unlock City with the debug button, start a district, finish a row, build on it, fail a session), measure frame rate and battery with 1, 2 and 3 districts, and record in `docs/device_tests.md`.
+- Commit: `T-V11.6: record districts device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.

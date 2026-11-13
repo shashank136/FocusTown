@@ -423,6 +423,17 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - A land session claims one parcel when it completes. It costs no workers and leaves no ruin if it fails. Its length is 25 minutes for the first parcel, 5 more for every 4 parcels claimed, at most 90.
 - Not in this version: gardens as buildable things, the globe, the showcase, a low-detail island view.
 
+## Districts: growing the island in blocks of 64 (Phase V11, decided 2026-11-12)
+
+- A district is an 8 x 8 block of plots (64) added on one side (north, east, south or west) of the island. It is built as a project over several sessions, like a landmark, and replaces the idea of claiming land a square at a time for big growth. The single-square "Extend land" session stays for small gaps and for keeping space between buildings.
+- It grows outward row by row: the row next to the island first. A district has 8 stages, one per row of 8 plots. Each finished stage adds a full row, which is ordinary land from then on (build on it, or leave it as a garden). A castle or landmark needs a 2 x 2 block, so it fits once two rows exist.
+- Minutes: the project takes 60 minutes per stage (8 hours in all). Like a landmark, it takes its time from the session wheel: the minutes make whole stages, and the leftover counts toward the next row. Any wheel length from 10 to 120 minutes works.
+- Land is never taken back. A failed session (abandoned or left too long) only loses the minutes put toward the next, unfinished row; every finished row stays, because buildings may stand on it.
+- Unlock and limits: it unlocks at City level (6,000 focus minutes). One district is in progress at a time. At first at most 3 districts in all, to keep the frame rate and battery (raise it only after measuring on the iPhone). The district has to fit inside the world's edge (parcel columns and rows -18 to 16): with the starting island that leaves room for one district east or south and two north or west. Only directions with room are offered.
+- Squares of the district that are already claimed (single parcels) are skipped: they stay as they are and count as done for their row.
+- The user picks the direction when starting; the row about to be built can be shown highlighted on the island before starting.
+- Later (not now): a globe view for choosing and showing off the districts.
+
 ## Multi-plot buildings (decided 2026-11-12)
 
 - A castle (91 to 120 minutes) is twice as wide as other buildings: it stands on a 2 x 2 block of four plots (14 x 14 tiles) instead of one. Every other tier still takes one plot. The pyramid, the castle tier's second look, takes the same block.
