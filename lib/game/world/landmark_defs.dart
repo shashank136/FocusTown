@@ -17,6 +17,8 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _tajMahal(w, ox, oy, stage);
     case Landmark.statueOfLiberty:
       _statueOfLiberty(w, ox, oy, stage);
+    case Landmark.colosseum:
+      _colosseum(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -238,4 +240,65 @@ void _statueOfLiberty(VoxelWorld w, int ox, int oy, int stage) {
       ..set(ox + 4, oy + 6, 13, Blocks.plank);
   }
   if (stage >= 12) w.fill(ox + 7, oy + 5, 20, ox + 7, oy + 5, 21, Blocks.wool);
+}
+
+// The Colosseum: a ring (a 12 x 12 square without its four corner cells) of
+// three tiers of arches, each closed by a solid band, an attic with windows,
+// seating terraces inside, a podium in the arena and banners on top. The
+// arches are every other cell; the main gate on the front is open from the
+// start. Stages: 1 floor, 2-7 the tiers (arches, then band), 8 attic,
+// 9-10 terraces, 11 podium, 12 banners.
+void _colosseum(VoxelWorld w, int ox, int oy, int stage) {
+  bool onRing(int x, int y) {
+    final edge = x == 0 || x == 11 || y == 0 || y == 11;
+    final corner = (x == 0 || x == 11) && (y == 0 || y == 11);
+    return edge && !corner;
+  }
+
+  // Every ring cell at [z] (a solid band), or only the pillars (even cells)
+  // between arches, with [window] in the arches when given.
+  void ring(int z, {bool solid = false, BlockMaterial? window}) {
+    for (var x = 0; x < 12; x++) {
+      for (var y = 0; y < 12; y++) {
+        if (!onRing(x, y)) continue;
+        final arch = (x + y).isOdd && !solid;
+        if (arch && window == null) continue;
+        w.set(ox + x, oy + y, z, arch ? window! : Blocks.stone);
+      }
+    }
+  }
+
+  if (stage >= 1) w.fill(ox + 2, oy + 2, 1, ox + 9, oy + 9, 1, Blocks.plank);
+  // Three tiers: arches over two levels (stage 2, 4, 6), a band (3, 5, 7).
+  for (var tier = 0; tier < 3; tier++) {
+    final base = 3 * tier + 1;
+    if (stage >= 2 * tier + 2) {
+      ring(base);
+      ring(base + 1);
+    }
+    if (stage >= 2 * tier + 3) ring(base + 2, solid: true);
+  }
+  if (stage >= 8) {
+    ring(10, window: Blocks.glass);
+    ring(11, window: Blocks.glass);
+  }
+  // The gate on the front.
+  for (final z in [1, 2]) {
+    w
+      ..remove(ox + 5, oy + 11, z)
+      ..remove(ox + 6, oy + 11, z);
+  }
+  // Seating terraces inside: three stepped rings.
+  if (stage >= 9) w.ring(ox + 2, oy + 2, 8, 8, 2, Blocks.cobble);
+  if (stage >= 10) {
+    w
+      ..ring(ox + 3, oy + 3, 6, 6, 3, Blocks.cobble)
+      ..ring(ox + 4, oy + 4, 4, 4, 4, Blocks.cobble);
+  }
+  if (stage >= 11) w.fill(ox + 5, oy + 5, 2, ox + 6, oy + 6, 2, Blocks.stone);
+  if (stage >= 12) {
+    for (final (x, y) in [(1, 0), (10, 0), (1, 11), (10, 11)]) {
+      w.set(ox + x, oy + y, 12, Blocks.wool);
+    }
+  }
 }

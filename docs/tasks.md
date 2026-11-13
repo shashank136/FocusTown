@@ -1922,7 +1922,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 - [x] Pagoda
 - [x] Taj Mahal
 - [x] Statue of Liberty
-- [ ] Colosseum
+- [x] Colosseum
 - [ ] A way to see and test the landmarks on the map without waiting for the level or the time
 
 ## Phase L: App Store submission (after V2 and LA)

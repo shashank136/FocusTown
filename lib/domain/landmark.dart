@@ -42,6 +42,14 @@ enum Landmark {
     unlockLevel: TownLevel.town,
   ),
 
+  /// The Colosseum: 12 stages of 40 minutes each, from City.
+  colosseum(
+    title: 'Colosseum',
+    stages: 12,
+    minutesPerStage: 40,
+    unlockLevel: TownLevel.city,
+  ),
+
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
   eiffel(
     title: 'Eiffel Tower',
