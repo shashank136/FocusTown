@@ -1971,8 +1971,9 @@ Look at the island from the north, east, south or west (the view turns in steps 
 - Done: `TownRenderer.setRotation` (blocks, preview, workers and their facing, particles, outlines, the camera's island box and region are turned on the way in) and `TownGame.rotate(by)` (keeps the camera on the same spot, ends a glide, turns the tap position back to the world). Tests: `test/game/rotated_view_test.dart`.
 - Commit: `T-V12.2: draw the rotated world`
 
-### T-V12.3 [ ] Rotate buttons, compass and taps
+### T-V12.3 [x] Rotate buttons, compass and taps
 - Do: two round buttons (turn left, turn right) and a small compass showing where north is, beside the bottom row; taps on plots and ruins keep working in every view; the camera stays on the same spot of the island.
+- Done: `lib/ui/compass.dart` (`Compass`), `TownGame.view` (a notifier for the compass), a column on the right above the bottom row: compass, Turn left, Turn right (always visible); taps work in every view (tested). Checked on the simulator with a real tap.
 - Commit: `T-V12.3: rotate buttons`
 
 ### T-V12.4 [ ] [device] Rotate on the iPhone

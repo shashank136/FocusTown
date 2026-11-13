@@ -21,8 +21,10 @@ import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/workers/worker_model.dart';
 import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
+import 'package:focus_town/game/world/view_rotation.dart';
 import 'package:focus_town/platform/power_state.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
+import 'package:focus_town/ui/compass.dart';
 import 'package:focus_town/ui/home_screen.dart';
 import 'package:focus_town/ui/landmarks_screen.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
@@ -185,6 +187,46 @@ void main() {
     // Same size, so they read as one row.
     expect(tester.getSize(landmarks).height, tester.getSize(start).height);
     expect(tester.getSize(recenter).height, tester.getSize(start).height);
+  });
+
+  testWidgets('the turn buttons look at the island from the other sides', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(_game.renderer.rotation, ViewRotation.none);
+    await tester.tap(find.byTooltip('Turn right'));
+    await tester.pump();
+    expect(_game.renderer.rotation, const ViewRotation(1));
+    await tester.tap(find.byTooltip('Turn right'));
+    await tester.tap(find.byTooltip('Turn right'));
+    await tester.tap(find.byTooltip('Turn right'));
+    await tester.pump();
+    expect(_game.renderer.rotation, ViewRotation.none); // all the way round
+    await tester.tap(find.byTooltip('Turn left'));
+    await tester.pump();
+    expect(_game.renderer.rotation, const ViewRotation(3));
+  });
+
+  testWidgets('a compass shows which way north is, and follows the turns', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(find.byType(Compass), findsOneWidget);
+    final before = tester.widget<Compass>(find.byType(Compass)).rotation;
+    await tester.tap(find.byTooltip('Turn right'));
+    await tester.pump();
+    expect(
+      tester.widget<Compass>(find.byType(Compass)).rotation,
+      isNot(before),
+    );
+  });
+
+  testWidgets('the turn buttons stay while a session runs', (tester) async {
+    final c = await _pump(tester);
+    await c.read(focusControllerProvider.notifier).start(25);
+    await tester.pump();
+    expect(find.byTooltip('Turn right'), findsOneWidget);
+    expect(find.byTooltip('Turn left'), findsOneWidget);
   });
 
   testWidgets('a completed hut reaches the game as a new town', (tester) async {

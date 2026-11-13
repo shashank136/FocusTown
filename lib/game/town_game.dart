@@ -63,6 +63,9 @@ class TownGame extends FlameGame
   /// Draws the sky and the town.
   final TownRenderer renderer;
 
+  /// The side the island is seen from, for the compass.
+  final ValueNotifier<ViewRotation> view = ValueNotifier(ViewRotation.none);
+
   /// Falls back to a still picture when drawing fails or crawls.
   final RenderGuard guard;
 
@@ -320,6 +323,7 @@ class TownGame extends FlameGame
     final cam = renderer.camera;
     final center = cam?.centerWorld;
     renderer.setRotation(next);
+    view.value = next;
     if (cam != null && center != null) {
       final (wx, wy) = old.unpoint(center.x, center.y);
       final (nx, ny) = next.point(wx, wy);

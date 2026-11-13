@@ -18,6 +18,8 @@ import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
+import 'package:focus_town/game/world/view_rotation.dart';
+import 'package:focus_town/ui/compass.dart';
 import 'package:focus_town/ui/debug_screen.dart';
 import 'package:focus_town/ui/hud.dart';
 import 'package:focus_town/ui/landmarks_screen.dart';
@@ -255,12 +257,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     required String tooltip,
     required IconData icon,
     required VoidCallback onPressed,
+    double size = _barHeight,
   }) => IconButton.filledTonal(
     tooltip: tooltip,
     icon: Icon(icon),
-    iconSize: 26,
+    iconSize: size == _barHeight ? 26 : 22,
     style: IconButton.styleFrom(
-      fixedSize: const Size(_barHeight, _barHeight),
+      fixedSize: Size(size, size),
       backgroundColor: Colors.white.withValues(alpha: 0.85),
       foregroundColor: Colors.black87,
     ),
@@ -493,6 +496,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       tooltip: 'Recenter town',
                       icon: Icons.my_location,
                       onPressed: _game.recenter,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Look at the island from the other sides: the compass and two turn
+          // buttons above the bottom row, on the right.
+          SafeArea(
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  right: 16 + (_barHeight - 44) / 2,
+                  bottom: 24 + _barHeight + 12,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ValueListenableBuilder<ViewRotation>(
+                      valueListenable: _game.view,
+                      builder: (_, rotation, _) => Compass(rotation: rotation),
+                    ),
+                    const SizedBox(height: 8),
+                    _roundButton(
+                      tooltip: 'Turn left',
+                      icon: Icons.rotate_left,
+                      size: 44,
+                      onPressed: () => _game.rotate(-1),
+                    ),
+                    const SizedBox(height: 8),
+                    _roundButton(
+                      tooltip: 'Turn right',
+                      icon: Icons.rotate_right,
+                      size: 44,
+                      onPressed: () => _game.rotate(1),
                     ),
                   ],
                 ),
