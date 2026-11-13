@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -57,6 +58,10 @@ TownState townFromRows(TownRow town, List<BuildingRow> buildings) {
     emergencyPauses: town.emergencyPauses,
     emergencyWeek: week == null ? null : LocalDate.parse(week),
     parcels: Parcel.decodeList(town.parcels),
+    districts: decodeDistricts(town.districts),
+    districtProject: town.districtProject == null
+        ? null
+        : DistrictProject.decode(town.districtProject!),
   );
 }
 
@@ -72,6 +77,8 @@ TownsCompanion townToRow(TownState state) => TownsCompanion(
   emergencyPauses: Value(state.emergencyPauses),
   emergencyWeek: Value(state.emergencyWeek?.toIso()),
   parcels: Value(Parcel.encodeList(state.parcels)),
+  districts: Value(encodeDistricts(state.districts)),
+  districtProject: Value(state.districtProject?.encode()),
 );
 
 /// One row per placed or queued building, all stamped [now].

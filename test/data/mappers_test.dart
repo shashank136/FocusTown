@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -30,6 +31,8 @@ TownRow _townRowFrom(TownState s) {
     emergencyPauses: c.emergencyPauses.value,
     emergencyWeek: c.emergencyWeek.value,
     parcels: c.parcels.value,
+    districts: c.districts.value,
+    districtProject: c.districtProject.value,
   );
 }
 
@@ -103,6 +106,8 @@ void main() {
     emergencyPauses: 0,
     emergencyWeek: LocalDate.parse('2026-03-02'),
     parcels: const [Parcel(-1, 3), Parcel(8, 0)],
+    districts: const [DistrictSide.east, DistrictSide.west],
+    districtProject: const DistrictProject(DistrictSide.north, 130),
   );
 
   group('town', () {
@@ -112,6 +117,14 @@ void main() {
         _buildingRowsFrom(full, now),
       );
       expect(back, full);
+    });
+
+    test('no district project maps to null and back', () {
+      final s = full.copyWith(clearDistrictProject: true);
+      expect(townToRow(s).districtProject.value, isNull);
+      final back = townFromRows(_townRowFrom(s), _buildingRowsFrom(s, now));
+      expect(back.districtProject, isNull);
+      expect(back.districts, s.districts);
     });
 
     test('null dates map to null and back', () {

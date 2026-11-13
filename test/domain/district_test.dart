@@ -18,6 +18,19 @@ TownState _city({
 );
 
 void main() {
+  group('text form', () {
+    test('sides and the project are written and read back', () {
+      expect(encodeDistricts(const []), '');
+      expect(decodeDistricts(''), isEmpty);
+      const sides = [DistrictSide.east, DistrictSide.north];
+      expect(encodeDistricts(sides), 'east,north');
+      expect(decodeDistricts('east,north'), sides);
+      const project = DistrictProject(DistrictSide.west, 130);
+      expect(project.encode(), 'west:130');
+      expect(DistrictProject.decode('west:130'), project);
+    });
+  });
+
   group('rows', () {
     test('a district is 8 rows of 8 parcels, outward from the island', () {
       expect(districtRow(DistrictSide.east, 0, 0), [

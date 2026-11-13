@@ -5,6 +5,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -34,6 +35,18 @@ void main() {
 
   Future<void> insert(Session s) =>
       db.into(db.sessions).insert(sessionToRow(s));
+
+  test('districts are saved with the town and loaded back', () async {
+    await repo.loadOrCreate();
+    final town = TownState.initial().copyWith(
+      districts: const [DistrictSide.east],
+      districtProject: const DistrictProject(DistrictSide.west, 130),
+    );
+    await repo.saveTown(town);
+    expect(await repo.loadOrCreate(), town);
+    await repo.saveTown(town.copyWith(clearDistrictProject: true));
+    expect((await repo.loadOrCreate()).districtProject, isNull);
+  });
 
   group('loadOrCreate', () {
     test('first call seeds the initial town', () async {

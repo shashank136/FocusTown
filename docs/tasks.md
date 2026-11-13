@@ -1936,8 +1936,9 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 - Done: `lib/domain/district.dart` (sides, `DistrictProject`, `districtRow`, `districtFits`) and `TownRules.districtState`, `beginDistrict`, `applyDistrictMinutes`, `applyDistrictFailed`; `TownState` has `districts` and `districtProject` (not stored yet: T-V11.2). Districts are laid out as arms of the starting island, so on a side the next district follows the last outward. Tests: `test/domain/district_test.dart`.
 - Commit: `T-V11.1: district rules`
 
-### T-V11.2 [ ] Storage
+### T-V11.2 [x] Storage
 - Do: the district project and the count of districts built in the town (schema version 10, dump and generate migrations, extend the migration test).
+- Done: schema version 10 (`towns.districts` as `east,north`, `towns.district_project` as `east:130`), migration from 1 to 9 tested, `drift_schema_v10.json` and `schema_v10.dart` generated; `DistrictProject.encode/decode`, `encodeDistricts/decodeDistricts`; mappers and the repository save and load them.
 - Commit: `T-V11.2: store districts`
 
 ### T-V11.3 [ ] Start and finish a district session

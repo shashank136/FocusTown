@@ -38,11 +38,24 @@ class DistrictProject {
   /// Creates a project.
   const new(this.side, this.progress);
 
+  /// Reads `side:progress` as written by [encode].
+  // ignore: unnecessary_type_name_in_constructor, shorthand not valid for factories
+  factory DistrictProject.decode(String s) {
+    final parts = s.split(':');
+    return DistrictProject(
+      DistrictSide.values.byName(parts[0]),
+      int.parse(parts[1]),
+    );
+  }
+
   /// Where it is built.
   final DistrictSide side;
 
   /// Focus minutes put in so far (0 to [kDistrictMinutes]).
   final int progress;
+
+  /// Writes the project as `side:progress`.
+  String encode() => '${side.name}:$progress';
 
   /// Whole rows done.
   int get rows => (progress ~/ kMinutesPerDistrictRow).clamp(0, kDistrictRows);
@@ -87,3 +100,12 @@ bool districtFits(DistrictSide side, int index) {
   }
   return true;
 }
+
+/// Writes the finished districts as `east,north` (empty for none).
+String encodeDistricts(List<DistrictSide> sides) =>
+    sides.map((s) => s.name).join(',');
+
+/// Reads a list written by [encodeDistricts].
+List<DistrictSide> decodeDistricts(String s) => s.isEmpty
+    ? const []
+    : [for (final name in s.split(',')) DistrictSide.values.byName(name)];

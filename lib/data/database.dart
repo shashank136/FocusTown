@@ -38,6 +38,10 @@ class Towns extends Table {
       boolean().withDefault(const Constant(false))();
   // claimed land beyond the starting island, as gx:gy,gx:gy
   TextColumn get parcels => text().withDefault(const Constant(''))();
+  // finished districts, as east,north (the side of each, in order)
+  TextColumn get districts => text().withDefault(const Constant(''))();
+  // the district being built, as east:130 (side and minutes), or null
+  TextColumn get districtProject => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -102,7 +106,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 9;
+  static const currentSchemaVersion = 10;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -123,6 +127,11 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v10: districts, the island grown in blocks of 64.
+      if (from < 10) {
+        await m.addColumn(towns, towns.districts);
+        await m.addColumn(towns, towns.districtProject);
+      }
       // v9: landmarks, built over several sessions.
       if (from < 9) {
         await m.addColumn(buildings, buildings.landmark);
