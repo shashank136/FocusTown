@@ -160,6 +160,29 @@ void main() {
     expect(_game.towns.last, TownState.initial());
   });
 
+  testWidgets('the bottom buttons sit on one level, Start in the middle', (
+    tester,
+  ) async {
+    await _pump(tester);
+    double centerY(Finder f) => tester.getCenter(f).dy;
+    final landmarks = find.byTooltip('Landmarks');
+    final start = find.widgetWithText(FilledButton, 'Start focus');
+    final recenter = find.byTooltip('Recenter town');
+    expect(centerY(landmarks), closeTo(centerY(start), 0.5));
+    expect(centerY(recenter), closeTo(centerY(start), 0.5));
+    expect(
+      tester.getCenter(landmarks).dx,
+      lessThan(tester.getCenter(start).dx),
+    );
+    expect(
+      tester.getCenter(recenter).dx,
+      greaterThan(tester.getCenter(start).dx),
+    );
+    // Same size, so they read as one row.
+    expect(tester.getSize(landmarks).height, tester.getSize(start).height);
+    expect(tester.getSize(recenter).height, tester.getSize(start).height);
+  });
+
   testWidgets('a completed hut reaches the game as a new town', (tester) async {
     final c = await _pump(tester);
     final controller = c.read(focusControllerProvider.notifier);

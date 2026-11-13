@@ -40,6 +40,9 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
+// The height of every button in the bottom row.
+const _barHeight = 56.0;
+
 class _HomeScreenState extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   late final TownGame _game =
@@ -249,6 +252,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _game.inBackground = state != AppLifecycleState.resumed;
   }
 
+  // A round side button of the bottom row, as tall as the Start button.
+  Widget _roundButton({
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) => IconButton.filledTonal(
+    tooltip: tooltip,
+    icon: Icon(icon),
+    iconSize: 26,
+    style: IconButton.styleFrom(
+      fixedSize: const Size(_barHeight, _barHeight),
+      backgroundColor: Colors.white.withValues(alpha: 0.85),
+      foregroundColor: Colors.black87,
+    ),
+    onPressed: onPressed,
+  );
+
   @override
   Widget build(BuildContext context) {
     _game.reducedMotion = MediaQuery.of(context).disableAnimations;
@@ -330,30 +350,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
           ),
-          // The way in: pick a duration and start (hidden while building).
-          if (active == null && placement == null)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(220, 56),
-                    ),
-                    onPressed: () => unawaited(
-                      showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        useSafeArea: true,
-                        builder: (_) => const SessionSetupSheet(),
-                      ),
-                    ),
-                    child: const Text('Start focus'),
-                  ),
-                ),
-              ),
-            ),
           // Choose-a-plot mode: taps pick a plot; pan and zoom still work.
           if (placement != null)
             Positioned.fill(
@@ -446,33 +442,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ),
                   ),
           ),
-          // The landmarks (hidden while a session runs or a plot is chosen).
-          if (active == null && placement == null)
-            SafeArea(
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: IconButton(
-                  tooltip: 'Landmarks',
-                  icon: const Icon(Icons.account_balance),
-                  color: Colors.black54,
-                  iconSize: 28,
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const LandmarksScreen(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // The bottom row, all on one level: the landmarks, the way in (pick
+          // a duration and start) and recenter. The landmarks and the way in
+          // are hidden while building or choosing a plot.
           SafeArea(
             child: Align(
-              alignment: Alignment.bottomRight,
-              child: IconButton(
-                tooltip: 'Recenter town',
-                icon: const Icon(Icons.my_location),
-                color: Colors.black54,
-                iconSize: 28,
-                onPressed: _game.recenter,
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Row(
+                  children: [
+                    if (active == null && placement == null)
+                      _roundButton(
+                        tooltip: 'Landmarks',
+                        icon: Icons.castle,
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => const LandmarksScreen(),
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(width: _barHeight),
+                    Expanded(
+                      child: active == null && placement == null
+                          ? Center(
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  minimumSize: const Size(200, _barHeight),
+                                ),
+                                onPressed: () => unawaited(
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    useSafeArea: true,
+                                    builder: (_) => const SessionSetupSheet(),
+                                  ),
+                                ),
+                                child: const Text('Start focus'),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    _roundButton(
+                      tooltip: 'Recenter town',
+                      icon: Icons.my_location,
+                      onPressed: _game.recenter,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
