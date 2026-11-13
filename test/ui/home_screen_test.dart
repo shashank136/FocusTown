@@ -178,6 +178,10 @@ void main() {
       tester.getCenter(recenter).dx,
       greaterThan(tester.getCenter(start).dx),
     );
+    // At the bottom of the screen, not the middle.
+    final bottom =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    expect(bottom - centerY(start), lessThan(100));
     // Same size, so they read as one row.
     expect(tester.getSize(landmarks).height, tester.getSize(start).height);
     expect(tester.getSize(recenter).height, tester.getSize(start).height);

@@ -467,6 +467,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     Expanded(
                       child: active == null && placement == null
                           ? Center(
+                              heightFactor: 1,
                               child: FilledButton(
                                 style: FilledButton.styleFrom(
                                   minimumSize: const Size(200, _barHeight),
