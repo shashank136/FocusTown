@@ -20,8 +20,7 @@ class _Flaky extends TownRepository {
   bool broken = false;
 
   @override
-  Future<void> saveSessionStarted(TownState town, Session session) =>
-      broken
+  Future<void> saveSessionStarted(TownState town, Session session) => broken
       ? Future.error(const SaveFailedException())
       : super.saveSessionStarted(town, session);
 

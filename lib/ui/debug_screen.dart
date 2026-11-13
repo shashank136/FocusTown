@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/domain/elapsed.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/ui/debug_log_view.dart';
 import 'package:focus_town/ui/event_log_panel.dart';
@@ -42,6 +43,17 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   Future<void> _refreshPermission() async {
     final granted = await ref.read(notifierProvider).hasPermission();
     if (mounted) setState(() => _notificationsGranted = granted);
+  }
+
+  Future<void> _resetLandmark() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref
+          .read(focusControllerProvider.notifier)
+          .resetLandmark(Landmark.eiffel);
+    } on StateError catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 
   Future<void> _requestPermission() async {
@@ -87,6 +99,10 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
               value: ref.watch(shortSessionsProvider),
               onChanged: (_) =>
                   ref.read(shortSessionsProvider.notifier).toggle(),
+            ),
+            OutlinedButton(
+              onPressed: () => unawaited(_resetLandmark()),
+              child: const Text('Reset Eiffel Tower'),
             ),
             const FocusDebugPanel(),
             const WorldStatsCard(),

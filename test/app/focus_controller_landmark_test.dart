@@ -163,4 +163,24 @@ void main() {
       expect(_project(c)!.progress, 20);
     },
   );
+
+  test('resetting a landmark (a testing aid) lets it be built again', () async {
+    final (c, n) = await ready();
+    await n.startLandmark(Landmark.eiffel, 60);
+    await finish(c, n, 60);
+    await n.resetLandmark(Landmark.eiffel);
+    expect(_project(c), isNull);
+    await n.startLandmark(Landmark.eiffel, 30);
+    expect(_project(c)!.progress, 0);
+    // It is saved, not just shown.
+    final again = _container();
+    final town = (await again.read(focusControllerProvider.future)).town;
+    expect(town.buildings.where((b) => b.landmark != null), hasLength(1));
+  });
+
+  test('a landmark cannot be reset while a session is running', () async {
+    final (_, n) = await ready();
+    await n.startLandmark(Landmark.eiffel, 30);
+    await expectLater(n.resetLandmark(Landmark.eiffel), throwsStateError);
+  });
 }

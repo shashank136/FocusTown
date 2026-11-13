@@ -6,6 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/platform/testing/fake_live_status_sink.dart';
@@ -94,5 +95,27 @@ void main() {
     await tester.tap(finder);
     await tester.pump();
     expect(c.read(shortSessionsProvider), isTrue);
+  });
+
+  testWidgets('the debug screen can reset the Eiffel Tower', (tester) async {
+    final c = _container();
+    await c.read(focusControllerProvider.future);
+    final n = c.read(focusControllerProvider.notifier);
+    await n.startLandmark(Landmark.eiffel, 30);
+    _clock.advance(const Duration(minutes: 31));
+    await n.tick();
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: c,
+        child: const MaterialApp(home: DebugScreen()),
+      ),
+    );
+    await tester.pump();
+    final finder = find.text('Reset Eiffel Tower');
+    await tester.scrollUntilVisible(finder, 200);
+    await tester.tap(finder);
+    await tester.pump();
+    final town = c.read(focusControllerProvider).requireValue.town;
+    expect(town.buildings.where((b) => b.landmark != null), isEmpty);
   });
 }
