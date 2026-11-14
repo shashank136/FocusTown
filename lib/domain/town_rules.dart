@@ -9,14 +9,13 @@ import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
 
-/// Where a district side stands for a town: waiting for the district being
-/// built, at the limit, with no room on that side, ready to start, or in
-/// progress. Districts are never locked: any town can grow its island.
+/// Where a district side stands for a town: at the limit, with no room on
+/// that side, ready to start, or in progress. Districts are never locked, and
+/// any side can be chosen at any time: the rows built on a side stay, and the
+/// side goes on from them.
 enum DistrictState {
-  /// Another district is being built.
-  busy,
-
-  /// The most districts a town can have are built.
+  /// The most districts a town can have are started, and this side is not one
+  /// of them.
   limit,
 
   /// The next district on this side would leave the world.
@@ -416,25 +415,62 @@ class TownRules {
     return _withProgress(town, l, (p) => max(0, p - l.minutesPerStage));
   }
 
-  /// Where a district on [side] stands for [town].
-  static DistrictState districtState(TownState town, DistrictSide side) {
-    final project = town.districtProject;
-    if (project != null) {
-      return project.side == side
-          ? DistrictState.inProgress
-          : DistrictState.busy;
+  /// How many rows of the next district on [side] are land already: the rows
+  /// from the island outward whose 8 squares are all owned.
+  static int builtRows(TownState town, DistrictSide side) {
+    final index = town.districts.where((d) => d == side).length;
+    final owned = {for (final p in town.parcels) (p.gx, p.gy)};
+    var rows = 0;
+    while (rows < kDistrictRows &&
+        districtRow(
+          side,
+          index,
+          rows,
+        ).every((p) => owned.contains((p.gx, p.gy)))) {
+      rows++;
     }
-    if (town.districts.length >= kMaxDistricts) return DistrictState.limit;
-    return districtFits(side, town.districts.where((d) => d == side).length)
-        ? DistrictState.ready
-        : DistrictState.noRoom;
+    return rows;
   }
 
-  /// Starts a district on [side]. Null when it cannot be started.
-  static TownState? beginDistrict(TownState town, DistrictSide side) =>
-      districtState(town, side) == DistrictState.ready
-      ? town.copyWith(districtProject: DistrictProject(side, 0))
-      : null;
+  // Districts that are finished or half built: the ones that count toward
+  // the limit.
+  static int _startedDistricts(TownState town) => [
+    for (final side in DistrictSide.values)
+      town.districts.where((d) => d == side).length +
+          (builtRows(town, side) > 0 ? 1 : 0),
+  ].fold(0, (a, b) => a + b);
+
+  /// Where a district on [side] stands for [town].
+  static DistrictState districtState(TownState town, DistrictSide side) {
+    if (town.districtProject?.side == side) return DistrictState.inProgress;
+    final index = town.districts.where((d) => d == side).length;
+    if (!districtFits(side, index)) return DistrictState.noRoom;
+    // A half-built district can always be gone on with; a new one cannot
+    // start once the limit is reached.
+    final started = builtRows(town, side) > 0;
+    if (!started && _startedDistricts(town) >= kMaxDistricts) {
+      return DistrictState.limit;
+    }
+    return DistrictState.ready;
+  }
+
+  /// Starts (or goes on with) the district on [side]. On another side than
+  /// the one being built, the minutes toward that side's next row are lost
+  /// and the rows already built stay; the new side goes on from the rows it
+  /// has. Null when it cannot be started.
+  static TownState? beginDistrict(TownState town, DistrictSide side) {
+    final state = districtState(town, side);
+    if (state != DistrictState.ready && state != DistrictState.inProgress) {
+      return null;
+    }
+    if (state == DistrictState.inProgress) return town;
+    return town.copyWith(
+      districtProject: DistrictProject(
+        side,
+        builtRows(town, side) * kMinutesPerDistrictRow,
+      ),
+    );
+  }
 
   /// Adds [minutes] to the district being built: every row the minutes
   /// finish becomes land at once (parcels already claimed are skipped and

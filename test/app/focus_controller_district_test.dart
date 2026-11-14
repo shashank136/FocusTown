@@ -121,12 +121,36 @@ void main() {
     },
   );
 
-  test('another side has to wait for the district being built', () async {
-    final (_, n) = await ready();
-    await n.startDistrict(DistrictSide.east, 60);
+  test('any side can be started while another is being built', () async {
+    final (c, n) = await ready();
+    await n.startDistrict(DistrictSide.east, 90);
+    await finish(n, 90); // one row on the east, 30 minutes toward the next
+    final eastRows = _state(c).town.parcels;
+    await n.startDistrict(DistrictSide.west, 60);
+    expect(_state(c).active!.district, DistrictSide.west);
+    expect(
+      _state(c).town.districtProject,
+      const DistrictProject(DistrictSide.west, 0),
+    );
     await finish(n, 60);
-    await expectLater(n.startDistrict(DistrictSide.west, 60), throwsStateError);
-    await n.startDistrict(DistrictSide.east, 60); // the same one goes on
+    final town = _state(c).town;
+    // The east row is still land, and a west row came.
+    expect(town.parcels.take(8), eastRows);
+    expect(town.parcels.skip(8), districtRow(DistrictSide.west, 0, 0));
+  });
+
+  test('going back to a side goes on from its rows', () async {
+    final (c, n) = await ready();
+    await n.startDistrict(DistrictSide.east, 120);
+    await finish(n, 120); // two rows
+    await n.startDistrict(DistrictSide.north, 60);
+    await finish(n, 60);
+    await n.startDistrict(DistrictSide.east, 60);
+    await finish(n, 60); // the third east row
+    final town = _state(c).town;
+    expect(town.parcels.where((p) => p.gx >= 8), hasLength(24));
+    expect(town.districtProject!.side, DistrictSide.east);
+    expect(town.districtProject!.progress, 180);
   });
 
   test(

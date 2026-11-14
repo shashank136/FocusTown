@@ -208,9 +208,9 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(town: town, active: session));
   });
 
-  /// Starts a session of [minutes] that builds the district on [side]: the
-  /// project begins with the first session and goes on with the next ones
-  /// (only on the same side). Nothing is at risk but the minutes toward the
+  /// Starts a session of [minutes] that builds the district on [side]. Any side
+  /// can be chosen at any time: the rows built stay as land, and a side goes
+  /// on from the rows it has. Nothing is at risk but the minutes toward the
   /// next row.
   Future<void> startDistrict(DistrictSide side, int minutes) => _once(() async {
     final current = await future;
@@ -220,15 +220,11 @@ class FocusController extends AsyncNotifier<FocusState> {
     if (!BuildingTier.validDurations().contains(minutes)) {
       throw StateError('$minutes minutes is not a valid length');
     }
-    var town = current.town;
-    final project = town.districtProject;
-    if (project == null) {
-      town =
-          TownRules.beginDistrict(town, side) ??
-          (throw StateError('A district on the ${side.name} cannot start'));
-    } else if (project.side != side) {
-      throw StateError('Finish the district on the ${project.side.name} first');
-    }
+    // The side being built goes on; any other side starts from the rows it
+    // already has (the minutes toward the old side's next row are lost).
+    var town =
+        TownRules.beginDistrict(current.town, side) ??
+        (throw StateError('A district on the ${side.name} cannot start'));
     final now = TimeStamp.now(ref.read(clockProvider));
     final built = SessionEngine.startDistrict(
       id: 's${now.wall.microsecondsSinceEpoch}',

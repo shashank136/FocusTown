@@ -91,8 +91,12 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           d,
     ];
     final expand = _expand && sides.isNotEmpty && landmark == null;
+    // It opens on the side being built, else the first one that is open.
+    final building = town.districtProject?.side;
     final side = sides.contains(_side)
         ? _side!
+        : sides.contains(building)
+        ? building!
         : (sides.isEmpty ? null : sides.first);
     return SingleChildScrollView(
       child: Column(
@@ -229,6 +233,12 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     int minutes,
   ) {
     final project = town.districtProject;
+    final built = TownRules.builtRows(town, side);
+    // Leaving a side drops the minutes it has toward its next row.
+    final switching =
+        project != null &&
+        project.side != side &&
+        project.progress % kMinutesPerDistrictRow > 0;
     final rows = minutes ~/ kMinutesPerDistrictRow;
     final rest = minutes % kMinutesPerDistrictRow;
     final text = rows > 0 && rest > 0
@@ -251,10 +261,17 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         ],
       ),
       const SizedBox(height: 8),
-      if (project != null && project.side == side)
-        Text('${project.rows} of $kDistrictRows rows built')
+      if (built > 0)
+        Text('$built of $kDistrictRows rows built')
       else
         const Text('A district is 8 rows of 8 squares: 64 new plots.'),
+      if (switching)
+        Text(
+          'Switching drops the ${project.progress % kMinutesPerDistrictRow} '
+          'min toward the next row on the ${project.side.name}. The rows '
+          'built there stay.',
+          textAlign: TextAlign.center,
+        ),
       Text(text),
       const Text(
         'Nothing is at risk but the minutes toward the next row. Land that is '

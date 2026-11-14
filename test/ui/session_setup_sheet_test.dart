@@ -18,6 +18,7 @@ import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
 
@@ -660,18 +661,34 @@ void main() {
       expect(s.plannedMinutes, 120);
     });
 
-    testWidgets('a district being built is the only side offered', (
+    testWidgets('every side is offered, the one being built comes first', (
       tester,
     ) async {
-      await _open(
-        tester,
-        seed: city(project: const DistrictProject(DistrictSide.south, 130)),
+      final built = TownRules.applyDistrictMinutes(
+        TownRules.beginDistrict(
+          TownState.initial().copyWith(xp: 6000),
+          DistrictSide.south,
+        )!,
+        130,
       );
+      await _open(tester, seed: built);
       await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
       await tester.pump();
-      expect(find.widgetWithText(ChoiceChip, 'South'), findsOneWidget);
-      expect(find.widgetWithText(ChoiceChip, 'North'), findsNothing);
+      for (final side in ['North', 'East', 'South', 'West']) {
+        expect(find.widgetWithText(ChoiceChip, side), findsOneWidget);
+      }
+      // It opens on the side being built, with its rows.
       expect(find.text('2 of 8 rows built'), findsOneWidget);
+      // Another side: its own rows, and what switching costs.
+      await tester.tap(find.widgetWithText(ChoiceChip, 'North'));
+      await tester.pump();
+      expect(find.text('2 of 8 rows built'), findsNothing);
+      expect(find.textContaining('Switching drops the 10 min'), findsOneWidget);
+      // Going back to a side that has rows shows them again.
+      await tester.tap(find.widgetWithText(ChoiceChip, 'South'));
+      await tester.pump();
+      expect(find.text('2 of 8 rows built'), findsOneWidget);
+      expect(find.textContaining('Switching drops'), findsNothing);
     });
 
     testWidgets('a side with no room left is not offered', (tester) async {

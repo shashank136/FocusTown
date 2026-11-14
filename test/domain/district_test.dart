@@ -143,13 +143,19 @@ void main() {
       }
     });
 
-    test('one at a time: the others are busy, the one building shows', () {
+    test('any side can be chosen while one is being built', () {
       final t = _city(project: const DistrictProject(DistrictSide.east, 0));
       expect(
         TownRules.districtState(t, DistrictSide.east),
         DistrictState.inProgress,
       );
-      expect(TownRules.districtState(t, DistrictSide.west), DistrictState.busy);
+      for (final side in [
+        DistrictSide.north,
+        DistrictSide.south,
+        DistrictSide.west,
+      ]) {
+        expect(TownRules.districtState(t, side), DistrictState.ready);
+      }
     });
 
     test('a side with no room left says so', () {
@@ -174,10 +180,73 @@ void main() {
       );
     });
 
-    test('beginning one sets the project, and only when it is ready', () {
+    test('beginning one sets the project', () {
       final t = TownRules.beginDistrict(_city(), DistrictSide.north)!;
       expect(t.districtProject, const DistrictProject(DistrictSide.north, 0));
-      expect(TownRules.beginDistrict(t, DistrictSide.west), isNull);
+    });
+  });
+
+  group('switching sides', () {
+    test('rows built on a side are counted from the land', () {
+      var t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      expect(TownRules.builtRows(t, DistrictSide.east), 0);
+      t = TownRules.applyDistrictMinutes(t, 130);
+      expect(TownRules.builtRows(t, DistrictSide.east), 2);
+      expect(TownRules.builtRows(t, DistrictSide.west), 0);
+    });
+
+    test('a row with a square owned before does not count by itself', () {
+      final t = _city(parcels: [districtRow(DistrictSide.west, 0, 0).first]);
+      expect(TownRules.builtRows(t, DistrictSide.west), 0);
+    });
+
+    test('switching keeps the rows and drops the minutes of the old side', () {
+      var t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      t = TownRules.applyDistrictMinutes(t, 130); // two rows and 10 minutes
+      final west = TownRules.beginDistrict(t, DistrictSide.west)!;
+      expect(west.districtProject, const DistrictProject(DistrictSide.west, 0));
+      expect(west.parcels, t.parcels); // the east rows are still land
+    });
+
+    test('coming back goes on from the rows already built', () {
+      var t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      t = TownRules.applyDistrictMinutes(t, 130);
+      t = TownRules.beginDistrict(t, DistrictSide.west)!;
+      final back = TownRules.beginDistrict(t, DistrictSide.east)!;
+      expect(
+        back.districtProject,
+        const DistrictProject(DistrictSide.east, 120),
+      );
+      final more = TownRules.applyDistrictMinutes(back, 60); // the third row
+      expect(TownRules.builtRows(more, DistrictSide.east), 3);
+      expect(more.parcels.length, 24);
+    });
+
+    test('starting the side already being built keeps its minutes', () {
+      var t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      t = TownRules.applyDistrictMinutes(t, 130);
+      expect(
+        TownRules.beginDistrict(t, DistrictSide.east)!.districtProject,
+        const DistrictProject(DistrictSide.east, 130),
+      );
+    });
+
+    test('the limit counts finished and half-built districts', () {
+      var t = _city(done: [DistrictSide.east, DistrictSide.west]);
+      // A third, half built, on the north.
+      t = TownRules.beginDistrict(t, DistrictSide.north)!;
+      t = TownRules.applyDistrictMinutes(t, 120);
+      expect(
+        TownRules.districtState(t, DistrictSide.south),
+        DistrictState.limit,
+      );
+      // The half-built one can still be gone on with.
+      expect(
+        TownRules.districtState(t, DistrictSide.north),
+        DistrictState.inProgress,
+      );
+      final other = TownRules.beginDistrict(t, DistrictSide.south);
+      expect(other, isNull);
     });
   });
 
