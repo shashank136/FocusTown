@@ -62,38 +62,3 @@ class Parcel {
   @override
   String toString() => 'Parcel($gx, $gy)';
 }
-
-bool _isBase(int gx, int gy) =>
-    gx >= 0 && gx < kBaseParcelsPerSide && gy >= 0 && gy < kBaseParcelsPerSide;
-
-/// The parcels next to the island (the starting square plus [claimed]) that
-/// nobody has claimed yet, row by row. Only the four sides count as next to.
-List<Parcel> claimableParcels(List<Parcel> claimed) {
-  final owned = {for (final p in claimed) (p.gx, p.gy)};
-  bool isIsland(int gx, int gy) => _isBase(gx, gy) || owned.contains((gx, gy));
-  final found = <Parcel>{};
-  void consider(int gx, int gy) {
-    if (gx < kMinParcel || gx > kMaxParcel) return;
-    if (gy < kMinParcel || gy > kMaxParcel) return;
-    if (!isIsland(gx, gy)) found.add(Parcel(gx, gy));
-  }
-
-  void around(int gx, int gy) {
-    consider(gx - 1, gy);
-    consider(gx + 1, gy);
-    consider(gx, gy - 1);
-    consider(gx, gy + 1);
-  }
-
-  for (var gx = 0; gx < kBaseParcelsPerSide; gx++) {
-    for (var gy = 0; gy < kBaseParcelsPerSide; gy++) {
-      around(gx, gy);
-    }
-  }
-  for (final p in claimed) {
-    around(p.gx, p.gy);
-  }
-  return found.toList()..sort(
-    (a, b) => a.gy != b.gy ? a.gy.compareTo(b.gy) : a.gx.compareTo(b.gx),
-  );
-}

@@ -63,23 +63,23 @@ void main() {
     expect(s.plannedMinutes, 1);
     await n.abandon();
     _clock.advance(const Duration(minutes: 1));
-    await n.startLand(const Parcel(-1, 3));
+    await n.startLand(const Parcel(5, 5, garden: true));
     s = c.read(focusControllerProvider).requireValue.active!;
     expect(s.plannedMinutes, 1);
   });
 
   test(
-    'a short land session really claims the parcel after a minute',
+    'a short garden session really makes the garden after a minute',
     () async {
       final c = _container();
       await c.read(focusControllerProvider.future);
       c.read(shortSessionsProvider.notifier).toggle();
       final n = c.read(focusControllerProvider.notifier);
-      await n.startLand(const Parcel(-1, 3));
+      await n.startLand(const Parcel(5, 5, garden: true));
       _clock.advance(const Duration(seconds: 61));
       await n.tick();
       expect(c.read(focusControllerProvider).requireValue.town.parcels, [
-        const Parcel(-1, 3),
+        const Parcel(5, 5, garden: true),
       ]);
     },
   );

@@ -105,7 +105,6 @@ void main() {
       final start = c.read(placementProvider)!;
       expect(start.minutes, 15);
       expect(start.garden, isTrue);
-      expect(start.land, isFalse);
       p.select(used); // the starter house
       expect(c.read(placementProvider)!.plot, isNull);
       p.select(kBaseCells.length); // not a square of the island

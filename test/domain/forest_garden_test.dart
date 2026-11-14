@@ -24,12 +24,20 @@ Session _session(Parcel p) => Session(
 void main() {
   test('a garden session takes 15 minutes', () {
     expect(TownRules.gardenMinutes, 15);
-    final town = TownState.initial();
-    expect(TownRules.landMinutesFor(town, _cell), 15);
-    expect(
-      TownRules.landMinutesFor(town, const Parcel(-1, 3)),
-      TownRules.landMinutes(0),
-    );
+  });
+
+  test('land at the coast can no longer be claimed square by square', () {
+    // Growing the island is done with districts now.
+    for (final p in const [Parcel(-1, 3), Parcel(8, 0), Parcel(3, -1)]) {
+      expect(TownRules.canClaim(TownState.initial(), p), isFalse);
+      expect(
+        TownRules.canClaim(
+          TownState.initial(),
+          Parcel(p.gx, p.gy, garden: true),
+        ),
+        isFalse,
+      );
+    }
   });
 
   test('a free forest square of the island can become a garden', () {

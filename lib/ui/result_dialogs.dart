@@ -24,7 +24,7 @@ Future<void> showResultDialog(
       _ when r.repair => _repair(r),
       _ when r.landmark != null => _landmark(r),
       _ when r.district != null => _district(r),
-      _ when r.land => _land(r),
+      _ when r.land => _garden(r),
       SessionOutcome.completed => _completed(r, growthTip),
       SessionOutcome.queued => _queued(r),
       SessionOutcome.failed => _failed(r, recoveryFull),
@@ -173,12 +173,12 @@ TextStyle? _heading(BuildContext context) =>
   );
 }
 
-(String, List<(String, bool)>) _land(SessionResult r) =>
+(String, List<(String, bool)>) _garden(SessionResult r) =>
     r.outcome == SessionOutcome.completed
     ? (
-        'Land claimed',
+        'Garden made',
         [
-          ('Your island has grown.', true),
+          ('The forest square is now a garden.', true),
           if (r.xpGained > 0) ('+${r.xpGained} XP', false),
           if (r.newStreak > 0)
             (
@@ -190,9 +190,9 @@ TextStyle? _heading(BuildContext context) =>
         ],
       )
     : (
-        'Land session stopped',
+        'Garden session stopped',
         [
-          ('The land is still free. Nothing was lost.', false),
+          ('The forest is still there. Nothing was lost.', false),
           if (r.reason == OutcomeReason.leftTooLong)
             ('You were away for ${_awayText(r.awaySeconds)}', false),
         ],

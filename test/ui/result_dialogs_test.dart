@@ -119,33 +119,31 @@ void main() {
     });
   });
 
-  group('land', () {
-    SessionResult land({SessionOutcome outcome = SessionOutcome.completed}) =>
+  group('garden', () {
+    SessionResult garden({SessionOutcome outcome = SessionOutcome.completed}) =>
         SessionResult(
           outcome: outcome,
           tier: BuildingTier.hut,
           workersLost: 0,
           workersGained: 0,
           newStreak: 2,
-          xpGained: outcome == SessionOutcome.completed ? 25 : 0,
+          xpGained: outcome == SessionOutcome.completed ? 15 : 0,
           land: true,
         );
 
-    testWidgets('claimed land says the island grew, with xp and no workers', (
-      tester,
-    ) async {
-      await _show(tester, land());
-      expect(find.text('Land claimed'), findsOneWidget);
-      expect(find.text('Your island has grown.'), findsOneWidget);
-      expect(find.text('+25 XP'), findsOneWidget);
+    testWidgets('a new garden says so, with xp and no workers', (tester) async {
+      await _show(tester, garden());
+      expect(find.text('Garden made'), findsOneWidget);
+      expect(find.text('The forest square is now a garden.'), findsOneWidget);
+      expect(find.text('+15 XP'), findsOneWidget);
       expect(find.textContaining('worker'), findsNothing);
     });
 
-    testWidgets('a lost land session says nothing was lost', (tester) async {
-      await _show(tester, land(outcome: SessionOutcome.failed));
-      expect(find.text('Land session stopped'), findsOneWidget);
+    testWidgets('a lost garden session says nothing was lost', (tester) async {
+      await _show(tester, garden(outcome: SessionOutcome.failed));
+      expect(find.text('Garden session stopped'), findsOneWidget);
       expect(
-        find.text('The land is still free. Nothing was lost.'),
+        find.text('The forest is still there. Nothing was lost.'),
         findsOneWidget,
       );
     });

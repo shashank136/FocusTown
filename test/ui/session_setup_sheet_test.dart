@@ -258,7 +258,6 @@ void main() {
     await _settle(tester);
     final placement = c.read(placementProvider)!;
     expect(placement.garden, isTrue);
-    expect(placement.land, isFalse);
     expect(placement.minutes, 15);
   });
 

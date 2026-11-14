@@ -297,16 +297,6 @@ class TownGame extends FlameGame
     final (wx, wy) = renderer.rotation.unpoint(screen.x, screen.y);
     final x = wx.floor();
     final y = wy.floor();
-    // Choosing land: the outlined parcels are not plots yet.
-    for (final i in renderer.plotOutlines.where((i) => i >= kLandBase)) {
-      final plot = plotFor(i, renderer.parcels);
-      if (x >= plot.originX &&
-          x < plot.originX + kPlotSize &&
-          y >= plot.originY &&
-          y < plot.originY + kPlotSize) {
-        return i;
-      }
-    }
     return plotAtWith(renderer.parcels, x, y)?.index;
   }
 

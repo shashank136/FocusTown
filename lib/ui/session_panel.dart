@@ -35,7 +35,7 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
     super.dispose();
   }
 
-  // What the session is doing; land and repair sessions have no building.
+  // What the session is doing; garden and repair sessions have no building.
   static String _label(Session s) => s.isRepair
       ? 'Repairing a ruin'
       : s.isLandmark
@@ -43,7 +43,7 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
       : s.isDistrict
       ? 'Growing the island'
       : s.isLand
-      ? (s.land!.garden ? 'Making a garden' : 'Claiming land')
+      ? 'Making a garden'
       : s.tier.name;
 
   @override

@@ -12,7 +12,8 @@ import 'package:focus_town/platform/testing/fake_notifier.dart';
 late AppDatabase _db;
 late FakeClock _clock;
 
-const _west = Parcel(-1, 3);
+// A forest square of the island, to become a garden.
+const _west = Parcel(5, 5, garden: true);
 
 ProviderContainer _container() {
   final c = ProviderContainer(
@@ -43,45 +44,52 @@ void main() {
     return c;
   }
 
-  test('startLand starts a 25-minute session that risks nothing', () async {
-    final c = await ready();
-    await c.read(focusControllerProvider.notifier).startLand(_west);
-    final s = _state(c).active!;
-    expect(s.isLand, isTrue);
-    expect(s.land, _west);
-    expect(s.plannedMinutes, 25);
-    expect(s.workersAssigned, 0);
-  });
-
-  test('a garden parcel is remembered as one', () async {
-    final c = await ready();
-    const garden = Parcel(-1, 3, garden: true);
-    await c.read(focusControllerProvider.notifier).startLand(garden);
-    expect(_state(c).active!.land, garden);
-  });
-
-  test('only a claimable parcel can be chosen, and not mid-session', () async {
-    final c = await ready();
-    final n = c.read(focusControllerProvider.notifier);
-    await expectLater(n.startLand(const Parcel(3, 3)), throwsStateError);
-    await n.startLand(_west);
-    await expectLater(n.startLand(const Parcel(-1, 4)), throwsStateError);
-  });
+  test(
+    'startLand starts a 15-minute garden session that risks nothing',
+    () async {
+      final c = await ready();
+      await c.read(focusControllerProvider.notifier).startLand(_west);
+      final s = _state(c).active!;
+      expect(s.isLand, isTrue);
+      expect(s.land, _west);
+      expect(s.plannedMinutes, 15);
+      expect(s.workersAssigned, 0);
+    },
+  );
 
   test(
-    'finishing claims the parcel, counts as focus, and survives a restart',
+    'only a free forest square can be chosen, and not mid-session',
+    () async {
+      final c = await ready();
+      final n = c.read(focusControllerProvider.notifier);
+      // Not a garden, and land off the island, are refused.
+      await expectLater(n.startLand(const Parcel(5, 5)), throwsStateError);
+      await expectLater(
+        n.startLand(const Parcel(-1, 3, garden: true)),
+        throwsStateError,
+      );
+      await n.startLand(_west);
+      await expectLater(
+        n.startLand(const Parcel(4, 5, garden: true)),
+        throwsStateError,
+      );
+    },
+  );
+
+  test(
+    'finishing makes the garden, counts as focus, and survives a restart',
     () async {
       final c = await ready();
       final n = c.read(focusControllerProvider.notifier);
       await n.startLand(_west);
-      _clock.advance(const Duration(minutes: 26));
+      _clock.advance(const Duration(minutes: 16));
       await n.tick();
       expect(_state(c).town.parcels, [_west]);
-      expect(_state(c).town.xp, 25);
+      expect(_state(c).town.xp, 15);
       final r = _state(c).lastResult!;
       expect(r.land, isTrue);
       expect(r.outcome, SessionOutcome.completed);
-      expect(r.xpGained, 25);
+      expect(r.xpGained, 15);
       expect(r.workersLost, 0);
       final again = _container();
       await again.read(focusControllerProvider.future);
@@ -89,7 +97,7 @@ void main() {
     },
   );
 
-  test('giving up claims nothing and costs nothing', () async {
+  test('giving up makes no garden and costs nothing', () async {
     final c = await ready();
     final n = c.read(focusControllerProvider.notifier);
     final before = _state(c).town;
@@ -104,24 +112,5 @@ void main() {
     expect(r.outcome, SessionOutcome.failed);
     expect(r.land, isTrue);
     expect(r.workersLost, 0);
-  });
-
-  test('the next land session is longer after 4 parcels', () async {
-    final c = await ready();
-    final n = c.read(focusControllerProvider.notifier);
-    for (final p in const [
-      Parcel(-1, 0),
-      Parcel(-1, 1),
-      Parcel(-1, 2),
-      Parcel(-1, 3),
-    ]) {
-      await n.startLand(p);
-      _clock.advance(const Duration(minutes: 26));
-      await n.tick();
-      n.clearResult();
-      _clock.advance(const Duration(minutes: 1));
-    }
-    await n.startLand(const Parcel(-1, 4));
-    expect(_state(c).active!.plannedMinutes, 30);
   });
 }

@@ -268,19 +268,11 @@ void main() {
         final n = c.read(focusControllerProvider.notifier);
         await n.abandon();
         _clock.advance(const Duration(minutes: 1));
-        await n.startLand(const Parcel(-1, 3));
-      });
-      await _settle(tester);
-      expect(find.text('Claiming land'), findsOneWidget);
-      expect(find.text('hut'), findsNothing);
-      await tester.runAsync(() async {
-        final n = c.read(focusControllerProvider.notifier);
-        await n.abandon();
-        _clock.advance(const Duration(minutes: 1));
-        await n.startLand(const Parcel(-1, 3, garden: true));
+        await n.startLand(const Parcel(5, 5, garden: true));
       });
       await _settle(tester);
       expect(find.text('Making a garden'), findsOneWidget);
+      expect(find.text('hut'), findsNothing);
       await tester.runAsync(() async {
         final n = c.read(focusControllerProvider.notifier);
         await n.abandon();
@@ -320,13 +312,13 @@ void main() {
       expect(find.text('Emergency pause'), findsNothing);
     });
 
-    testWidgets('a land session has no pause button', (tester) async {
+    testWidgets('a garden session has no pause button', (tester) async {
       final c = await _pump(tester);
       await tester.runAsync(() async {
         final n = c.read(focusControllerProvider.notifier);
         await n.abandon();
         _clock.advance(const Duration(minutes: 1));
-        await n.startLand(const Parcel(-1, 3));
+        await n.startLand(const Parcel(5, 5, garden: true));
       });
       await _settle(tester);
       expect(find.text('Emergency pause'), findsNothing);

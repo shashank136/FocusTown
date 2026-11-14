@@ -269,8 +269,9 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(town: town));
   }
 
-  /// Starts a land session that claims [parcel] when it completes. Nothing is
-  /// at risk: if it fails, nothing changes.
+  /// Starts a garden session that turns [parcel], a forest square of the
+  /// island, into a garden when it completes. Nothing is at risk: if it
+  /// fails, nothing changes.
   Future<void> startLand(Parcel parcel) => _once(() async {
     final current = await future;
     if (current.active != null) {
@@ -283,7 +284,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     final built = SessionEngine.startLand(
       id: 's${now.wall.microsecondsSinceEpoch}',
       parcel: parcel,
-      minutes: TownRules.landMinutesFor(current.town, parcel),
+      minutes: TownRules.gardenMinutes,
       now: now,
     );
     final session = _testLength(built);

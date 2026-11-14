@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 
@@ -22,11 +23,17 @@ void main() {
     expect(parcelOrigin(16), 117);
   });
 
-  test('no claimable parcel leaves the 8-bit world', () {
-    for (final p in claimableParcels(const [])) {
-      final plot = plotFor(64, [p]);
-      expect(plot.originX, inInclusiveRange(-128, 120));
-      expect(plot.originY, inInclusiveRange(-128, 120));
+  test('no district parcel leaves the 8-bit world', () {
+    for (final side in DistrictSide.values) {
+      for (var index = 0; districtFits(side, index); index++) {
+        for (var row = 0; row < kDistrictRows; row++) {
+          for (final p in districtRow(side, index, row)) {
+            final plot = plotFor(64, [p]);
+            expect(plot.originX, inInclusiveRange(-128, 120));
+            expect(plot.originY, inInclusiveRange(-128, 120));
+          }
+        }
+      }
     }
   });
 
@@ -34,12 +41,5 @@ void main() {
     const parcels = [Parcel(-1, 3, garden: true), Parcel(8, 0)];
     final first = plotFor(64, parcels);
     expect((first.originX, first.originY), (61, 3));
-  });
-
-  test('a virtual index stands for a parcel that can be claimed', () {
-    final claimable = claimableParcels(const []);
-    final plot = plotFor(kLandBase + 2, const []);
-    expect(plot.originX, parcelOrigin(claimable[2].gx));
-    expect(plot.originY, parcelOrigin(claimable[2].gy));
   });
 }

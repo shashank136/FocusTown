@@ -6,7 +6,7 @@ private extension FocusActivityAttributes.ContentState {
   var heading: String {
     switch title {
     case "repair": return "Repairing a ruin"
-    case "land": return "Claiming land"
+    case "land": return "Making a garden"
     case "landmark": return "Building a landmark"
     case "district": return "Growing the island"
     default: return "Building a \(title)"

@@ -247,34 +247,21 @@ class TownRules {
     );
   }
 
-  /// Minutes of a land session when [claimed] parcels are already claimed: 25
-  /// for the first, 5 more for every 4, at most 90.
-  static int landMinutes(int claimed) => min(90, 25 + 5 * (claimed ~/ 4));
-
   /// Minutes it takes to turn a forest square of the island into a garden.
   static const gardenMinutes = 15;
 
-  /// Minutes of the land session for [parcel]: [gardenMinutes] for a square of
-  /// the island, else [landMinutes].
-  static int landMinutesFor(TownState town, Parcel parcel) =>
-      _isIsland(parcel) ? gardenMinutes : landMinutes(town.parcels.length);
-
   static bool _isIsland(Parcel p) => kBaseCells.contains((p.gx, p.gy));
 
-  /// Whether [parcel] can be claimed: land that touches the island and
-  /// nobody has claimed, or a free forest square of the island that is to
-  /// become a garden.
-  static bool canClaim(TownState town, Parcel parcel) {
-    if (_isIsland(parcel)) {
-      return parcel.garden &&
-          !occupied(town).contains(kBaseCells.indexOf((parcel.gx, parcel.gy)));
-    }
-    return claimableParcels(town.parcels)
-        .any((p) => p.gx == parcel.gx && p.gy == parcel.gy);
-  }
+  /// Whether [parcel] can be made: a free forest square of the island that is
+  /// to become a garden. (The island grows with districts, not square by
+  /// square.)
+  static bool canClaim(TownState town, Parcel parcel) =>
+      _isIsland(parcel) &&
+      parcel.garden &&
+      !occupied(town).contains(kBaseCells.indexOf((parcel.gx, parcel.gy)));
 
-  /// Applies a completed land [session]: its parcel becomes part of the island.
-  /// A parcel that cannot be claimed any more changes nothing.
+  /// Applies a completed garden [session]: its square becomes a garden. A
+  /// square that cannot be made one any more changes nothing.
   static TownState applyLandCompleted(TownState town, Session session) {
     final parcel = session.land;
     if (parcel == null || !canClaim(town, parcel)) return town;

@@ -420,7 +420,7 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - The island is the starting 8 x 8 square of plots plus claimed land. Land comes in parcels, one plot-sized square (7 x 7 tiles) each; claimed parcels are stored in claim order and parcel `i` is plot `64 + i`.
 - Claimable parcels are the unclaimed parcels that touch the island on a side. The world has an edge (parcel columns and rows -18 to 16, from the 8-bit voxel coordinates).
 - Space limits buildings (there is no daily plot unlock): when every plot is used, the player claims land to make room, or claims it earlier to keep space between buildings or to make a garden.
-- A land session claims one parcel when it completes. It costs no workers and leaves no ruin if it fails. Its length is 25 minutes for the first parcel, 5 more for every 4 parcels claimed, at most 90.
+- Land is claimed in districts (see below), not square by square. The one-square land session was removed (2026-11-13). A land session now only makes a garden on a forest square of the island: 15 minutes, no workers at risk.
 - Not in this version: gardens as buildable things, the globe, the showcase, a low-detail island view.
 
 ## Gardens on forest squares (decided 2026-11-12)

@@ -51,19 +51,12 @@ int parcelOrigin(int g) => g < 0
     ? kBaseOrigins[g]
     : kBaseOrigins.last + kPlotSize * (g - kBaseOrigins.length + 1);
 
-/// Plot indexes from here up stand for the parcels that can be claimed (index
-/// `kLandBase + k` is the k-th of [claimableParcels]); they exist only while
-/// the user chooses land.
-const kLandBase = 1000;
-
 /// Plot [index] of a town with the claimed [parcels]: the classic plots come
 /// first (0..63), then one plot per claimed non-garden parcel in claim order.
 Plot plotFor(int index, List<Parcel> parcels) {
   final Parcel p;
   if (index < kPlots.length) {
     return kPlots[index];
-  } else if (index >= kLandBase) {
-    p = claimableParcels(parcels)[index - kLandBase];
   } else {
     p = [
       for (final q in parcels)

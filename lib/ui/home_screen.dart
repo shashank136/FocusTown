@@ -9,13 +9,11 @@ import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/tips.dart';
-import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/tip.dart';
 import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/render_guard.dart';
 import 'package:focus_town/game/town_game.dart';
-import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/town_world_builder.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/game/world/view_rotation.dart';
@@ -100,13 +98,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       _game.setTown(next ? TownRules.landmarkShowcase(town) : town);
       if (next) _game.showIsland();
     });
-    ref.listenManual(placementProvider, (prev, next) {
-      _syncPlacement();
-      // Choosing land: step back to see the coast.
-      if (next != null && next.land && !(prev?.land ?? false)) {
-        _game.showIsland();
-      }
-    });
+    ref.listenManual(placementProvider, (prev, next) => _syncPlacement());
     // The free pass was just spent: explain it, once.
     ref.listenManual(focusControllerProvider, (prev, next) {
       final used = next.value?.active?.passUsed ?? false;
@@ -179,11 +171,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _game.setPlacement(
       placement == null || town == null
           ? const {}
-          : placement.land
-          ? {
-              for (var i = 0; i < claimableParcels(town.parcels).length; i++)
-                kLandBase + i,
-            }
           : {
               for (
                 var i = 0;
@@ -196,9 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 if (TownRules.isPlotFree(town, i, placement.tier)) i,
             },
       placement?.plot,
-      span: placement != null && !placement.land && plotsOf(placement.tier) == 4
-          ? 2
-          : 1,
+      span: placement != null && plotsOf(placement.tier) == 4 ? 2 : 1,
     );
   }
 
@@ -372,10 +357,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            placement.land
-                                ? 'Choose land for your '
-                                      '${placement.minutes}-minute session'
-                                : placement.garden
+                            placement.garden
                                 ? 'Choose a forest square to turn into a '
                                       'garden (${placement.minutes} minutes)'
                                 : placement.landmark != null
@@ -384,18 +366,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                                 : 'Choose a plot for your '
                                       '${placement.minutes}-minute build',
                           ),
-                          if (placement.land)
-                            SwitchListTile(
-                              dense: true,
-                              title: const Text('Make it a garden'),
-                              subtitle: const Text(
-                                'Open space: no building can stand here.',
-                              ),
-                              value: placement.garden,
-                              onChanged: (_) => ref
-                                  .read(placementProvider.notifier)
-                                  .toggleGarden(),
-                            ),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisSize: MainAxisSize.min,
