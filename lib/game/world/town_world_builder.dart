@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/district.dart';
+import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
@@ -97,6 +100,26 @@ VoxelWorld buildTownWorld(
       w
         ..set(x, y, -1, Blocks.dirt)
         ..set(x, y, 0, isRoad(x, y) ? Blocks.path : Blocks.grass);
+    }
+  }
+  // New land makes the island ground one rectangle: the base island has a
+  // 3-tile margin round its squares, and so do the rows added to it, which
+  // keeps the edge straight where a row is shorter than the island.
+  final claimed = [...town.parcels, ?active?.land];
+  if (claimed.isNotEmpty) {
+    final gx = [0, kBaseParcelsPerSide - 1, for (final p in claimed) p.gx];
+    final gy = [0, kBaseParcelsPerSide - 1, for (final p in claimed) p.gy];
+    final x0 = parcelOrigin(gx.reduce(math.min)) - 3;
+    final x1 = parcelOrigin(gx.reduce(math.max)) + kPlotSize + 3;
+    final y0 = parcelOrigin(gy.reduce(math.min)) - 3;
+    final y1 = parcelOrigin(gy.reduce(math.max)) + kPlotSize + 3;
+    for (var x = x0; x < x1; x++) {
+      for (var y = y0; y < y1; y++) {
+        if (w.has(x, y, 0)) continue;
+        w
+          ..set(x, y, -1, Blocks.dirt)
+          ..set(x, y, 0, Blocks.grass);
+      }
     }
   }
   final building =

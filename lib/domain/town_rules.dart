@@ -463,13 +463,55 @@ class TownRules {
     if (state != DistrictState.ready && state != DistrictState.inProgress) {
       return null;
     }
-    if (state == DistrictState.inProgress) return town;
-    return town.copyWith(
+    // An island saved before corners were filled gets them here.
+    final filled = withCorners(town);
+    if (state == DistrictState.inProgress) return filled;
+    return filled.copyWith(
       districtProject: DistrictProject(
         side,
         builtRows(town, side) * kMinutesPerDistrictRow,
       ),
     );
+  }
+
+  /// [town] with the corner between every two neighbouring arms filled: where
+  /// the north and the east both have rows, the square between them is land
+  /// too (forest), so the island stays one rectangle. Squares already owned
+  /// are left as they are.
+  static TownState withCorners(TownState town) {
+    int arm(DistrictSide s) =>
+        kDistrictRows * town.districts.where((d) => d == s).length +
+        builtRows(town, s);
+    final north = arm(DistrictSide.north);
+    final east = arm(DistrictSide.east);
+    final south = arm(DistrictSide.south);
+    final west = arm(DistrictSide.west);
+    final owned = {for (final p in town.parcels) (p.gx, p.gy)};
+    final corners = <Parcel>[];
+    void add(int gx, int gy) {
+      if (owned.add((gx, gy))) corners.add(Parcel(gx, gy));
+    }
+
+    const edge = kBaseParcelsPerSide;
+    for (var i = 0; i < east; i++) {
+      for (var j = 0; j < north; j++) {
+        add(edge + i, -1 - j);
+      }
+      for (var j = 0; j < south; j++) {
+        add(edge + i, edge + j);
+      }
+    }
+    for (var i = 0; i < west; i++) {
+      for (var j = 0; j < south; j++) {
+        add(-1 - i, edge + j);
+      }
+      for (var j = 0; j < north; j++) {
+        add(-1 - i, -1 - j);
+      }
+    }
+    return corners.isEmpty
+        ? town
+        : town.copyWith(parcels: [...town.parcels, ...corners]);
   }
 
   /// Adds [minutes] to the district being built: every row the minutes
@@ -491,7 +533,7 @@ class TownRules {
           if (!owned.contains((p.gx, p.gy))) p,
     ];
     final parcels = [...town.parcels, ...added];
-    return progress >= kDistrictMinutes
+    final grown = progress >= kDistrictMinutes
         ? town.copyWith(
             parcels: parcels,
             districts: [...town.districts, project.side],
@@ -501,6 +543,7 @@ class TownRules {
             parcels: parcels,
             districtProject: DistrictProject(project.side, progress),
           );
+    return withCorners(grown);
   }
 
   /// Applies a completed district [session]: the minutes it counts build the

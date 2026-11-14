@@ -358,6 +358,102 @@ void main() {
     });
   });
 
+  group('corners', () {
+    // The town with [north] rows built north and [east] rows built east.
+    TownState built(int north, int east) {
+      var t = _city();
+      if (north > 0) {
+        t = TownRules.beginDistrict(t, DistrictSide.north)!;
+        t = TownRules.applyDistrictMinutes(t, north * 60);
+      }
+      if (east > 0) {
+        t = TownRules.beginDistrict(t, DistrictSide.east)!;
+        t = TownRules.applyDistrictMinutes(t, east * 60);
+      }
+      return t;
+    }
+
+    Set<(int, int)> cells(TownState t) => {
+      for (final p in t.parcels) (p.gx, p.gy),
+    };
+
+    test('two neighbouring sides fill the corner between them', () {
+      final t = built(2, 2);
+      // 16 + 16 parcels in the arms, and the 2 x 2 corner (columns 8 and 9,
+      // rows -1 and -2) between them.
+      expect(t.parcels, hasLength(36));
+      for (final (x, y) in [(8, -1), (9, -1), (8, -2), (9, -2)]) {
+        expect(cells(t), contains((x, y)), reason: 'corner $x,$y');
+      }
+    });
+
+    test('one arm alone has no corner', () {
+      expect(built(2, 0).parcels, hasLength(16));
+      expect(built(0, 2).parcels, hasLength(16));
+    });
+
+    test('the corner grows with the second arm, not before', () {
+      // 2 rows north, 1 row east: the corner is 1 column by 2 rows.
+      final t = built(2, 1);
+      expect(t.parcels, hasLength(16 + 8 + 2));
+      expect(cells(t), containsAll([(8, -1), (8, -2)]));
+      expect(cells(t), isNot(contains((9, -1))));
+    });
+
+    test('a corner square owned before is not taken twice', () {
+      var t = _city(parcels: [const Parcel(8, -1, garden: true)]);
+      t = TownRules.beginDistrict(t, DistrictSide.north)!;
+      t = TownRules.applyDistrictMinutes(t, 60);
+      t = TownRules.beginDistrict(t, DistrictSide.east)!;
+      t = TownRules.applyDistrictMinutes(t, 60);
+      expect(t.parcels.where((p) => p.gx == 8 && p.gy == -1), hasLength(1));
+      expect(
+        t.parcels.firstWhere((p) => p.gx == 8 && p.gy == -1).garden,
+        isTrue,
+      );
+    });
+
+    test(
+      'an island saved without its corner gets it when a session starts',
+      () {
+        // Built the old way: both arms, no corner.
+        final arms = [
+          ...districtRow(DistrictSide.north, 0, 0),
+          ...districtRow(DistrictSide.north, 0, 1),
+          ...districtRow(DistrictSide.east, 0, 0),
+          ...districtRow(DistrictSide.east, 0, 1),
+        ];
+        final t = TownRules.beginDistrict(
+          _city(parcels: arms),
+          DistrictSide.south,
+        )!;
+        expect(t.parcels, hasLength(36));
+      },
+    );
+
+    test('three sides make one rectangle', () {
+      var t = _city();
+      for (final side in [
+        DistrictSide.north,
+        DistrictSide.east,
+        DistrictSide.south,
+      ]) {
+        t = TownRules.beginDistrict(t, side)!;
+        t = TownRules.applyDistrictMinutes(t, 120);
+      }
+      // 3 arms of 16 parcels, and the two corners on the east: 2 x 2 each.
+      expect(t.parcels, hasLength(16 * 3 + 4 + 4));
+      final cells = {for (final p in t.parcels) (p.gx, p.gy)};
+      for (final x in [8, 9]) {
+        for (final y in [-2, -1, 8, 9]) {
+          expect(cells, contains((x, y)), reason: 'corner $x,$y');
+        }
+      }
+      // Nothing on the west, where there is no arm.
+      expect(cells.every((c) => c.$1 >= 0), isTrue);
+    });
+  });
+
   group('live land', () {
     test('the rows a running session has reached so far', () {
       final t = TownRules.beginDistrict(_city(), DistrictSide.east)!;

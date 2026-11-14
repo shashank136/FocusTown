@@ -82,6 +82,25 @@ void main() {
     }
   });
 
+  test('new land makes the island ground one clean rectangle', () {
+    // Without land the island ground is the 64 x 64 map: nothing beyond it.
+    final plain = buildTownWorld(_town(const []));
+    expect(plain.has(1, -2, 0), isFalse);
+    // One row north: the ground reaches across the whole island width, the
+    // 3-tile margins at both ends included, so the edge is straight.
+    final north = buildTownWorld(_town(districtRow(DistrictSide.north, 0, 0)));
+    expect(north.has(0, -2, 0), isTrue);
+    expect(north.has(1, -2, 0), isTrue);
+    expect(north.has(62, -2, 0), isTrue);
+    expect(north.has(63, -2, 0), isTrue);
+    expect(north.has(64, -2, 0), isFalse); // no further than the island
+    // A row east: the same on that side.
+    final east = buildTownWorld(_town(districtRow(DistrictSide.east, 0, 0)));
+    expect(east.has(66, 0, 0), isTrue);
+    expect(east.has(66, 1, 0), isTrue);
+    expect(east.has(66, 63, 0), isTrue);
+  });
+
   test('a garden parcel is drawn as a garden, not as forest', () {
     const garden = Parcel(-1, 3, garden: true);
     const forest = Parcel(-1, 3);

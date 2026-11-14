@@ -148,7 +148,11 @@ void main() {
     await n.startDistrict(DistrictSide.east, 60);
     await finish(n, 60); // the third east row
     final town = _state(c).town;
-    expect(town.parcels.where((p) => p.gx >= 8), hasLength(24));
+    // The east strip: columns 8 and up, beside the island (not the corner).
+    expect(
+      town.parcels.where((p) => p.gx >= 8 && p.gy >= 0 && p.gy < 8),
+      hasLength(24),
+    );
     expect(town.districtProject!.side, DistrictSide.east);
     expect(town.districtProject!.progress, 180);
   });
