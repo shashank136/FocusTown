@@ -274,4 +274,25 @@ void main() {
       expect(stored.parcels.split(',').length, 36);
     },
   );
+
+  test(
+    'north then east in one run: the corner comes with the first east row',
+    () async {
+      final (c, n) = await ready();
+      await n.startDistrict(DistrictSide.north, 120);
+      await finish(n, 120);
+      expect(_state(c).town.parcels, hasLength(16)); // no corner: one arm
+      // The east: 1 row (60 minutes). The corner is 1 column by 2 rows.
+      await n.startDistrict(DistrictSide.east, 60);
+      await finish(n, 60);
+      final cells = {for (final p in _state(c).town.parcels) (p.gx, p.gy)};
+      expect(cells, hasLength(16 + 8 + 2));
+      expect(cells, containsAll([(8, -1), (8, -2)]));
+      // Giving up part-way through a second east row also keeps its corner.
+      await n.startDistrict(DistrictSide.east, 60);
+      _clock.advance(const Duration(minutes: 59));
+      await n.abandon();
+      expect(_state(c).town.parcels, hasLength(16 + 8 + 2)); // no new row yet
+    },
+  );
 }
