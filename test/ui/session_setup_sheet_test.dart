@@ -261,14 +261,12 @@ void main() {
     expect(placement.minutes, 15);
   });
 
-  testWidgets('Extend land… starts choosing land', (tester) async {
-    final c = await _open(tester);
-    await tester.tap(find.text('Extend land…'));
-    await _settle(tester);
-    final placement = c.read(placementProvider)!;
-    expect(placement.land, isTrue);
-    expect(placement.minutes, 25);
-    expect(find.byType(SessionSetupSheet), findsNothing);
+  testWidgets('there is no one-square Extend land: Expand island grows it', (
+    tester,
+  ) async {
+    await _open(tester);
+    expect(find.text('Extend land…'), findsNothing);
+    expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsOneWidget);
   });
 
   testWidgets('a full town with no ruins does not mention ruins', (
@@ -288,7 +286,7 @@ void main() {
     await _open(tester, seed: full);
     expect(find.textContaining('Every plot is used.'), findsOneWidget);
     expect(find.textContaining('ruin'), findsNothing);
-    expect(find.textContaining('Extend land to add some'), findsOneWidget);
+    expect(find.textContaining('Expand island to add some'), findsOneWidget);
   });
 
   testWidgets('a castle says it needs a free 2 x 2 block', (tester) async {
@@ -331,7 +329,7 @@ void main() {
     expect(
       find.text(
         'Every plot is used. A finished build waits until there is room. Tap '
-        'Extend land to add some, or tap a ruin to repair it.',
+        'Expand island to add some, or tap a ruin to repair it.',
       ),
       findsOneWidget,
     );

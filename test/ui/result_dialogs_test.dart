@@ -248,8 +248,8 @@ void main() {
     expect(find.text('Ready to place'), findsOneWidget);
     expect(
       find.text(
-        'Your tower is finished, but there is no free space for it. Extend '
-        'your land (Start focus, then Extend land) or repair a ruin, and it '
+        'Your tower is finished, but there is no free space for it. Grow the '
+        'island (Start focus, then Expand island) or repair a ruin, and it '
         'will be placed.',
       ),
       findsOneWidget,

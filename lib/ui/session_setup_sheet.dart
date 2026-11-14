@@ -353,7 +353,6 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
                 : null,
             child: const Text('Choose plot…'),
           ),
-          TextButton(onPressed: _extendLand, child: const Text('Extend land…')),
           TextButton(onPressed: _makeGarden, child: const Text('Make garden…')),
           FilledButton(
             onPressed: option.enabled ? () => unawaited(_start(minutes)) : null,
@@ -370,8 +369,8 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     final head = plotsOf(tier) == 1
         ? 'Every plot is used.'
         : 'There is no free 2 x 2 block of plots for a castle.';
-    return '$head A finished build waits until there is room. Tap Extend '
-        'land to add some${ruins ? ', or tap a ruin to repair it' : ''}.';
+    return '$head A finished build waits until there is room. Tap Expand '
+        'island to add some${ruins ? ', or tap a ruin to repair it' : ''}.';
   }
 
   // The looks to choose from, each shown as the building it will be.
@@ -471,11 +470,6 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     } on Object catch (e) {
       messenger.showSnackBar(SnackBar(content: Text('$e')));
     }
-  }
-
-  void _extendLand() {
-    ref.read(placementProvider.notifier).beginLand();
-    Navigator.of(context).pop();
   }
 
   void _choosePlot(int minutes, {Landmark? landmark}) {

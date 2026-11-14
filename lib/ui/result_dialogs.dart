@@ -203,7 +203,7 @@ TextStyle? _heading(BuildContext context) =>
   [
     (
       'Your ${r.tier.name} is finished, but there is no free space for it. '
-          'Extend your land (Start focus, then Extend land) or repair a ruin, '
+          'Grow the island (Start focus, then Expand island) or repair a ruin, '
           'and it will be placed.',
       false,
     ),
