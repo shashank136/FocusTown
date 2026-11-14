@@ -239,4 +239,39 @@ void main() {
     await n.startDistrict(DistrictSide.east, 60);
     await expectLater(n.startDistrict(DistrictSide.east, 60), throwsStateError);
   });
+
+  test(
+    'an island saved without its corner gets it when the app opens',
+    () async {
+      // Built before corners were filled: two rows north, two rows east.
+      final seed = TownState.initial().copyWith(
+        parcels: [
+          ...districtRow(DistrictSide.north, 0, 0),
+          ...districtRow(DistrictSide.north, 0, 1),
+          ...districtRow(DistrictSide.east, 0, 0),
+          ...districtRow(DistrictSide.east, 0, 1),
+        ],
+      );
+      await _db.transaction(() async {
+        await _db
+            .into(_db.towns)
+            .insert(
+              townToRow(seed)
+                  .copyWith(id: const Value(1), createdAt: const Value(0)),
+            );
+        await _db.batch(
+          (b) => b.insertAll(
+            _db.buildings,
+            buildingsToRows(seed, now: _clock.nowWall()),
+          ),
+        );
+      });
+      final c = _container();
+      await c.read(focusControllerProvider.future);
+      expect(_state(c).town.parcels, hasLength(36)); // the 2 x 2 corner came
+      // And it is saved, not only shown.
+      final stored = await _db.select(_db.towns).getSingle();
+      expect(stored.parcels.split(',').length, 36);
+    },
+  );
 }

@@ -29,9 +29,9 @@ class FocusController extends AsyncNotifier<FocusState> {
     listenSelf((_, next) => unawaited(_syncLiveStatus(next.value?.active)));
     final repo = ref.watch(townRepositoryProvider);
     var town = await repo.loadOrCreate();
-    // Buildings that waited for room (the island grew, or the plots became
-    // free) are placed now.
-    final placed = TownRules.placeQueued(town);
+    // Corners between two sides of new land are filled, then buildings that
+    // waited for room (the island grew, or the plots became free) are placed.
+    final placed = TownRules.placeQueued(TownRules.withCorners(town));
     if (placed != town) {
       try {
         await repo.saveTown(placed);
