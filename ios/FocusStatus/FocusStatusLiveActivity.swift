@@ -8,6 +8,7 @@ private extension FocusActivityAttributes.ContentState {
     case "repair": return "Repairing a ruin"
     case "land": return "Claiming land"
     case "landmark": return "Building a landmark"
+    case "district": return "Growing the island"
     default: return "Building a \(title)"
     }
   }

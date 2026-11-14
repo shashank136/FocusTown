@@ -23,6 +23,7 @@ Future<void> showResultDialog(
     final (title, lines) = switch (r.outcome) {
       _ when r.repair => _repair(r),
       _ when r.landmark != null => _landmark(r),
+      _ when r.district != null => _district(r),
       _ when r.land => _land(r),
       SessionOutcome.completed => _completed(r, growthTip),
       SessionOutcome.queued => _queued(r),
@@ -99,6 +100,43 @@ TextStyle? _heading(BuildContext context) =>
             ('You were away for ${_awayText(r.awaySeconds)}', false),
         ],
       );
+
+(String, List<(String, bool)>) _district(SessionResult r) {
+  if (r.outcome != SessionOutcome.completed) {
+    final rows = r.districtRows;
+    final kept = rows == 0
+        ? 'No rows were built yet'
+        : 'The $rows ${_plural(rows, 'row', 'rows')} you built stay';
+    return (
+      'Land not finished',
+      [
+        (
+          'The minutes toward the next row are lost. $kept, and no workers '
+              'were lost.',
+          false,
+        ),
+        if (r.reason == OutcomeReason.leftTooLong)
+          ('You were away for ${_awayText(r.awaySeconds)}', false),
+      ],
+    );
+  }
+  return (
+    r.districtFinished
+        ? 'New district finished!'
+        : 'The island grew: ${r.districtRows} of 8 rows',
+    [
+      if (r.districtFinished) ('64 new plots are yours.', true),
+      if (r.xpGained > 0) ('+${r.xpGained} XP', false),
+      if (r.newStreak > 0)
+        (
+          'Streak: ${r.newStreak} ${_plural(r.newStreak, 'day', 'days')}',
+          false,
+        ),
+      if (r.leveledUpTo != null)
+        ('Your town is now a ${_capital(r.leveledUpTo!.name)}', true),
+    ],
+  );
+}
 
 (String, List<(String, bool)>) _landmark(SessionResult r) {
   final title = r.landmark!.title;

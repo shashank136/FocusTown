@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
@@ -39,6 +40,9 @@ class SessionResult {
     this.landmark,
     this.landmarkStage = 0,
     this.landmarkFinished = false,
+    this.district,
+    this.districtRows = 0,
+    this.districtFinished = false,
   });
 
   /// How it ended.
@@ -89,6 +93,15 @@ class SessionResult {
   /// Whether this session finished the landmark.
   final bool landmarkFinished;
 
+  /// The side of the district this session worked on, if any.
+  final DistrictSide? district;
+
+  /// How many rows of the district are built after this session.
+  final int districtRows;
+
+  /// Whether this session finished the district.
+  final bool districtFinished;
+
   @override
   bool operator ==(Object other) =>
       other is SessionResult &&
@@ -107,7 +120,10 @@ class SessionResult {
       other.land == land &&
       other.landmark == landmark &&
       other.landmarkStage == landmarkStage &&
-      other.landmarkFinished == landmarkFinished;
+      other.landmarkFinished == landmarkFinished &&
+      other.district == district &&
+      other.districtRows == districtRows &&
+      other.districtFinished == districtFinished;
 
   @override
   int get hashCode => Object.hash(
@@ -127,6 +143,9 @@ class SessionResult {
     landmark,
     landmarkStage,
     landmarkFinished,
+    district,
+    districtRows,
+    districtFinished,
   );
 }
 

@@ -198,6 +198,7 @@ class TownRules {
         session.isRepair ||
         session.isLand ||
         session.isLandmark ||
+        session.isDistrict ||
         session.emergencyArmed ||
         session.emergencyUsed) {
       return null;
@@ -470,6 +471,17 @@ class TownRules {
             districtProject: DistrictProject(project.side, progress),
           );
   }
+
+  /// Applies a completed district [session]: its minutes build the district (a
+  /// session under 10 minutes can only come from the testing aid and counts as
+  /// a whole row).
+  static TownState applyDistrictCompleted(TownState town, Session session) =>
+      applyDistrictMinutes(
+        town,
+        session.plannedMinutes < 10
+            ? kMinutesPerDistrictRow
+            : session.plannedMinutes,
+      );
 
   /// Applies a failed district session: the minutes toward the next row are
   /// lost. Rows already built stay, because buildings may stand on them.

@@ -1,9 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session.dart';
+import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/garden.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
@@ -208,6 +211,25 @@ void main() {
         );
       }
     }
+  });
+
+  test('a district session is sited on the row being built', () {
+    final town = TownRules.beginDistrict(
+      TownState.initial().copyWith(xp: 6000),
+      DistrictSide.east,
+    )!;
+    final session = SessionEngine.startDistrict(
+      id: 'd',
+      side: DistrictSide.east,
+      minutes: 60,
+      now: TimeStamp(DateTime(2026), Duration.zero),
+    );
+    final plot = sessionSitePlot(town, session);
+    // The first row of the east district: parcel column 8, row 0.
+    expect((plot.originX, plot.originY), (parcelOrigin(8), parcelOrigin(0)));
+    final later = TownRules.applyDistrictMinutes(town, 120);
+    final next = sessionSitePlot(later, session);
+    expect((next.originX, next.originY), (parcelOrigin(10), parcelOrigin(0)));
   });
 
   test('a land session shows its parcel as ground while it runs', () {

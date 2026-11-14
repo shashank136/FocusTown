@@ -70,6 +70,7 @@ SessionRow _sessionRowFrom(SessionsCompanion c) => SessionRow(
   land: c.land.value,
   look: c.look.value,
   landmark: c.landmark.value,
+  district: c.district.value,
   emergencyArmed: c.emergencyArmed.value,
   emergencyUsed: c.emergencyUsed.value,
 );
@@ -388,5 +389,32 @@ void main() {
         Landmark.eiffel,
       );
     });
+  });
+
+  test('a district session round trips with its side', () {
+    final s = Session(
+      id: 'd',
+      plannedMinutes: 60,
+      tier: BuildingTier.hut,
+      workersAssigned: 0,
+      state: SessionState.running,
+      startedAt: TimeStamp(DateTime(2026, 3, 4, 9), Duration.zero),
+      district: DistrictSide.south,
+    );
+    final back = sessionFromRow(_sessionRowFrom(sessionToRow(s)));
+    expect(back.district, DistrictSide.south);
+    expect(back, s);
+    final plain = Session(
+      id: 'p',
+      plannedMinutes: 25,
+      tier: BuildingTier.house,
+      workersAssigned: 2,
+      state: SessionState.running,
+      startedAt: TimeStamp(DateTime(2026, 3, 4, 9), Duration.zero),
+    );
+    expect(
+      sessionFromRow(_sessionRowFrom(sessionToRow(plain))).district,
+      isNull,
+    );
   });
 }

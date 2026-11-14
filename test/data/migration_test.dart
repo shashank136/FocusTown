@@ -28,12 +28,12 @@ void main() {
       ''');
     final db = AppDatabase(schema.newConnection());
     addTearDown(db.close);
-    await verifier.migrateAndValidate(db, 10);
+    await verifier.migrateAndValidate(db, 11);
     return db;
   }
 
-  for (final from in [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
-    test('v$from to v10 keeps the town, building and session', () async {
+  for (final from in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
+    test('v$from to v11 keeps the town, building and session', () async {
       final db = await migrate(from);
       final town = await db.select(db.towns).getSingle();
       expect(town.workerCount, 4);
@@ -64,6 +64,7 @@ void main() {
       expect(session.land, isNull);
       expect(session.look, isNull);
       expect(session.landmark, isNull);
+      expect(session.district, isNull);
       expect(session.emergencyArmed, isFalse);
       expect(session.emergencyUsed, isFalse);
     });

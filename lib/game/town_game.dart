@@ -407,7 +407,10 @@ class TownGame extends FlameGame
   void _updateSite() {
     final active = _focus?.active;
     // A repair builds nothing: the ruin stays until the repair is done.
-    if (active == null || active.isRepair || active.isLand) {
+    if (active == null ||
+        active.isRepair ||
+        active.isLand ||
+        active.isDistrict) {
       renderer.setSite(null);
       return;
     }
@@ -443,7 +446,11 @@ class TownGame extends FlameGame
     final town = focus.town;
     final active = focus.active;
     final site =
-        active == null || active.isRepair || active.isLand || active.isLandmark
+        active == null ||
+            active.isRepair ||
+            active.isLand ||
+            active.isLandmark ||
+            active.isDistrict
         ? null
         : sessionSitePlot(town, active);
     if (_routeSite != site?.index ||
@@ -470,7 +477,7 @@ class TownGame extends FlameGame
       if (active.isRepair) {
         // One repairer at the ruin; the other workers keep walking.
         onSite = 1;
-      } else if (active.isLand) {
+      } else if (active.isLand || active.isDistrict) {
         onSite = 0; // surveying, not building
       } else if (active.isLandmark) {
         // A crew of up to four raises the landmark; nobody is at risk.

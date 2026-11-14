@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/session_engine.dart';
+import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_level.dart';
 import 'package:focus_town/domain/town_rules.dart';
@@ -28,6 +30,24 @@ void main() {
       const project = DistrictProject(DistrictSide.west, 130);
       expect(project.encode(), 'west:130');
       expect(DistrictProject.decode('west:130'), project);
+    });
+  });
+
+  group('session', () {
+    test('a district session risks nothing and says which side', () {
+      final s = SessionEngine.startDistrict(
+        id: 'd1',
+        side: DistrictSide.west,
+        minutes: 60,
+        now: TimeStamp(DateTime(2026), Duration.zero),
+      );
+      expect(s.isDistrict, isTrue);
+      expect(s.district, DistrictSide.west);
+      expect(s.workersAssigned, 0);
+      expect(s.plannedMinutes, 60);
+      expect(s.isLand || s.isLandmark || s.isRepair, isFalse);
+      // The session copies keep the side.
+      expect(s.copyWith(plannedMinutes: 30).district, DistrictSide.west);
     });
   });
 

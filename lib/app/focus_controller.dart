@@ -6,6 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
@@ -207,6 +208,40 @@ class FocusController extends AsyncNotifier<FocusState> {
     state = AsyncData(current.copyWith(town: town, active: session));
   });
 
+  /// Starts a session of [minutes] that builds the district on [side]: the
+  /// project begins with the first session and goes on with the next ones
+  /// (only on the same side). Nothing is at risk but the minutes toward the
+  /// next row.
+  Future<void> startDistrict(DistrictSide side, int minutes) => _once(() async {
+    final current = await future;
+    if (current.active != null) {
+      throw StateError('A session is already active');
+    }
+    if (!BuildingTier.validDurations().contains(minutes)) {
+      throw StateError('$minutes minutes is not a valid length');
+    }
+    var town = current.town;
+    final project = town.districtProject;
+    if (project == null) {
+      town =
+          TownRules.beginDistrict(town, side) ??
+          (throw StateError('A district on the ${side.name} cannot start'));
+    } else if (project.side != side) {
+      throw StateError('Finish the district on the ${project.side.name} first');
+    }
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final built = SessionEngine.startDistrict(
+      id: 's${now.wall.microsecondsSinceEpoch}',
+      side: side,
+      minutes: minutes,
+      now: now,
+    );
+    final session = _testLength(built);
+    town = _refilled(town, now);
+    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
+  });
+
   /// Removes [landmark] from the town, finished or not, so it can be built
   /// again. A testing aid, reached from the debug screen; not while a session
   /// is running.
@@ -371,6 +406,8 @@ class FocusController extends AsyncNotifier<FocusState> {
           ? 'land'
           : active.isLandmark
           ? 'landmark'
+          : active.isDistrict
+          ? 'district'
           : active.tier.name,
       away: active.state == SessionState.away,
     );
@@ -415,6 +452,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     final repair = finished.isRepair;
     final land = finished.isLand;
     final landmark = finished.landmark;
+    final district = finished.district;
     // The day counts from when the session ended, not from when the app
     // noticed (it may have been closed past midnight).
     final plannedEnd = finished.startedAt.wall.add(finished.planned);
@@ -432,6 +470,14 @@ class FocusController extends AsyncNotifier<FocusState> {
         base.town,
         finished,
       ),
+      _ when district != null && completed => Progression.onSessionCompleted(
+        TownRules.applyDistrictCompleted(base.town, finished),
+        finished,
+        doneAt,
+      ),
+      // A failed district session loses the minutes toward the next row;
+      // the land already built stays.
+      _ when district != null => TownRules.applyDistrictFailed(base.town),
       // Land: the claim comes first, so the day's plot has room to arrive.
       _ when land && completed => Progression.onSessionCompleted(
         TownRules.applyLandCompleted(base.town, finished),
@@ -475,7 +521,8 @@ class FocusController extends AsyncNotifier<FocusState> {
           : SessionOutcome.completed,
       tier: finished.tier,
       workersLost: completed ? 0 : finished.workersAssigned,
-      workersGained: completed && !repair && !land && landmark == null
+      workersGained:
+          completed && !repair && !land && landmark == null && district == null
           ? finished.tier.workersAddedOnSuccess
           : 0,
       newStreak: Progression.currentStreak(
@@ -502,6 +549,12 @@ class FocusController extends AsyncNotifier<FocusState> {
           landmark != null &&
           completed &&
           TownRules.landmarkProject(town, landmark) == null,
+      district: district,
+      districtRows: district == null
+          ? 0
+          : (town.districtProject?.rows ?? kDistrictRows),
+      districtFinished:
+          district != null && completed && town.districtProject == null,
     );
     return FocusState(town: town, lastResult: result);
   }

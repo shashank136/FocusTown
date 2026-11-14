@@ -7,6 +7,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -297,6 +298,25 @@ void main() {
       });
       await _settle(tester);
       expect(find.text('Building the Eiffel Tower'), findsOneWidget);
+      expect(find.text('Emergency pause'), findsNothing);
+    });
+
+    testWidgets('a district session says it grows the island, no pause', (
+      tester,
+    ) async {
+      final c = await _pump(
+        tester,
+        town: TownState.initial().copyWith(xp: 6000),
+      );
+      await tester.runAsync(() async {
+        final n = c.read(focusControllerProvider.notifier);
+        await n.abandon();
+        _clock.advance(const Duration(minutes: 1));
+        await n.startDistrict(DistrictSide.east, 60);
+      });
+      await _settle(tester);
+      expect(find.text('Growing the island'), findsOneWidget);
+      expect(find.text('hut'), findsNothing);
       expect(find.text('Emergency pause'), findsNothing);
     });
 

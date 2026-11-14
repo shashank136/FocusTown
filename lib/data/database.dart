@@ -92,6 +92,8 @@ class Sessions extends Table {
   IntColumn get look => integer().nullable()();
   // Landmark.name for a landmark session
   TextColumn get landmark => text().nullable()();
+  // DistrictSide.name for a district session
+  TextColumn get district => text().nullable()();
   BoolColumn get emergencyArmed =>
       boolean().withDefault(const Constant(false))();
   BoolColumn get emergencyUsed =>
@@ -106,7 +108,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 10;
+  static const currentSchemaVersion = 11;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -127,6 +129,8 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v11: the side a district session builds on.
+      if (from < 11) await m.addColumn(sessions, sessions.district);
       // v10: districts, the island grown in blocks of 64.
       if (from < 10) {
         await m.addColumn(towns, towns.districts);

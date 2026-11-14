@@ -40,6 +40,8 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
       ? 'Repairing a ruin'
       : s.isLandmark
       ? 'Building the ${s.landmark!.title}'
+      : s.isDistrict
+      ? 'Growing the island'
       : s.isLand
       ? (s.land!.garden ? 'Making a garden' : 'Claiming land')
       : s.tier.name;
@@ -87,6 +89,7 @@ class _SessionPanelState extends ConsumerState<SessionPanel> {
             if (!session.isRepair &&
                 !session.isLand &&
                 !session.isLandmark &&
+                !session.isDistrict &&
                 !session.emergencyUsed)
               _pauseControl(session),
             const SizedBox(height: 8),

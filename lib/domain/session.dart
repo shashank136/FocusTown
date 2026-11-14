@@ -2,6 +2,7 @@
 // ignore_for_file: avoid_equals_and_hash_code_on_mutable_classes
 
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -52,6 +53,7 @@ class Session {
     this.land,
     this.look,
     this.landmark,
+    this.district,
     this.emergencyArmed = false,
     this.emergencyUsed = false,
   });
@@ -103,6 +105,10 @@ class Session {
   /// The landmark this session works on, for a landmark session.
   final Landmark? landmark;
 
+  /// The side of the island this session builds a district on, for a
+  /// district session.
+  final DistrictSide? district;
+
   /// The weekly emergency pause is switched on: the next absence may last up
   /// to 10 minutes.
   final bool emergencyArmed;
@@ -115,6 +121,9 @@ class Session {
 
   /// Whether this session builds on a [landmark].
   bool get isLandmark => landmark != null;
+
+  /// Whether this session builds a [district].
+  bool get isDistrict => district != null;
 
   /// Whether this session claims [land] instead of building.
   bool get isLand => land != null;
@@ -157,6 +166,7 @@ class Session {
     land: land,
     look: look,
     landmark: landmark,
+    district: district,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -179,6 +189,7 @@ class Session {
       other.land == land &&
       other.look == look &&
       other.landmark == landmark &&
+      other.district == district &&
       other.emergencyArmed == emergencyArmed &&
       other.emergencyUsed == emergencyUsed;
 
@@ -199,6 +210,7 @@ class Session {
     land,
     look,
     landmark,
+    district,
     emergencyArmed,
     emergencyUsed,
   );

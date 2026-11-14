@@ -142,6 +142,9 @@ Session sessionFromRow(SessionRow row) {
     land: row.land == null ? null : Parcel.decode(row.land!),
     look: row.look,
     landmark: _landmark(row.landmark),
+    district: row.district == null
+        ? null
+        : DistrictSide.values.byName(row.district!),
     emergencyArmed: row.emergencyArmed,
     emergencyUsed: row.emergencyUsed,
   );
@@ -168,6 +171,7 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     land: Value(session.land?.encode()),
     look: Value(session.look),
     landmark: Value(session.landmark?.name),
+    district: Value(session.district?.name),
     emergencyArmed: Value(session.emergencyArmed),
     emergencyUsed: Value(session.emergencyUsed),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),

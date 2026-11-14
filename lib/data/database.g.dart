@@ -1925,6 +1925,17 @@ class $SessionsTable extends Sessions
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _districtMeta = const VerificationMeta(
+    'district',
+  );
+  @override
+  late final GeneratedColumn<String> district = GeneratedColumn<String>(
+    'district',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _emergencyArmedMeta = const VerificationMeta(
     'emergencyArmed',
   );
@@ -1975,6 +1986,7 @@ class $SessionsTable extends Sessions
     land,
     look,
     landmark,
+    district,
     emergencyArmed,
     emergencyUsed,
   ];
@@ -2140,6 +2152,12 @@ class $SessionsTable extends Sessions
         landmark.isAcceptableOrUnknown(data['landmark']!, _landmarkMeta),
       );
     }
+    if (data.containsKey('district')) {
+      context.handle(
+        _districtMeta,
+        district.isAcceptableOrUnknown(data['district']!, _districtMeta),
+      );
+    }
     if (data.containsKey('emergency_armed')) {
       context.handle(
         _emergencyArmedMeta,
@@ -2239,6 +2257,10 @@ class $SessionsTable extends Sessions
         DriftSqlType.string,
         data['${effectivePrefix}landmark'],
       ),
+      district: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}district'],
+      ),
       emergencyArmed: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}emergency_armed'],
@@ -2275,6 +2297,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   final String? land;
   final int? look;
   final String? landmark;
+  final String? district;
   final bool emergencyArmed;
   final bool emergencyUsed;
   const SessionRow({
@@ -2296,6 +2319,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     this.land,
     this.look,
     this.landmark,
+    this.district,
     required this.emergencyArmed,
     required this.emergencyUsed,
   });
@@ -2338,6 +2362,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     if (!nullToAbsent || landmark != null) {
       map['landmark'] = Variable<String>(landmark);
     }
+    if (!nullToAbsent || district != null) {
+      map['district'] = Variable<String>(district);
+    }
     map['emergency_armed'] = Variable<bool>(emergencyArmed);
     map['emergency_used'] = Variable<bool>(emergencyUsed);
     return map;
@@ -2377,6 +2404,9 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       landmark: landmark == null && nullToAbsent
           ? const Value.absent()
           : Value(landmark),
+      district: district == null && nullToAbsent
+          ? const Value.absent()
+          : Value(district),
       emergencyArmed: Value(emergencyArmed),
       emergencyUsed: Value(emergencyUsed),
     );
@@ -2406,6 +2436,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       land: serializer.fromJson<String?>(json['land']),
       look: serializer.fromJson<int?>(json['look']),
       landmark: serializer.fromJson<String?>(json['landmark']),
+      district: serializer.fromJson<String?>(json['district']),
       emergencyArmed: serializer.fromJson<bool>(json['emergencyArmed']),
       emergencyUsed: serializer.fromJson<bool>(json['emergencyUsed']),
     );
@@ -2432,6 +2463,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       'land': serializer.toJson<String?>(land),
       'look': serializer.toJson<int?>(look),
       'landmark': serializer.toJson<String?>(landmark),
+      'district': serializer.toJson<String?>(district),
       'emergencyArmed': serializer.toJson<bool>(emergencyArmed),
       'emergencyUsed': serializer.toJson<bool>(emergencyUsed),
     };
@@ -2456,6 +2488,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     Value<String?> land = const Value.absent(),
     Value<int?> look = const Value.absent(),
     Value<String?> landmark = const Value.absent(),
+    Value<String?> district = const Value.absent(),
     bool? emergencyArmed,
     bool? emergencyUsed,
   }) => SessionRow(
@@ -2483,6 +2516,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     land: land.present ? land.value : this.land,
     look: look.present ? look.value : this.look,
     landmark: landmark.present ? landmark.value : this.landmark,
+    district: district.present ? district.value : this.district,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -2526,6 +2560,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
       land: data.land.present ? data.land.value : this.land,
       look: data.look.present ? data.look.value : this.look,
       landmark: data.landmark.present ? data.landmark.value : this.landmark,
+      district: data.district.present ? data.district.value : this.district,
       emergencyArmed: data.emergencyArmed.present
           ? data.emergencyArmed.value
           : this.emergencyArmed,
@@ -2556,6 +2591,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           ..write('land: $land, ')
           ..write('look: $look, ')
           ..write('landmark: $landmark, ')
+          ..write('district: $district, ')
           ..write('emergencyArmed: $emergencyArmed, ')
           ..write('emergencyUsed: $emergencyUsed')
           ..write(')'))
@@ -2563,7 +2599,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     plannedMinutes,
     tier,
@@ -2582,9 +2618,10 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
     land,
     look,
     landmark,
+    district,
     emergencyArmed,
     emergencyUsed,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2607,6 +2644,7 @@ class SessionRow extends DataClass implements Insertable<SessionRow> {
           other.land == this.land &&
           other.look == this.look &&
           other.landmark == this.landmark &&
+          other.district == this.district &&
           other.emergencyArmed == this.emergencyArmed &&
           other.emergencyUsed == this.emergencyUsed);
 }
@@ -2630,6 +2668,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
   final Value<String?> land;
   final Value<int?> look;
   final Value<String?> landmark;
+  final Value<String?> district;
   final Value<bool> emergencyArmed;
   final Value<bool> emergencyUsed;
   final Value<int> rowid;
@@ -2652,6 +2691,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.land = const Value.absent(),
     this.look = const Value.absent(),
     this.landmark = const Value.absent(),
+    this.district = const Value.absent(),
     this.emergencyArmed = const Value.absent(),
     this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2675,6 +2715,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     this.land = const Value.absent(),
     this.look = const Value.absent(),
     this.landmark = const Value.absent(),
+    this.district = const Value.absent(),
     this.emergencyArmed = const Value.absent(),
     this.emergencyUsed = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2706,6 +2747,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Expression<String>? land,
     Expression<int>? look,
     Expression<String>? landmark,
+    Expression<String>? district,
     Expression<bool>? emergencyArmed,
     Expression<bool>? emergencyUsed,
     Expression<int>? rowid,
@@ -2729,6 +2771,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       if (land != null) 'land': land,
       if (look != null) 'look': look,
       if (landmark != null) 'landmark': landmark,
+      if (district != null) 'district': district,
       if (emergencyArmed != null) 'emergency_armed': emergencyArmed,
       if (emergencyUsed != null) 'emergency_used': emergencyUsed,
       if (rowid != null) 'rowid': rowid,
@@ -2754,6 +2797,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     Value<String?>? land,
     Value<int?>? look,
     Value<String?>? landmark,
+    Value<String?>? district,
     Value<bool>? emergencyArmed,
     Value<bool>? emergencyUsed,
     Value<int>? rowid,
@@ -2777,6 +2821,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
       land: land ?? this.land,
       look: look ?? this.look,
       landmark: landmark ?? this.landmark,
+      district: district ?? this.district,
       emergencyArmed: emergencyArmed ?? this.emergencyArmed,
       emergencyUsed: emergencyUsed ?? this.emergencyUsed,
       rowid: rowid ?? this.rowid,
@@ -2840,6 +2885,9 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
     if (landmark.present) {
       map['landmark'] = Variable<String>(landmark.value);
     }
+    if (district.present) {
+      map['district'] = Variable<String>(district.value);
+    }
     if (emergencyArmed.present) {
       map['emergency_armed'] = Variable<bool>(emergencyArmed.value);
     }
@@ -2873,6 +2921,7 @@ class SessionsCompanion extends UpdateCompanion<SessionRow> {
           ..write('land: $land, ')
           ..write('look: $look, ')
           ..write('landmark: $landmark, ')
+          ..write('district: $district, ')
           ..write('emergencyArmed: $emergencyArmed, ')
           ..write('emergencyUsed: $emergencyUsed, ')
           ..write('rowid: $rowid')
@@ -3711,6 +3760,7 @@ typedef $$SessionsTableCreateCompanionBuilder = SessionsCompanion Function({
   Value<String?> land,
   Value<int?> look,
   Value<String?> landmark,
+  Value<String?> district,
   Value<bool> emergencyArmed,
   Value<bool> emergencyUsed,
   Value<int> rowid,
@@ -3734,6 +3784,7 @@ typedef $$SessionsTableUpdateCompanionBuilder = SessionsCompanion Function({
   Value<String?> land,
   Value<int?> look,
   Value<String?> landmark,
+  Value<String?> district,
   Value<bool> emergencyArmed,
   Value<bool> emergencyUsed,
   Value<int> rowid,
@@ -3835,6 +3886,11 @@ class $$SessionsTableFilterComposer
 
   ColumnFilters<String> get landmark => $composableBuilder(
     column: $table.landmark,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get district => $composableBuilder(
+    column: $table.district,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3948,6 +4004,11 @@ class $$SessionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get district => $composableBuilder(
+    column: $table.district,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get emergencyArmed => $composableBuilder(
     column: $table.emergencyArmed,
     builder: (column) => ColumnOrderings(column),
@@ -4042,6 +4103,9 @@ class $$SessionsTableAnnotationComposer
   GeneratedColumn<String> get landmark =>
       $composableBuilder(column: $table.landmark, builder: (column) => column);
 
+  GeneratedColumn<String> get district =>
+      $composableBuilder(column: $table.district, builder: (column) => column);
+
   GeneratedColumn<bool> get emergencyArmed => $composableBuilder(
     column: $table.emergencyArmed,
     builder: (column) => column,
@@ -4102,6 +4166,7 @@ class $$SessionsTableTableManager
                 Value<String?> land = const Value.absent(),
                 Value<int?> look = const Value.absent(),
                 Value<String?> landmark = const Value.absent(),
+                Value<String?> district = const Value.absent(),
                 Value<bool> emergencyArmed = const Value.absent(),
                 Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4124,6 +4189,7 @@ class $$SessionsTableTableManager
                 land: land,
                 look: look,
                 landmark: landmark,
+                district: district,
                 emergencyArmed: emergencyArmed,
                 emergencyUsed: emergencyUsed,
                 rowid: rowid,
@@ -4148,6 +4214,7 @@ class $$SessionsTableTableManager
                 Value<String?> land = const Value.absent(),
                 Value<int?> look = const Value.absent(),
                 Value<String?> landmark = const Value.absent(),
+                Value<String?> district = const Value.absent(),
                 Value<bool> emergencyArmed = const Value.absent(),
                 Value<bool> emergencyUsed = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4170,6 +4237,7 @@ class $$SessionsTableTableManager
                 land: land,
                 look: look,
                 landmark: landmark,
+                district: district,
                 emergencyArmed: emergencyArmed,
                 emergencyUsed: emergencyUsed,
                 rowid: rowid,

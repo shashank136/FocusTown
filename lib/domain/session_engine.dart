@@ -1,4 +1,5 @@
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
@@ -93,6 +94,23 @@ class SessionEngine {
     startedAt: now,
     plotIndex: plotIndex,
     landmark: landmark,
+  );
+
+  /// A session of [minutes] that builds the district on [side]. Nothing is at
+  /// risk: no workers are assigned.
+  static Session startDistrict({
+    required String id,
+    required DistrictSide side,
+    required int minutes,
+    required TimeStamp now,
+  }) => Session(
+    id: id,
+    plannedMinutes: minutes,
+    tier: BuildingTier.hut,
+    workersAssigned: 0,
+    state: SessionState.running,
+    startedAt: now,
+    district: side,
   );
 
   /// A session of [minutes] that claims [parcel] when it completes. Nothing is

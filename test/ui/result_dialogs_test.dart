@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
@@ -353,6 +354,51 @@ void main() {
       await _show(tester, _failed(recoveryStarted: true), recoveryFull: false);
       expect(_allText(tester), contains(short));
       expect(_allText(tester), isNot(contains(full)));
+    });
+  });
+
+  group('district', () {
+    SessionResult district({
+      SessionOutcome outcome = SessionOutcome.completed,
+      int rows = 3,
+      bool finished = false,
+    }) => SessionResult(
+      outcome: outcome,
+      tier: BuildingTier.hut,
+      workersLost: 0,
+      workersGained: 0,
+      newStreak: 2,
+      xpGained: outcome == SessionOutcome.completed ? 120 : 0,
+      district: DistrictSide.east,
+      districtRows: rows,
+      districtFinished: finished,
+    );
+
+    testWidgets('progress says how much land the island grew', (tester) async {
+      await _show(tester, district());
+      expect(find.text('The island grew: 3 of 8 rows'), findsOneWidget);
+      expect(find.text('+120 XP'), findsOneWidget);
+      expect(find.textContaining('worker'), findsNothing);
+    });
+
+    testWidgets('finishing says the whole district is land', (tester) async {
+      await _show(tester, district(rows: 8, finished: true));
+      expect(find.text('New district finished!'), findsOneWidget);
+      expect(find.text('64 new plots are yours.'), findsOneWidget);
+    });
+
+    testWidgets('a failed session loses only the unfinished row', (
+      tester,
+    ) async {
+      await _show(tester, district(outcome: SessionOutcome.failed, rows: 2));
+      expect(find.text('Land not finished'), findsOneWidget);
+      expect(
+        find.text(
+          'The minutes toward the next row are lost. The 2 rows you built '
+          'stay, and no workers were lost.',
+        ),
+        findsOneWidget,
+      );
     });
   });
 }

@@ -1942,8 +1942,9 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 - Done: schema version 10 (`towns.districts` as `east,north`, `towns.district_project` as `east:130`), migration from 1 to 9 tested, `drift_schema_v10.json` and `schema_v10.dart` generated; `DistrictProject.encode/decode`, `encodeDistricts/decodeDistricts`; mappers and the repository save and load them.
 - Commit: `T-V11.2: store districts`
 
-### T-V11.3 [ ] Start and finish a district session
+### T-V11.3 [x] Start and finish a district session
 - Do: a district session like a landmark session in `SessionEngine` and `FocusController` (minutes from the wheel, whole stages, a finished row becomes parcels, a failed session never takes land back), plus Live Activity text.
+- Done: `Session.district` and `SessionEngine.startDistrict`; schema version 11 (`sessions.district`, migration tested); `FocusController.startDistrict(side, minutes)` (the project begins with the first session and only the same side goes on; a finished session adds its minutes with `TownRules.applyDistrictCompleted`, a failed one `applyDistrictFailed`; short test sessions count as a whole row); `SessionResult` district fields and the result dialog; the session panel label ("Growing the island", no emergency pause); the game draws it (no site, workers survey, the camera looks at the row being built); Live Activity heading.
 - Commit: `T-V11.3: district sessions`
 
 ### T-V11.4 [ ] Choose it in the session sheet

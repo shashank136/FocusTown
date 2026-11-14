@@ -1,5 +1,6 @@
 import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
@@ -45,6 +46,15 @@ Plot sessionSitePlot(TownState town, Session session) {
   }
   if (session.isLandmark) {
     return plotForTier(session.plotIndex!, BuildingTier.castle, town.parcels);
+  }
+  final district = session.district;
+  if (district != null) {
+    // The row being built: where the camera looks while the session runs.
+    final project = town.districtProject;
+    final side = project?.side ?? district;
+    final index = town.districts.where((d) => d == side).length;
+    final row = districtRow(side, index, (project?.rows ?? 0).clamp(0, 7));
+    return Plot(-1, parcelOrigin(row.first.gx), parcelOrigin(row.first.gy));
   }
   return activeSitePlot(town, session.plotIndex, session.tier);
 }
