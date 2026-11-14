@@ -100,33 +100,52 @@ void main() {
     expect(_at(_build(Landmark.spaceNeedle, 12), 5, 5, 26), Blocks.wool);
   });
 
-  test('Great Sphinx: a sand base, a lion lying down, a head with a face', () {
-    expect(_at(_build(Landmark.sphinx, 1), 5, 5, 1), Blocks.path);
-    expect(_at(_build(Landmark.sphinx, 1), 5, 5, 2), isNull);
-    // The body lies along y, from the tail end to the chest.
-    expect(_at(_build(Landmark.sphinx, 2), 5, 1, 3), Blocks.travertine);
-    expect(_at(_build(Landmark.sphinx, 2), 5, 7, 3), isNull);
-    expect(_at(_build(Landmark.sphinx, 3), 5, 7, 3), Blocks.travertine);
-    expect(_at(_build(Landmark.sphinx, 3), 5, 5, 4), isNull);
-    expect(_at(_build(Landmark.sphinx, 4), 5, 5, 4), Blocks.travertine);
-    // The forepaws reach out in front of the chest.
-    expect(_at(_build(Landmark.sphinx, 5), 4, 11, 2), isNull);
-    expect(_at(_build(Landmark.sphinx, 6), 4, 11, 2), Blocks.travertine);
-    expect(_at(_build(Landmark.sphinx, 6), 7, 11, 2), Blocks.travertine);
-    // The head rises on a neck, with a headdress.
-    expect(_at(_build(Landmark.sphinx, 7), 5, 8, 5), Blocks.travertine);
-    expect(_at(_build(Landmark.sphinx, 8), 5, 8, 8), Blocks.travertine);
-    expect(_at(_build(Landmark.sphinx, 8), 5, 8, 9), isNull);
-    expect(_at(_build(Landmark.sphinx, 9), 5, 8, 9), Blocks.path);
-    expect(_at(_build(Landmark.sphinx, 9), 3, 8, 6), Blocks.path);
-    // The face: dark eyes, a nose, a mouth.
-    expect(_at(_build(Landmark.sphinx, 10), 4, 10, 8), Blocks.char);
-    expect(_at(_build(Landmark.sphinx, 10), 7, 10, 8), Blocks.char);
-    expect(_at(_build(Landmark.sphinx, 10), 5, 10, 7), Blocks.travertine);
-    // A small pyramid behind, then palms.
-    expect(_at(_build(Landmark.sphinx, 10), 2, 2, 3), isNull);
-    expect(_at(_build(Landmark.sphinx, 11), 2, 2, 3), Blocks.travertine);
-    expect(_at(_build(Landmark.sphinx, 11), 10, 10, 5), isNull);
-    expect(_at(_build(Landmark.sphinx, 12), 10, 10, 5), Blocks.leaves);
-  });
+  test(
+    'Great Sphinx: a lion lying down with a striped headdress and a face',
+    () {
+      BlockMaterial? at(int stage, int x, int y, int z) =>
+          _at(_build(Landmark.sphinx, stage), x, y, z);
+      final t = Blocks.travertine;
+      // A sand base, then the body along y from the tail end to the chest.
+      expect(at(1, 5, 5, 1), Blocks.path);
+      expect(at(1, 5, 5, 2), isNull);
+      expect(at(2, 5, 1, 3), t);
+      expect(at(2, 5, 7, 3), isNull);
+      expect(at(2, 3, 2, 2), isNull);
+      expect(at(3, 3, 2, 2), t); // the haunches are wider
+      expect(at(3, 5, 5, 4), isNull);
+      expect(at(4, 5, 5, 4), t);
+      expect(at(4, 5, 7, 3), t);
+      expect(at(4, 9, 2, 2), isNull);
+      expect(at(5, 9, 2, 2), t); // the curled tail
+      // The chest and the forepaws stretched out in front.
+      expect(at(5, 4, 11, 2), isNull);
+      expect(at(6, 4, 11, 2), t);
+      expect(at(6, 7, 11, 2), t);
+      expect(at(6, 5, 9, 3), t);
+      // The neck, then a tall head.
+      expect(at(6, 5, 8, 5), isNull);
+      expect(at(7, 5, 8, 5), t);
+      expect(at(8, 5, 8, 9), t);
+      expect(at(8, 5, 8, 10), isNull);
+      // The headdress: a top, striped side flaps and a band over the forehead.
+      expect(at(9, 5, 8, 10), Blocks.path);
+      expect(at(9, 3, 8, 6), Blocks.path);
+      expect(at(9, 3, 8, 5), t);
+      expect(at(9, 5, 10, 9), Blocks.path);
+      // The face: dark eyes, a broken nose, a mouth and a beard.
+      expect(at(9, 4, 10, 8), isNull);
+      expect(at(10, 4, 10, 8), Blocks.char);
+      expect(at(10, 7, 10, 8), Blocks.char);
+      expect(at(10, 5, 10, 7), t);
+      expect(at(10, 5, 10, 5), Blocks.cobble);
+      expect(at(10, 5, 10, 3), t);
+      // Two small pyramids at the side, then a palm.
+      expect(at(10, 9, 5, 2), isNull);
+      expect(at(11, 9, 5, 2), t);
+      expect(at(11, 10, 6, 3), t);
+      expect(at(11, 1, 9, 5), isNull);
+      expect(at(12, 1, 9, 5), Blocks.leaves);
+    },
+  );
 }

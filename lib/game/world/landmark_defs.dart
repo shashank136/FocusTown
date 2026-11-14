@@ -613,66 +613,85 @@ void _spaceNeedle(VoxelWorld w, int ox, int oy, int stage) {
   }
 }
 
-// The Great Sphinx of Giza: a sand base, a lion lying down along y with its
-// tail on one side and its forepaws stretched out in front, a head on a neck
-// with a headdress and side flaps, a face with dark eyes, a nose and a mouth,
-// a small pyramid behind and two palms. The face looks along +y. Stages: 1 the
-// base, 2-4 the body, 5 the tail, 6 the paws, 7 the neck, 8 the head, 9 the
-// headdress, 10 the face, 11 the pyramid, 12 the palms.
+// The Great Sphinx of Giza: a sand base, a lion lying down along y with wide
+// haunches and a curled tail, the chest and the forepaws stretched out in
+// front, a neck and a tall head with a striped headdress, a band over the
+// forehead, dark eyes, a broken nose, a mouth and a beard, two small pyramids
+// at the side and a palm. The face looks along +y. Stages: 1 the base, 2-4 the
+// body, 5 the tail, 6 the chest and paws, 7 the neck, 8 the head, 9 the
+// headdress, 10 the face, 11 the pyramids, 12 the palm.
 void _sphinx(VoxelWorld w, int ox, int oy, int stage) {
+  final t = Blocks.travertine;
   if (stage >= 1) {
     w.fill(ox + 1, oy + 1, 1, ox + 10, oy + 10, 1, Blocks.path);
   }
   if (stage >= 2) {
-    w.fill(ox + 4, oy + 1, 2, ox + 7, oy + 5, 3, Blocks.travertine);
+    w.fill(ox + 4, oy + 1, 2, ox + 7, oy + 5, 3, t);
   }
   if (stage >= 3) {
-    w.fill(ox + 4, oy + 6, 2, ox + 7, oy + 8, 3, Blocks.travertine);
+    w.fill(ox + 3, oy + 1, 2, ox + 8, oy + 3, 3, t);
   }
   if (stage >= 4) {
-    w.fill(ox + 4, oy + 1, 4, ox + 7, oy + 8, 4, Blocks.travertine);
+    w
+      ..fill(ox + 4, oy + 6, 2, ox + 7, oy + 8, 3, t)
+      ..fill(ox + 4, oy + 1, 4, ox + 7, oy + 8, 4, t);
   }
   if (stage >= 5) {
     w
-      ..fill(ox + 8, oy + 2, 2, ox + 8, oy + 3, 2, Blocks.travertine)
-      ..set(ox + 8, oy + 3, 3, Blocks.travertine);
+      ..fill(ox + 9, oy + 2, 2, ox + 9, oy + 3, 2, t)
+      ..set(ox + 9, oy + 3, 3, t);
   }
   if (stage >= 6) {
     w
-      ..fill(ox + 4, oy + 9, 2, ox + 7, oy + 9, 3, Blocks.travertine)
-      ..fill(ox + 4, oy + 10, 2, ox + 4, oy + 11, 2, Blocks.travertine)
-      ..fill(ox + 7, oy + 10, 2, ox + 7, oy + 11, 2, Blocks.travertine);
+      ..fill(ox + 4, oy + 9, 2, ox + 7, oy + 9, 3, t)
+      ..fill(ox + 4, oy + 10, 2, ox + 4, oy + 11, 2, t)
+      ..fill(ox + 7, oy + 10, 2, ox + 7, oy + 11, 2, t);
   }
   if (stage >= 7) {
-    w.fill(ox + 4, oy + 7, 5, ox + 7, oy + 9, 5, Blocks.travertine);
+    w.fill(ox + 4, oy + 7, 5, ox + 7, oy + 9, 5, t);
   }
   if (stage >= 8) {
-    w.fill(ox + 4, oy + 7, 6, ox + 7, oy + 9, 8, Blocks.travertine);
+    w.fill(ox + 4, oy + 7, 6, ox + 7, oy + 9, 9, t);
   }
   if (stage >= 9) {
     w
-      ..fill(ox + 4, oy + 7, 9, ox + 7, oy + 9, 9, Blocks.path)
-      ..fill(ox + 3, oy + 8, 6, ox + 3, oy + 9, 8, Blocks.path)
-      ..fill(ox + 8, oy + 8, 6, ox + 8, oy + 9, 8, Blocks.path);
+      ..fill(ox + 4, oy + 7, 10, ox + 7, oy + 9, 10, Blocks.path)
+      ..fill(ox + 4, oy + 10, 9, ox + 7, oy + 10, 9, Blocks.path);
+    // The side flaps are striped.
+    for (var z = 5; z <= 9; z++) {
+      final stripe = z.isEven ? Blocks.path : t;
+      w
+        ..fill(ox + 3, oy + 8, z, ox + 3, oy + 9, z, stripe)
+        ..fill(ox + 8, oy + 8, z, ox + 8, oy + 9, z, stripe);
+    }
   }
   if (stage >= 10) {
     w
       ..set(ox + 4, oy + 10, 8, Blocks.char)
       ..set(ox + 7, oy + 10, 8, Blocks.char)
-      ..fill(ox + 5, oy + 10, 7, ox + 6, oy + 10, 7, Blocks.travertine)
-      ..fill(ox + 5, oy + 10, 6, ox + 6, oy + 10, 6, Blocks.cobble);
+      ..set(ox + 5, oy + 10, 7, t)
+      ..fill(ox + 5, oy + 10, 5, ox + 6, oy + 10, 5, Blocks.cobble)
+      ..fill(ox + 5, oy + 10, 3, ox + 6, oy + 10, 4, t);
   }
   if (stage >= 11) {
-    w
-      ..fill(ox + 1, oy + 1, 2, ox + 3, oy + 3, 2, Blocks.travertine)
-      ..set(ox + 2, oy + 2, 3, Blocks.travertine);
+    for (final (x, y, size) in [(9, 5, 3), (9, 8, 2)]) {
+      for (var k = 0; k < (size + 1) ~/ 2; k++) {
+        w.fill(
+          ox + x + k,
+          oy + y + k,
+          2 + k,
+          ox + x + size - 1 - k,
+          oy + y + size - 1 - k,
+          2 + k,
+          t,
+        );
+      }
+    }
   }
   if (stage >= 12) {
-    for (final (x, y) in [(10, 10), (1, 9)]) {
-      w.fill(ox + x, oy + y, 2, ox + x, oy + y, 4, Blocks.log);
-      for (final (dx, dy) in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]) {
-        w.set(ox + x + dx, oy + y + dy, 5, Blocks.leaves);
-      }
+    w.fill(ox + 1, oy + 9, 2, ox + 1, oy + 9, 4, Blocks.log);
+    for (final (dx, dy) in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]) {
+      w.set(ox + 1 + dx, oy + 9 + dy, 5, Blocks.leaves);
     }
   }
 }
