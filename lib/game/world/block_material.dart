@@ -26,7 +26,14 @@ List<int> _faces(int hex, double base) => [
 
 /// Face colors of one block type. Index 0 is the base, 1 to 4 the variants.
 class BlockMaterial {
-  const new _(this.top, this.sideX, this.sideY);
+  const new _(
+    this.top,
+    this.sideX,
+    this.sideY, [
+    this.dotTop,
+    this.dotSideX,
+    this.dotSideY,
+  ]);
 
   /// Builds a material from a top and a side color (RGB hex).
   // ignore: unnecessary_type_name_in_constructor, shorthand not valid for factories
@@ -36,6 +43,32 @@ class BlockMaterial {
     _faces(sideHex, -0.26),
   );
 
+  /// A flower bush: green with dots of bloom, half and half on every face. The
+  /// face lists hold the green shades (index 0 is a mix of green and bloom, for
+  /// when the block is too small to show dots); the dot lists hold the bloom
+  /// shades.
+  // ignore: unnecessary_type_name_in_constructor, shorthand not valid for factories
+  factory BlockMaterial.dotted(int bloomTopHex, int bloomSideHex) {
+    final greenTop = _faces(0x4e9a3d, 0);
+    final greenX = _faces(0x3f8531, -0.06);
+    final greenY = _faces(0x3f8531, -0.26);
+    final bloomTop = _faces(bloomTopHex, 0);
+    final bloomX = _faces(bloomSideHex, -0.06);
+    final bloomY = _faces(bloomSideHex, -0.26);
+    List<int> green(List<int> g, List<int> b) => [
+      _mix(g[0], b[0]),
+      ...g.skip(1),
+    ];
+    return BlockMaterial._(
+      green(greenTop, bloomTop),
+      green(greenX, bloomX),
+      green(greenY, bloomY),
+      bloomTop,
+      bloomX,
+      bloomY,
+    );
+  }
+
   /// Top face colors.
   final List<int> top;
 
@@ -44,6 +77,22 @@ class BlockMaterial {
 
   /// Right side face colors (darker).
   final List<int> sideY;
+
+  /// The bloom shades of the top face, or null for an ordinary block.
+  final List<int>? dotTop;
+
+  /// The bloom shades of the left face, or null.
+  final List<int>? dotSideX;
+
+  /// The bloom shades of the right face, or null.
+  final List<int>? dotSideY;
+}
+
+// The two colors mixed half and half.
+int _mix(int a, int b) {
+  int channel(int shift) =>
+      ((((a >> shift) & 0xFF) + ((b >> shift) & 0xFF)) / 2).round();
+  return 0xFF000000 | (channel(16) << 16) | (channel(8) << 8) | channel(0);
 }
 
 /// The block types of the town.
@@ -105,6 +154,34 @@ abstract final class Blocks {
   /// Pale pink cherry blossom.
   static final cherry = BlockMaterial.of(0xfbc9de, 0xe3a5c0);
 
+  /// A flower bush in red blooms.
+  static final bushRed = BlockMaterial.dotted(0xe0483e, 0xc63d34);
+
+  /// A flower bush in yellow blooms.
+  static final bushYellow = BlockMaterial.dotted(0xf7d62e, 0xd9b81c);
+
+  /// A flower bush in pink blooms.
+  static final bushPink = BlockMaterial.dotted(0xf47fb2, 0xd5648f);
+
+  /// A flower bush in violet blooms.
+  static final bushViolet = BlockMaterial.dotted(0x9b6fe3, 0x7d54c2);
+
+  /// A flower bush in blue blooms.
+  static final bushBlue = BlockMaterial.dotted(0x58a6f2, 0x4088d4);
+
+  /// A flower bush in white blooms.
+  static final bushWhite = BlockMaterial.dotted(0xf6f4ee, 0xdcd8cc);
+
+  /// The flower bushes, one of each colour.
+  static final List<BlockMaterial> bushes = [
+    bushRed,
+    bushYellow,
+    bushPink,
+    bushViolet,
+    bushBlue,
+    bushWhite,
+  ];
+
   /// Yellow flowers.
   static final flowerYellow = BlockMaterial.of(0xf7d62e, 0xd9b81c);
 
@@ -118,7 +195,7 @@ abstract final class Blocks {
   static final flowerBlue = BlockMaterial.of(0x58a6f2, 0x4088d4);
 }
 
-/// All 23 block types.
+/// All 29 block types.
 final List<BlockMaterial> allBlocks = [
   Blocks.grass,
   Blocks.dirt,
@@ -143,6 +220,7 @@ final List<BlockMaterial> allBlocks = [
   Blocks.flowerViolet,
   Blocks.flowerBlue,
   Blocks.cherry,
+  ...Blocks.bushes,
 ];
 
 /// The two pinks of a cherry tree in bloom.
