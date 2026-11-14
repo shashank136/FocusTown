@@ -172,7 +172,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           if (expand)
             ..._districtPart(town, sides, side!, minutes)
           else if (landmark != null)
-            ..._landmarkPart(town, landmark, minutes)
+            ..._landmarkPart(town, landmarks, landmark, minutes)
           else
             ..._buildingPart(town, option, minutes),
         ],
@@ -180,8 +180,9 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     );
   }
 
-  // What to build with the time: a new building, one of the landmarks that
-  // can be worked on now, or a district to grow the island.
+  // What to build with the time: a new building, a landmark (one chip, the
+  // landmark itself is picked from a dropdown) or a district to grow the
+  // island.
   Widget _target(
     List<Landmark> landmarks,
     Landmark? chosen, {
@@ -201,12 +202,13 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
             _expand = false;
           }),
         ),
-        for (final l in landmarks)
+        if (landmarks.isNotEmpty)
           ChoiceChip(
-            label: Text(l.title),
-            selected: chosen == l,
+            label: const Text('Landmark'),
+            selected: chosen != null,
+            // The one being built, else the first that is open.
             onSelected: (_) => setState(() {
-              _landmark = l;
+              _landmark = chosen ?? landmarks.first;
               _expand = false;
             }),
           ),
@@ -289,7 +291,12 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
   // The time goes into [landmark]: how many whole stages it makes, and the
   // minutes left over, which count toward the next stage. Nothing is at risk
   // but progress.
-  List<Widget> _landmarkPart(TownState town, Landmark landmark, int minutes) {
+  List<Widget> _landmarkPart(
+    TownState town,
+    List<Landmark> landmarks,
+    Landmark landmark,
+    int minutes,
+  ) {
     final started = TownRules.landmarkProject(town, landmark) != null;
     final stages = minutes ~/ landmark.minutesPerStage;
     final rest = minutes % landmark.minutesPerStage;
@@ -300,7 +307,24 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         ? 'Adds $stages stage${stages == 1 ? '' : 's'}'
         : 'Adds $rest min toward the next stage';
     return [
-      Text(landmark.title, style: Theme.of(context).textTheme.titleMedium),
+      // Every landmark that is open in one dropdown, so the sheet stays small.
+      SizedBox(
+        width: 280,
+        child: DropdownButton<Landmark>(
+          value: landmark,
+          isExpanded: true,
+          underline: const SizedBox.shrink(),
+          style: Theme.of(context).textTheme.titleMedium,
+          items: [
+            for (final l in landmarks)
+              DropdownMenuItem(
+                value: l,
+                child: Text(l.title, overflow: TextOverflow.ellipsis),
+              ),
+          ],
+          onChanged: (l) => setState(() => _landmark = l),
+        ),
+      ),
       Text(text),
       const Text(
         'Nothing is at risk but progress: leaving costs one stage.',

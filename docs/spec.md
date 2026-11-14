@@ -431,7 +431,7 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 
 ## Districts: growing the island in blocks of 64 (Phase V11, decided 2026-11-12)
 
-- A district is an 8 x 8 block of plots (64) added on one side (north, east, south or west) of the island. It is built as a project over several sessions, like a landmark, and replaces the idea of claiming land a square at a time for big growth. The single-square "Extend land" session stays for small gaps and for keeping space between buildings.
+- A district is an 8 x 8 block of plots (64) added on one side (north, east, south or west) of the island. It is built as a project over several sessions, like a landmark, and replaces the idea of claiming land a square at a time for big growth. The single-square "Extend land" session was removed; land sessions now only make a garden on a forest square.
 - It grows outward row by row: the row next to the island first. A district has 8 stages, one per row of 8 plots. Each finished stage adds a full row, which is ordinary land from then on (build on it, or leave it as a garden). A castle or landmark needs a 2 x 2 block, so it fits once two rows exist.
 - Minutes: the project takes 60 minutes per stage (8 hours in all). Like a landmark, it takes its time from the session wheel: the minutes make whole stages, and the leftover counts toward the next row. Any wheel length from 10 to 120 minutes works.
 - Land is never taken back. A failed session (abandoned or left too long) keeps every row its focused time finished and only loses the minutes toward the next, unfinished row, because buildings may stand on the land. While a session runs the map shows the rows its time has reached so far, and they stay if the session is given up later. The testing aid (1-minute sessions) keeps the minutes that were chosen: a 120-minute choice still counts 120 minutes, so its rows appear within the minute.
@@ -471,6 +471,10 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - The Start focus sheet stays about time only (duration, looks, choose plot, extend land). Landmarks have their own Landmarks screen, opened by a button on the island (beside the recenter button, hidden while a session runs). It shows a card per landmark: a picture, its total time, and its state (locked, not started, stage N of 12, or built).
 - Starting or continuing a landmark opens a short sheet to pick the length of that session (10 to 120 minutes), then Start.
 - Each landmark has its own total time, so a smaller one can be shorter than the Eiffel Tower's 4 hours.
+
+### One chip for all landmarks (decided 2026-11-14)
+
+- The session sheet shows three choices at most: New building, Landmark and Expand island. All the landmarks that are open share the one Landmark chip; the landmark itself is picked from a dropdown (the one being built comes first), so the sheet stays the same size however many are unlocked.
 
 ### The landmark list (decided 2026-11-12)
 

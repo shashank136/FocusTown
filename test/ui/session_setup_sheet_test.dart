@@ -484,12 +484,28 @@ void main() {
   group('landmarks', () {
     TownState village() => TownState.initial().copyWith(xp: 300);
 
+    // The Landmark chip, then [title] from the dropdown of landmarks.
+    Future<void> pickLandmark(WidgetTester tester, String title) async {
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Landmark'));
+      await tester.pump();
+      final menu = find.byType(DropdownButton<Landmark>);
+      expect(menu, findsOneWidget);
+      if (find
+          .descendant(of: menu, matching: find.text(title))
+          .evaluate()
+          .isEmpty) {
+        await tester.tap(menu);
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.tap(find.text(title).last);
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+    }
+
     testWidgets('the wheel time can go into a landmark, in whole stages', (
       tester,
     ) async {
       final c = await _open(tester, seed: village(), lastDuration: 60);
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
-      await tester.pump();
+      await pickLandmark(tester, 'Eiffel Tower');
       expect(find.text('Adds 3 stages'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Start'));
       await _settle(tester);
@@ -502,8 +518,7 @@ void main() {
       tester,
     ) async {
       await _open(tester, seed: village(), lastDuration: 25);
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
-      await tester.pump();
+      await pickLandmark(tester, 'Eiffel Tower');
       expect(find.text('Adds 1 stage and 5 min toward the next'), findsOne);
       _jumpTo(tester, 10);
       await tester.pump();
@@ -532,8 +547,7 @@ void main() {
       tester,
     ) async {
       final c = await _open(tester, seed: village(), lastDuration: 60);
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
-      await tester.pump();
+      await pickLandmark(tester, 'Eiffel Tower');
       await tester.tap(find.text('Choose plot…'));
       await _settle(tester);
       final p = c.read(placementProvider)!;
@@ -554,47 +568,75 @@ void main() {
         buildings: [...village().buildings, eiffel],
       );
       await _open(tester, seed: seed);
-      await tester.tap(find.widgetWithText(ChoiceChip, 'Eiffel Tower'));
-      await tester.pump();
+      await pickLandmark(tester, 'Eiffel Tower');
       expect(find.text('Choose plot…'), findsNothing);
     });
 
-    testWidgets('every unlocked landmark is a choice, new building first', (
+    testWidgets('all landmarks share one chip, however many are open', (
       tester,
     ) async {
       await _open(tester, seed: village());
-      final ready = Landmark.values.where((l) => l.unlockLevel.minXp <= 300);
-      // New building, every landmark that is open, and Expand island.
-      expect(find.byType(ChoiceChip), findsNWidgets(ready.length + 2));
+      // New building, Landmark, Expand island: three chips, not one per
+      // landmark.
+      expect(find.byType(ChoiceChip), findsNWidgets(3));
       expect(find.widgetWithText(ChoiceChip, 'New building'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Landmark'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsOneWidget);
       // The default is still a normal building.
       expect(find.text('house'), findsOneWidget);
     });
 
-    testWidgets('with one landmark in progress, only it is offered', (
+    testWidgets('the dropdown lists every landmark that is open', (
       tester,
     ) async {
-      const eiffel = TownBuilding(
-        id: 'landmark-eiffel',
-        tier: BuildingTier.castle,
-        status: BuildingStatus.building,
-        plotIndex: 0,
-        landmark: Landmark.eiffel,
-        progress: 40,
-      );
-      final seed = village().copyWith(
-        buildings: [...village().buildings, eiffel],
-      );
-      await _open(tester, seed: seed);
-      // New building, the landmark being built, and Expand island.
-      expect(find.byType(ChoiceChip), findsNWidgets(3));
-      expect(find.widgetWithText(ChoiceChip, 'Eiffel Tower'), findsOneWidget);
+      await _open(tester, seed: village());
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Landmark'));
+      await tester.pump();
+      await tester.tap(find.byType(DropdownButton<Landmark>));
+      await tester.pump(const Duration(milliseconds: 400));
+      final open = Landmark.values.where((l) => l.unlockLevel.minXp <= 300);
+      for (final l in open) {
+        expect(find.text(l.title), findsWidgets);
+      }
     });
+
+    testWidgets(
+      'a landmark being built is the one selected, and the only one',
+      (tester) async {
+        const eiffel = TownBuilding(
+          id: 'landmark-eiffel',
+          tier: BuildingTier.castle,
+          status: BuildingStatus.building,
+          plotIndex: 0,
+          landmark: Landmark.eiffel,
+          progress: 40,
+        );
+        final seed = village().copyWith(
+          buildings: [...village().buildings, eiffel],
+        );
+        await _open(tester, seed: seed);
+        expect(find.byType(ChoiceChip), findsNWidgets(3));
+        await tester.tap(find.widgetWithText(ChoiceChip, 'Landmark'));
+        await tester.pump();
+        final menu = find.byType(DropdownButton<Landmark>);
+        expect(
+          find.descendant(of: menu, matching: find.text('Eiffel Tower')),
+          findsOneWidget,
+        );
+        await tester.tap(menu);
+        await tester.pump(const Duration(milliseconds: 400));
+        // No other landmark is offered.
+        for (final l in Landmark.values.where((l) => l != Landmark.eiffel)) {
+          expect(find.text(l.title), findsNothing, reason: l.title);
+        }
+      },
+    );
 
     testWidgets('with no landmark unlocked: new building or expand island', (
       tester,
     ) async {
       await _open(tester);
+      expect(find.widgetWithText(ChoiceChip, 'Landmark'), findsNothing);
       expect(find.byType(ChoiceChip), findsNWidgets(2));
       expect(find.widgetWithText(ChoiceChip, 'New building'), findsOneWidget);
       expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsOneWidget);
