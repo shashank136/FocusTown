@@ -11,7 +11,6 @@ import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
-import 'package:focus_town/domain/town_level.dart';
 import 'package:focus_town/platform/testing/fake_live_status_sink.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
 
@@ -70,9 +69,10 @@ void main() {
     _clock.advance(const Duration(minutes: 1));
   }
 
-  test('a district needs the City level', () async {
-    final (_, n) = await ready(xp: TownLevel.city.minXp - 1);
-    await expectLater(n.startDistrict(DistrictSide.east, 60), throwsStateError);
+  test('a district is never locked: a new town can start one', () async {
+    final (c, n) = await ready(xp: 0);
+    await n.startDistrict(DistrictSide.east, 60);
+    expect(_state(c).active!.district, DistrictSide.east);
   });
 
   test('starting one begins the project and risks nothing', () async {

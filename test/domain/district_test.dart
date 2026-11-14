@@ -83,18 +83,16 @@ void main() {
   });
 
   group('state', () {
-    test('locked below City, ready at City', () {
-      expect(
-        TownRules.districtState(
-          _city(xp: TownLevel.city.minXp - 1),
-          DistrictSide.east,
-        ),
-        DistrictState.locked,
-      );
-      expect(
-        TownRules.districtState(_city(), DistrictSide.east),
-        DistrictState.ready,
-      );
+    test('never locked: a new town can start a district at once', () {
+      for (final side in DistrictSide.values) {
+        expect(
+          TownRules.districtState(
+            TownState.initial(), // no focus minutes at all
+            side,
+          ),
+          DistrictState.ready,
+        );
+      }
     });
 
     test('one at a time: the others are busy, the one building shows', () {
@@ -131,7 +129,6 @@ void main() {
     test('beginning one sets the project, and only when it is ready', () {
       final t = TownRules.beginDistrict(_city(), DistrictSide.north)!;
       expect(t.districtProject, const DistrictProject(DistrictSide.north, 0));
-      expect(TownRules.beginDistrict(_city(xp: 0), DistrictSide.north), isNull);
       expect(TownRules.beginDistrict(t, DistrictSide.west), isNull);
     });
   });

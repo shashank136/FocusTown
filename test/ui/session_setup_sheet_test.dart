@@ -566,7 +566,8 @@ void main() {
     ) async {
       await _open(tester, seed: village());
       final ready = Landmark.values.where((l) => l.unlockLevel.minXp <= 300);
-      expect(find.byType(ChoiceChip), findsNWidgets(ready.length + 1));
+      // New building, every landmark that is open, and Expand island.
+      expect(find.byType(ChoiceChip), findsNWidgets(ready.length + 2));
       expect(find.widgetWithText(ChoiceChip, 'New building'), findsOneWidget);
       // The default is still a normal building.
       expect(find.text('house'), findsOneWidget);
@@ -587,15 +588,18 @@ void main() {
         buildings: [...village().buildings, eiffel],
       );
       await _open(tester, seed: seed);
-      expect(find.byType(ChoiceChip), findsNWidgets(2));
+      // New building, the landmark being built, and Expand island.
+      expect(find.byType(ChoiceChip), findsNWidgets(3));
       expect(find.widgetWithText(ChoiceChip, 'Eiffel Tower'), findsOneWidget);
     });
 
-    testWidgets('with no landmark unlocked there is no choice to make', (
+    testWidgets('with no landmark unlocked: new building or expand island', (
       tester,
     ) async {
       await _open(tester);
-      expect(find.byType(ChoiceChip), findsNothing);
+      expect(find.byType(ChoiceChip), findsNWidgets(2));
+      expect(find.widgetWithText(ChoiceChip, 'New building'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsOneWidget);
     });
   });
 
@@ -609,9 +613,11 @@ void main() {
       districtProject: project,
     );
 
-    testWidgets('it is a choice from City on, not before', (tester) async {
-      await _open(tester, seed: TownState.initial().copyWith(xp: 1500));
-      expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsNothing);
+    testWidgets('it is a choice from the first day, never locked', (
+      tester,
+    ) async {
+      await _open(tester, seed: TownState.initial());
+      expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsOneWidget);
     });
 
     testWidgets('choosing it offers the four sides and the time', (

@@ -1933,7 +1933,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 
 ### T-V11.1 [x] District rules (pure)
-- Do: `District` rules in `lib/domain`: the four directions, the 64 parcels of a district split into 8 rows from the island's edge outward, which directions have room inside the world edge, skipping parcels already claimed, 8 stages of 60 minutes, progress from minutes, failure loses only the minutes toward the next row, unlock at City, at most 3 districts, one in progress.
+- Do: `District` rules in `lib/domain`: the four directions, the 64 parcels of a district split into 8 rows from the island's edge outward, which directions have room inside the world edge, skipping parcels already claimed, 8 stages of 60 minutes, progress from minutes, failure loses only the minutes toward the next row, never locked, at most 3 districts, one in progress.
 - Done: `lib/domain/district.dart` (sides, `DistrictProject`, `districtRow`, `districtFits`) and `TownRules.districtState`, `beginDistrict`, `applyDistrictMinutes`, `applyDistrictFailed`; `TownState` has `districts` and `districtProject` (not stored yet: T-V11.2). Districts are laid out as arms of the starting island, so on a side the next district follows the last outward. Tests: `test/domain/district_test.dart`.
 - Commit: `T-V11.1: district rules`
 
@@ -1949,16 +1949,16 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 
 ### T-V11.4 [x] Choose it in the session sheet
 - Do: an "Expand island" choice in the session sheet beside New building and the landmarks, with the direction picker (only directions with room), the rows the time makes, and the row about to be built highlighted on the island.
-- Done: an "Expand island" chip in the session sheet (from City on, not at 3 districts): the sides that are ready or being built (only the one being built while a project runs), the rows the wheel time makes and the leftover, "N of 8 rows built", then Start (`FocusController.startDistrict`). Not done: highlighting the row about to be built on the island before starting (the sheet covers the island; a small addition later).
+- Done: an "Expand island" chip in the session sheet (always, until 3 districts): the sides that are ready or being built (only the one being built while a project runs), the rows the wheel time makes and the leftover, "N of 8 rows built", then Start (`FocusController.startDistrict`). Not done: highlighting the row about to be built on the island before starting (the sheet covers the island; a small addition later).
 - Commit: `T-V11.4: expand island in the session sheet`
 
 ### T-V11.5 [x] Debug aid and docs
 - Do: show a full district in the debug screen without waiting, and record the rules in the docs.
-- Done without new code: the debug screen's "City 6000" button unlocks districts and "Short test sessions" makes every 1-minute session count as a whole row (a district takes eight such sessions). Rules are in `docs/spec.md` ("Districts").
+- Done without new code: "Short test sessions" in the debug screen makes every 1-minute session count as a whole row (a district takes eight such sessions). Rules are in `docs/spec.md` ("Districts").
 - Commit: `T-V11.5: district test aid`
 
 ### T-V11.6 [ ] [device] Districts on the iPhone
-- Do: give the user steps (unlock City with the debug button, start a district, finish a row, build on it, fail a session), measure frame rate and battery with 1, 2 and 3 districts, and record in `docs/device_tests.md`.
+- Do: give the user steps (start a district, finish a row, build on it, fail a session), measure frame rate and battery with 1, 2 and 3 districts, and record in `docs/device_tests.md`.
 - Commit: `T-V11.6: record districts device check`
 
 ## Phase V12: rotate the island (decided 2026-11-12)

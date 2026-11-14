@@ -8,15 +8,11 @@ import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/town.dart';
-import 'package:focus_town/domain/town_level.dart';
 
-/// Where a district side stands for a town: not unlocked, waiting for the
-/// district being built, at the limit, with no room on that side, ready to
-/// start, or in progress.
+/// Where a district side stands for a town: waiting for the district being
+/// built, at the limit, with no room on that side, ready to start, or in
+/// progress. Districts are never locked: any town can grow its island.
 enum DistrictState {
-  /// Below the town level that unlocks districts.
-  locked,
-
   /// Another district is being built.
   busy,
 
@@ -428,7 +424,6 @@ class TownRules {
           ? DistrictState.inProgress
           : DistrictState.busy;
     }
-    if (town.xp < TownLevel.city.minXp) return DistrictState.locked;
     if (town.districts.length >= kMaxDistricts) return DistrictState.limit;
     return districtFits(side, town.districts.where((d) => d == side).length)
         ? DistrictState.ready
