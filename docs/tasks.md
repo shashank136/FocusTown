@@ -1926,6 +1926,7 @@ One landmark at a time, each with its tests first (stage by stage layout, inside
 - [x] A way to see and test the landmarks on the map without waiting for the level or the time (debug screen: "Show every landmark on the map")
 - [x] A landmark takes the time from the session wheel: the session sheet offers "New building" or any landmark that can be worked on, and shows the whole stages the minutes make (leftover minutes count toward the next stage)
 - [x] Chichén Itzá, Petra, Christ the Redeemer, the Easter Island Moai and the Space Needle (Machu Picchu was dropped, the Great Wall is left out for now)
+- [x] The Great Sphinx of Giza (Town, 25 minutes per stage)
 
 ## Phase V11: districts, growing the island in blocks of 64 (decided 2026-11-12)
 

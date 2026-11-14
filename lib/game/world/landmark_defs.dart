@@ -31,6 +31,8 @@ void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
       _petra(w, ox, oy, stage);
     case Landmark.christRedeemer:
       _christRedeemer(w, ox, oy, stage);
+    case Landmark.sphinx:
+      _sphinx(w, ox, oy, stage);
     case Landmark.eiffel:
       _eiffel(w, ox, oy, stage);
   }
@@ -608,5 +610,69 @@ void _spaceNeedle(VoxelWorld w, int ox, int oy, int stage) {
   }
   if (stage >= 12) {
     w.fill(ox + 5, oy + 5, 26, ox + 5, oy + 5, 26, Blocks.wool);
+  }
+}
+
+// The Great Sphinx of Giza: a sand base, a lion lying down along y with its
+// tail on one side and its forepaws stretched out in front, a head on a neck
+// with a headdress and side flaps, a face with dark eyes, a nose and a mouth,
+// a small pyramid behind and two palms. The face looks along +y. Stages: 1 the
+// base, 2-4 the body, 5 the tail, 6 the paws, 7 the neck, 8 the head, 9 the
+// headdress, 10 the face, 11 the pyramid, 12 the palms.
+void _sphinx(VoxelWorld w, int ox, int oy, int stage) {
+  if (stage >= 1) {
+    w.fill(ox + 1, oy + 1, 1, ox + 10, oy + 10, 1, Blocks.path);
+  }
+  if (stage >= 2) {
+    w.fill(ox + 4, oy + 1, 2, ox + 7, oy + 5, 3, Blocks.travertine);
+  }
+  if (stage >= 3) {
+    w.fill(ox + 4, oy + 6, 2, ox + 7, oy + 8, 3, Blocks.travertine);
+  }
+  if (stage >= 4) {
+    w.fill(ox + 4, oy + 1, 4, ox + 7, oy + 8, 4, Blocks.travertine);
+  }
+  if (stage >= 5) {
+    w
+      ..fill(ox + 8, oy + 2, 2, ox + 8, oy + 3, 2, Blocks.travertine)
+      ..set(ox + 8, oy + 3, 3, Blocks.travertine);
+  }
+  if (stage >= 6) {
+    w
+      ..fill(ox + 4, oy + 9, 2, ox + 7, oy + 9, 3, Blocks.travertine)
+      ..fill(ox + 4, oy + 10, 2, ox + 4, oy + 11, 2, Blocks.travertine)
+      ..fill(ox + 7, oy + 10, 2, ox + 7, oy + 11, 2, Blocks.travertine);
+  }
+  if (stage >= 7) {
+    w.fill(ox + 4, oy + 7, 5, ox + 7, oy + 9, 5, Blocks.travertine);
+  }
+  if (stage >= 8) {
+    w.fill(ox + 4, oy + 7, 6, ox + 7, oy + 9, 8, Blocks.travertine);
+  }
+  if (stage >= 9) {
+    w
+      ..fill(ox + 4, oy + 7, 9, ox + 7, oy + 9, 9, Blocks.path)
+      ..fill(ox + 3, oy + 8, 6, ox + 3, oy + 9, 8, Blocks.path)
+      ..fill(ox + 8, oy + 8, 6, ox + 8, oy + 9, 8, Blocks.path);
+  }
+  if (stage >= 10) {
+    w
+      ..set(ox + 4, oy + 10, 8, Blocks.char)
+      ..set(ox + 7, oy + 10, 8, Blocks.char)
+      ..fill(ox + 5, oy + 10, 7, ox + 6, oy + 10, 7, Blocks.travertine)
+      ..fill(ox + 5, oy + 10, 6, ox + 6, oy + 10, 6, Blocks.cobble);
+  }
+  if (stage >= 11) {
+    w
+      ..fill(ox + 1, oy + 1, 2, ox + 3, oy + 3, 2, Blocks.travertine)
+      ..set(ox + 2, oy + 2, 3, Blocks.travertine);
+  }
+  if (stage >= 12) {
+    for (final (x, y) in [(10, 10), (1, 9)]) {
+      w.fill(ox + x, oy + y, 2, ox + x, oy + y, 4, Blocks.log);
+      for (final (dx, dy) in [(0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)]) {
+        w.set(ox + x + dx, oy + y + dy, 5, Blocks.leaves);
+      }
+    }
   }
 }

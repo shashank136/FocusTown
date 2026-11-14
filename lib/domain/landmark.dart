@@ -90,6 +90,14 @@ enum Landmark {
     unlockLevel: TownLevel.city,
   ),
 
+  /// The Great Sphinx of Giza: 12 stages of 25 minutes each, from Town.
+  sphinx(
+    title: 'Great Sphinx of Giza',
+    stages: 12,
+    minutesPerStage: 25,
+    unlockLevel: TownLevel.town,
+  ),
+
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
   eiffel(
     title: 'Eiffel Tower',
