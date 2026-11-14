@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
@@ -48,6 +49,53 @@ void main() {
       expect(s.isLand || s.isLandmark || s.isRepair, isFalse);
       // The session copies keep the side.
       expect(s.copyWith(plannedMinutes: 30).district, DistrictSide.west);
+    });
+
+    test(
+      'it remembers the minutes it counts, even when the clock is faster',
+      () {
+        final s = SessionEngine.startDistrict(
+          id: 'd1',
+          side: DistrictSide.north,
+          minutes: 120,
+          now: TimeStamp(DateTime(2026), Duration.zero),
+        );
+        expect(s.creditMinutes, 120);
+        // The testing aid makes the session last 1 minute; the credit stays.
+        final quick = s.copyWith(plannedMinutes: 1);
+        expect(quick.plannedMinutes, 1);
+        expect(quick.creditMinutes, 120);
+      },
+    );
+
+    test('how much of the planned time was focused when it failed', () {
+      final start = TimeStamp(DateTime(2026), Duration.zero);
+      TimeStamp at(int s) => TimeStamp(
+        DateTime(2026).add(Duration(seconds: s)),
+        Duration(seconds: s),
+      );
+      final s = SessionEngine.startDistrict(
+        id: 'd1',
+        side: DistrictSide.north,
+        minutes: 120,
+        now: start,
+      ).copyWith(plannedMinutes: 1);
+      final abandoned = s.copyWith(
+        state: SessionState.failed,
+        outcomeReason: OutcomeReason.abandoned,
+      );
+      expect(
+        SessionEngine.focusedFraction(abandoned, at(30)),
+        closeTo(0.5, 1e-9),
+      );
+      expect(SessionEngine.focusedFraction(abandoned, at(500)), 1);
+      // Left too long: the focus stopped when the user left.
+      final left = s.copyWith(
+        state: SessionState.failed,
+        outcomeReason: OutcomeReason.leftTooLong,
+        leftAt: at(15),
+      );
+      expect(SessionEngine.focusedFraction(left, at(500)), closeTo(0.25, 1e-9));
     });
   });
 
@@ -187,6 +235,23 @@ void main() {
     });
   });
 
+  group('a session counts its credit minutes', () {
+    test('a completed session counts the minutes it was started with', () {
+      final s = SessionEngine.startDistrict(
+        id: 'd1',
+        side: DistrictSide.east,
+        minutes: 120,
+        now: TimeStamp(DateTime(2026), Duration.zero),
+      ).copyWith(plannedMinutes: 1);
+      final t = TownRules.applyDistrictCompleted(
+        TownRules.beginDistrict(_city(), DistrictSide.east)!,
+        s,
+      );
+      expect(t.parcels, hasLength(16)); // two rows, not one
+      expect(t.districtProject!.progress, 120);
+    });
+  });
+
   group('failing', () {
     test('only the minutes toward the next row are lost', () {
       var t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
@@ -201,6 +266,44 @@ void main() {
       expect(TownRules.applyDistrictFailed(t).districtProject!.progress, 0);
       t = TownRules.applyDistrictMinutes(t, 120);
       expect(TownRules.applyDistrictFailed(t).districtProject!.progress, 120);
+    });
+
+    test('the rows earned before giving up stay', () {
+      final t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      // 130 minutes were focused: two whole rows, 10 minutes lost.
+      final failed = TownRules.applyDistrictFailed(t, 130);
+      expect(failed.parcels, hasLength(16));
+      expect(failed.districtProject!.progress, 120);
+      // Under an hour earns nothing.
+      expect(TownRules.applyDistrictFailed(t, 59).parcels, isEmpty);
+      expect(TownRules.applyDistrictFailed(t, 59).districtProject!.progress, 0);
+    });
+
+    test('earning the last row before giving up finishes the district', () {
+      var t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      t = TownRules.applyDistrictMinutes(t, 450);
+      final failed = TownRules.applyDistrictFailed(t, 40);
+      expect(failed.parcels, hasLength(64));
+      expect(failed.districts, [DistrictSide.east]);
+      expect(failed.districtProject, isNull);
+    });
+  });
+
+  group('live land', () {
+    test('the rows a running session has reached so far', () {
+      final t = TownRules.beginDistrict(_city(), DistrictSide.east)!;
+      final s = SessionEngine.startDistrict(
+        id: 'd1',
+        side: DistrictSide.east,
+        minutes: 120,
+        now: TimeStamp(DateTime(2026), Duration.zero),
+      );
+      expect(TownRules.liveDistrictParcels(t, s, 0.49), isEmpty);
+      expect(
+        TownRules.liveDistrictParcels(t, s, 0.5),
+        districtRow(DistrictSide.east, 0, 0),
+      );
+      expect(TownRules.liveDistrictParcels(t, s, 1), hasLength(16));
     });
   });
 }

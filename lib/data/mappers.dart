@@ -144,7 +144,10 @@ Session sessionFromRow(SessionRow row) {
     landmark: _landmark(row.landmark),
     district: row.district == null
         ? null
-        : DistrictSide.values.byName(row.district!),
+        : DistrictSide.values.byName(row.district!.split(':').first),
+    districtMinutes: row.district != null && row.district!.contains(':')
+        ? int.parse(row.district!.split(':').last)
+        : null,
     emergencyArmed: row.emergencyArmed,
     emergencyUsed: row.emergencyUsed,
   );
@@ -171,7 +174,12 @@ SessionsCompanion sessionToRow(Session session, {DateTime? resolvedAt}) {
     land: Value(session.land?.encode()),
     look: Value(session.look),
     landmark: Value(session.landmark?.name),
-    district: Value(session.district?.name),
+    // The side and the minutes it counts, as north:120.
+    district: Value(
+      session.district == null
+          ? null
+          : '${session.district!.name}:${session.creditMinutes}',
+    ),
     emergencyArmed: Value(session.emergencyArmed),
     emergencyUsed: Value(session.emergencyUsed),
     resolvedAt: Value(resolvedAt?.millisecondsSinceEpoch),

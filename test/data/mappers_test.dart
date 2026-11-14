@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
@@ -400,10 +401,19 @@ void main() {
       state: SessionState.running,
       startedAt: TimeStamp(DateTime(2026, 3, 4, 9), Duration.zero),
       district: DistrictSide.south,
+      districtMinutes: 120,
     );
     final back = sessionFromRow(_sessionRowFrom(sessionToRow(s)));
     expect(back.district, DistrictSide.south);
+    expect(back.districtMinutes, 120);
     expect(back, s);
+    // A session saved before the minutes were kept reads as its plan.
+    final old = sessionFromRow(
+      _sessionRowFrom(sessionToRow(s)).copyWith(district: const Value('west')),
+    );
+    expect(old.district, DistrictSide.west);
+    expect(old.districtMinutes, isNull);
+    expect(old.creditMinutes, 60);
     final plain = Session(
       id: 'p',
       plannedMinutes: 25,

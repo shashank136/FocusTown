@@ -111,6 +111,7 @@ class SessionEngine {
     state: SessionState.running,
     startedAt: now,
     district: side,
+    districtMinutes: minutes,
   );
 
   /// A session of [minutes] that claims [parcel] when it completes. Nothing is
@@ -238,6 +239,21 @@ class SessionEngine {
     return elapsedBetween(session.startedAt, now) >= session.planned
         ? complete(withAway)
         : session;
+  }
+
+  /// How much of the planned time was focused when [session] ended: all of it
+  /// when it completed, the time up to [now] when it was abandoned, and up to
+  /// the moment the user left when it failed by leaving too long.
+  static double focusedFraction(Session session, TimeStamp now) {
+    if (session.state == SessionState.completed) return 1;
+    final until =
+        session.outcomeReason == OutcomeReason.leftTooLong &&
+            session.leftAt != null
+        ? session.leftAt!
+        : now;
+    return (elapsedBetween(session.startedAt, until).inMicroseconds /
+            session.planned.inMicroseconds)
+        .clamp(0.0, 1.0);
   }
 
   /// Fraction of the planned time done, from 0.0 to 1.0.

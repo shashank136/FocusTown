@@ -467,29 +467,36 @@ class TownRules {
           );
   }
 
-  /// Applies a completed district [session]: its minutes build the district (a
-  /// session under 10 minutes can only come from the testing aid and counts as
-  /// a whole row).
+  /// Applies a completed district [session]: the minutes it counts build the
+  /// district.
   static TownState applyDistrictCompleted(TownState town, Session session) =>
-      applyDistrictMinutes(
-        town,
-        session.plannedMinutes < 10
-            ? kMinutesPerDistrictRow
-            : session.plannedMinutes,
-      );
+      applyDistrictMinutes(town, session.creditMinutes);
 
-  /// Applies a failed district session: the minutes toward the next row are
-  /// lost. Rows already built stay, because buildings may stand on them.
-  static TownState applyDistrictFailed(TownState town) {
-    final project = town.districtProject;
-    if (project == null) return town;
-    return town.copyWith(
+  /// Applies a failed district session after [earned] minutes of it were
+  /// focused: every row those minutes finished stays, and the minutes toward
+  /// the next row are lost. Land that was built is never taken back.
+  static TownState applyDistrictFailed(TownState town, [int earned = 0]) {
+    final built = applyDistrictMinutes(town, earned);
+    final project = built.districtProject;
+    if (project == null) return built;
+    return built.copyWith(
       districtProject: DistrictProject(
         project.side,
         project.rows * kMinutesPerDistrictRow,
       ),
     );
   }
+
+  /// The parcels a running district [session] has reached when [fraction] of
+  /// its time has passed (not stored yet): the rows its minutes finish.
+  static List<Parcel> liveDistrictParcels(
+    TownState town,
+    Session session,
+    double fraction,
+  ) => applyDistrictMinutes(
+    town,
+    (fraction * session.creditMinutes).floor(),
+  ).parcels.sublist(town.parcels.length);
 
   /// Moves queued buildings onto free plots, oldest first.
   static TownState placeQueued(TownState town) {

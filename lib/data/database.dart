@@ -92,7 +92,7 @@ class Sessions extends Table {
   IntColumn get look => integer().nullable()();
   // Landmark.name for a landmark session
   TextColumn get landmark => text().nullable()();
-  // DistrictSide.name for a district session
+  // a district session: DistrictSide.name and the minutes it counts, north:120
   TextColumn get district => text().nullable()();
   BoolColumn get emergencyArmed =>
       boolean().withDefault(const Constant(false))();

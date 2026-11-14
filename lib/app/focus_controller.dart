@@ -475,9 +475,13 @@ class FocusController extends AsyncNotifier<FocusState> {
         finished,
         doneAt,
       ),
-      // A failed district session loses the minutes toward the next row;
-      // the land already built stays.
-      _ when district != null => TownRules.applyDistrictFailed(base.town),
+      // A failed district session keeps every row its focused time finished
+      // and loses the minutes toward the next one.
+      _ when district != null => TownRules.applyDistrictFailed(
+        base.town,
+        (SessionEngine.focusedFraction(finished, now) * finished.creditMinutes)
+            .floor(),
+      ),
       // Land: the claim comes first, so the day's plot has room to arrive.
       _ when land && completed => Progression.onSessionCompleted(
         TownRules.applyLandCompleted(base.town, finished),

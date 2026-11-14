@@ -161,14 +161,49 @@ void main() {
     expect(_state(c).lastResult!.districtFinished, isTrue);
   });
 
-  test('short test sessions count as a whole row', () async {
+  test('short test sessions count the minutes you chose, not 1', () async {
     final (c, n) = await ready();
     c.read(shortSessionsProvider.notifier).toggle();
-    await n.startDistrict(DistrictSide.south, 60);
+    await n.startDistrict(DistrictSide.south, 120);
     expect(_state(c).active!.plannedMinutes, 1);
+    expect(_state(c).active!.creditMinutes, 120);
     _clock.advance(const Duration(minutes: 2));
     await n.tick();
-    expect(_state(c).town.parcels, hasLength(8));
+    expect(_state(c).town.parcels, hasLength(16)); // two rows
+  });
+
+  test(
+    'giving up near the end of a 120-minute test keeps the first row',
+    () async {
+      final (c, n) = await ready();
+      c.read(shortSessionsProvider.notifier).toggle();
+      await n.startDistrict(DistrictSide.north, 120);
+      _clock.advance(const Duration(seconds: 55)); // 55 of 60 seconds
+      await n.abandon();
+      final town = _state(c).town;
+      expect(town.parcels, districtRow(DistrictSide.north, 0, 0)); // one row
+      expect(town.districtProject!.progress, 60);
+      final r = _state(c).lastResult!;
+      expect(r.outcome, SessionOutcome.failed);
+      expect(r.districtRows, 1);
+    },
+  );
+
+  test('giving up before the first hour earns no row', () async {
+    final (c, n) = await ready();
+    await n.startDistrict(DistrictSide.north, 120);
+    _clock.advance(const Duration(minutes: 59));
+    await n.abandon();
+    expect(_state(c).town.parcels, isEmpty);
+    expect(_state(c).town.districtProject!.progress, 0);
+  });
+
+  test('giving up 90 minutes into a 120-minute run keeps one row', () async {
+    final (c, n) = await ready();
+    await n.startDistrict(DistrictSide.north, 120);
+    _clock.advance(const Duration(minutes: 90));
+    await n.abandon();
+    expect(_state(c).town.parcels, hasLength(8)); // 90 min: one row
   });
 
   test('no district while a session is running', () async {

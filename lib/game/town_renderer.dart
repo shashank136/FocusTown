@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show listEquals;
+
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/town.dart';
@@ -61,6 +63,7 @@ class TownRenderer {
   ViewRotation _rotation = ViewRotation.none;
   int _worldVersion = 0;
   TownState? _town;
+  List<Parcel> _extraLand = const [];
   ActiveSite? _site;
   Set<int> _regionPlots = {for (var i = 0; i < 6; i++) i};
   TownCamera? _camera;
@@ -81,6 +84,18 @@ class TownRenderer {
     _rebuild();
     final preview = _preview;
     if (preview != null) setPreview(preview);
+  }
+
+  /// Land a running session has reached but that is not stored yet.
+  List<Parcel> get extraLand => _extraLand;
+
+  /// Draws [land] as part of the island too (the rows a district session has
+  /// reached so far); an empty list shows only the stored town.
+  void setExtraLand(List<Parcel> land) {
+    if (listEquals(land, _extraLand)) return;
+    _extraLand = land;
+    _camera?.box = _box;
+    _rebuild();
   }
 
   /// The blocks that show a face, back to front, as drawn (a spy for tests).
@@ -126,7 +141,10 @@ class TownRenderer {
   void _rebuild() {
     final town = _town;
     if (town == null) return; // a site set early waits for the town
-    final world = buildTownWorld(town, site: _site);
+    final shown = _extraLand.isEmpty
+        ? town
+        : town.copyWith(parcels: [...town.parcels, ..._extraLand]);
+    final world = buildTownWorld(shown, site: _site);
     final visible =
         (_rotation == ViewRotation.none ? world : _rotation.rotateWorld(world))
             .sortedVisible();
@@ -310,7 +328,7 @@ class TownRenderer {
   }
 
   /// The claimed land, for picking and outlines.
-  List<Parcel> get parcels => _town?.parcels ?? const [];
+  List<Parcel> get parcels => [...?_town?.parcels, ..._extraLand];
 
   // The island as a tile box for the camera, with a plot of sea on every side
   // so the claimable land at the coast fits on screen too.

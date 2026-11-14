@@ -54,6 +54,7 @@ class Session {
     this.look,
     this.landmark,
     this.district,
+    this.districtMinutes,
     this.emergencyArmed = false,
     this.emergencyUsed = false,
   });
@@ -108,6 +109,13 @@ class Session {
   /// The side of the island this session builds a district on, for a
   /// district session.
   final DistrictSide? district;
+
+  /// The minutes a district session counts toward the district. Normally the
+  /// planned minutes; the testing aid shortens the session but keeps these.
+  final int? districtMinutes;
+
+  /// The minutes this session counts toward a district.
+  int get creditMinutes => districtMinutes ?? plannedMinutes;
 
   /// The weekly emergency pause is switched on: the next absence may last up
   /// to 10 minutes.
@@ -167,6 +175,7 @@ class Session {
     look: look,
     landmark: landmark,
     district: district,
+    districtMinutes: districtMinutes,
     emergencyArmed: emergencyArmed ?? this.emergencyArmed,
     emergencyUsed: emergencyUsed ?? this.emergencyUsed,
   );
@@ -190,6 +199,7 @@ class Session {
       other.look == look &&
       other.landmark == landmark &&
       other.district == district &&
+      other.districtMinutes == districtMinutes &&
       other.emergencyArmed == emergencyArmed &&
       other.emergencyUsed == emergencyUsed;
 
@@ -211,6 +221,7 @@ class Session {
     look,
     landmark,
     district,
+    districtMinutes,
     emergencyArmed,
     emergencyUsed,
   );

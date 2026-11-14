@@ -12,6 +12,7 @@ import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/camera/camera_transition.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/effects/particles.dart';
@@ -406,6 +407,16 @@ class TownGame extends FlameGame
   // The stage comes from the clock on every frame, never from stored state.
   void _updateSite() {
     final active = _focus?.active;
+    // A district session shows the rows its time has reached so far.
+    renderer.setExtraLand(
+      active != null && active.isDistrict
+          ? TownRules.liveDistrictParcels(
+              _focus!.town,
+              active,
+              SessionEngine.progress(active, TimeStamp.now(_clock)),
+            )
+          : const [],
+    );
     // A repair builds nothing: the ruin stays until the repair is done.
     if (active == null ||
         active.isRepair ||
