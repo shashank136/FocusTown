@@ -12,6 +12,7 @@ import 'package:focus_town/data/save_failed_exception.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
@@ -595,6 +596,98 @@ void main() {
     ) async {
       await _open(tester);
       expect(find.byType(ChoiceChip), findsNothing);
+    });
+  });
+
+  group('expand island', () {
+    TownState city({
+      List<DistrictSide> done = const [],
+      DistrictProject? project,
+    }) => TownState.initial().copyWith(
+      xp: 6000,
+      districts: done,
+      districtProject: project,
+    );
+
+    testWidgets('it is a choice from City on, not before', (tester) async {
+      await _open(tester, seed: TownState.initial().copyWith(xp: 1500));
+      expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsNothing);
+    });
+
+    testWidgets('choosing it offers the four sides and the time', (
+      tester,
+    ) async {
+      await _open(tester, seed: city());
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      _jumpTo(tester, 120);
+      await tester.pump();
+      for (final side in ['North', 'East', 'South', 'West']) {
+        expect(find.widgetWithText(ChoiceChip, side), findsOneWidget);
+      }
+      expect(find.text('Adds 2 rows'), findsOneWidget);
+      expect(find.text('Choose plot…'), findsNothing);
+    });
+
+    testWidgets('the time makes whole rows, the leftover carries', (
+      tester,
+    ) async {
+      await _open(tester, seed: city());
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      _jumpTo(tester, 90);
+      await tester.pump();
+      expect(find.text('Adds 1 row and 30 min toward the next'), findsOne);
+      _jumpTo(tester, 30);
+      await tester.pump();
+      expect(find.text('Adds 30 min toward the next row'), findsOne);
+    });
+
+    testWidgets('starting it builds on the chosen side', (tester) async {
+      final c = await _open(tester, seed: city());
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      _jumpTo(tester, 120);
+      await tester.pump();
+      await tester.tap(find.widgetWithText(ChoiceChip, 'West'));
+      await tester.pump();
+      await tester.ensureVisible(find.widgetWithText(FilledButton, 'Start'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Start'));
+      await _settle(tester);
+      final s = c.read(focusControllerProvider).requireValue.active!;
+      expect(s.district, DistrictSide.west);
+      expect(s.plannedMinutes, 120);
+    });
+
+    testWidgets('a district being built is the only side offered', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        seed: city(project: const DistrictProject(DistrictSide.south, 130)),
+      );
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      await tester.pump();
+      expect(find.widgetWithText(ChoiceChip, 'South'), findsOneWidget);
+      expect(find.widgetWithText(ChoiceChip, 'North'), findsNothing);
+      expect(find.text('2 of 8 rows built'), findsOneWidget);
+    });
+
+    testWidgets('a side with no room left is not offered', (tester) async {
+      await _open(tester, seed: city(done: [DistrictSide.east]));
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      await tester.pump();
+      expect(find.widgetWithText(ChoiceChip, 'East'), findsNothing);
+      expect(find.widgetWithText(ChoiceChip, 'West'), findsOneWidget);
+    });
+
+    testWidgets('three districts is the most: no choice any more', (
+      tester,
+    ) async {
+      await _open(
+        tester,
+        seed: city(
+          done: [DistrictSide.east, DistrictSide.west, DistrictSide.north],
+        ),
+      );
+      expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsNothing);
     });
   });
 }

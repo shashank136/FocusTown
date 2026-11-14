@@ -1947,12 +1947,14 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 - Done: `Session.district` and `SessionEngine.startDistrict`; schema version 11 (`sessions.district`, migration tested); `FocusController.startDistrict(side, minutes)` (the project begins with the first session and only the same side goes on; a finished session adds its minutes with `TownRules.applyDistrictCompleted`, a failed one `applyDistrictFailed`; short test sessions count as a whole row); `SessionResult` district fields and the result dialog; the session panel label ("Growing the island", no emergency pause); the game draws it (no site, workers survey, the camera looks at the row being built); Live Activity heading.
 - Commit: `T-V11.3: district sessions`
 
-### T-V11.4 [ ] Choose it in the session sheet
+### T-V11.4 [x] Choose it in the session sheet
 - Do: an "Expand island" choice in the session sheet beside New building and the landmarks, with the direction picker (only directions with room), the rows the time makes, and the row about to be built highlighted on the island.
+- Done: an "Expand island" chip in the session sheet (from City on, not at 3 districts): the sides that are ready or being built (only the one being built while a project runs), the rows the wheel time makes and the leftover, "N of 8 rows built", then Start (`FocusController.startDistrict`). Not done: highlighting the row about to be built on the island before starting (the sheet covers the island; a small addition later).
 - Commit: `T-V11.4: expand island in the session sheet`
 
-### T-V11.5 [ ] Debug aid and docs
+### T-V11.5 [x] Debug aid and docs
 - Do: show a full district in the debug screen without waiting, and record the rules in the docs.
+- Done without new code: the debug screen's "City 6000" button unlocks districts and "Short test sessions" makes every 1-minute session count as a whole row (a district takes eight such sessions). Rules are in `docs/spec.md` ("Districts").
 - Commit: `T-V11.5: district test aid`
 
 ### T-V11.6 [ ] [device] Districts on the iPhone
