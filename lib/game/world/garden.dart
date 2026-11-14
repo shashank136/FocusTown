@@ -1,4 +1,5 @@
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/flower_bush.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
 /// How many gardens there are: park, pond, orchard and flower beds.
@@ -28,8 +29,6 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
           ..set(ox + 3, oy + i, 0, Blocks.path)
           ..set(ox + i, oy + 3, 0, Blocks.path);
       }
-      _tree(w, ox + 1, oy + 1, cherryBlossoms[0]);
-      _tree(w, ox + 5, oy + 5, cherryBlossoms[1]);
       w.fill(ox + 5, oy + 1, 1, ox + 5, oy + 2, 1, Blocks.plank);
       var i = 0;
       for (final (dx, dy) in [
@@ -48,6 +47,8 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       ]) {
         flower(dx, dy, i++);
       }
+      buildFlowerBush(w, ox + 1, oy + 1, 0);
+      buildFlowerBush(w, ox + 5, oy + 5, 3);
     case 1: // pond: water with stones and flowers round it
       w.fill(ox + 2, oy + 2, 0, ox + 4, oy + 4, 0, Blocks.water);
       for (final (dx, dy) in [(1, 1), (5, 1), (1, 5), (5, 5), (3, 1), (3, 5)]) {
@@ -70,11 +71,7 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       ]) {
         flower(dx, dy, i++);
       }
-    case 2: // orchard: four fruit trees, flowers in the grass
-      for (final (dx, dy) in [(1, 1), (5, 1), (1, 5), (5, 5)]) {
-        _tree(w, ox + dx, oy + dy, cherryBlossoms[(dx + dy) % 4 == 2 ? 1 : 0]);
-        w.set(ox + dx + 1, oy + dy, 3, Blocks.wool); // an apple
-      }
+    case 2: // orchard: four flower bushes, flowers in the grass
       var i = 0;
       for (final (dx, dy) in [
         (3, 1),
@@ -91,6 +88,10 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       ]) {
         flower(dx, dy, i++);
       }
+      var n = 0;
+      for (final (dx, dy) in [(1, 1), (5, 1), (1, 5), (5, 5)]) {
+        buildFlowerBush(w, ox + dx, oy + dy, n++ * 2);
+      }
     default: // flower beds: rows of colour between low hedges
       for (var dx = 1; dx <= 5; dx++) {
         for (var dy = 1; dy <= 5; dy++) {
@@ -102,16 +103,5 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
         }
       }
       w.fill(ox, oy, 1, ox + 6, oy, 1, Blocks.plank); // a fence on one side
-  }
-}
-
-// A small cherry tree in bloom whose canopy stays inside the 3 x 3 around its
-// trunk.
-void _tree(VoxelWorld w, int x, int y, BlockMaterial canopy) {
-  w.fill(x, y, 1, x, y, 2, Blocks.log);
-  for (var dx = -1; dx <= 1; dx++) {
-    for (var dy = -1; dy <= 1; dy++) {
-      w.set(x + dx, y + dy, 3, canopy);
-    }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/flower_bush.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
@@ -14,17 +15,21 @@ void buildForest(
   VoxelWorld w, {
   required Set<int> cleared,
   List<Parcel> parcels = const [],
-  List<(int, int, int, int)> blossomZones = const [],
+  List<(int, int, int, int)> bushZones = const [],
   int seed = 11,
 }) {
-  // Trees in and just in front of a garden blossom instead of leafing, so
-  // they do not hide it with green: [blossomZones] give the tile range
+  // Trees in and just in front of a garden are flower bushes instead: low,
+  // so they do not hide the garden with green. [bushZones] give the tile range
   // (x0, y0, x1, y1) of their trunks.
   void tree(int x, int y) {
-    final blossom = blossomZones.any(
+    final bush = bushZones.any(
       (a) => x >= a.$1 && x <= a.$3 && y >= a.$2 && y <= a.$4,
     );
-    _lowTree(w, x, y, blossom ? cherryBlossoms[(x + y) % 2] : null);
+    if (bush) {
+      buildFlowerBush(w, x, y, x * 7 + y * 3);
+    } else {
+      _lowTree(w, x, y);
+    }
   }
 
   final plots = [
@@ -59,13 +64,13 @@ void buildForest(
 
 // A squat tree (4 blocks tall against 6): tall canopies hide the roads and
 // paths behind them in the isometric view.
-void _lowTree(VoxelWorld w, int x, int y, [BlockMaterial? canopy]) {
+void _lowTree(VoxelWorld w, int x, int y) {
   w.fill(x, y, 1, x, y, 2, Blocks.log);
   for (var dx = -1; dx <= 1; dx++) {
     for (var dy = -1; dy <= 1; dy++) {
-      w.set(x + dx, y + dy, 3, canopy ?? Blocks.leaves);
+      w.set(x + dx, y + dy, 3, Blocks.leaves);
       if (dx.abs() + dy.abs() < 2) {
-        w.set(x + dx, y + dy, 4, canopy ?? Blocks.leaves);
+        w.set(x + dx, y + dy, 4, Blocks.leaves);
       }
     }
   }

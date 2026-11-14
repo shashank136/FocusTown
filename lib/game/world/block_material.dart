@@ -151,9 +151,6 @@ abstract final class Blocks {
   /// White marble (Christ the Redeemer).
   static final marble = BlockMaterial.of(0xf6f4ee, 0xdcd8cc);
 
-  /// Pale pink cherry blossom.
-  static final cherry = BlockMaterial.of(0xfbc9de, 0xe3a5c0);
-
   /// A flower bush in red blooms.
   static final bushRed = BlockMaterial.dotted(0xe0483e, 0xc63d34);
 
@@ -195,7 +192,7 @@ abstract final class Blocks {
   static final flowerBlue = BlockMaterial.of(0x58a6f2, 0x4088d4);
 }
 
-/// All 29 block types.
+/// All 28 block types.
 final List<BlockMaterial> allBlocks = [
   Blocks.grass,
   Blocks.dirt,
@@ -219,12 +216,8 @@ final List<BlockMaterial> allBlocks = [
   Blocks.flowerPink,
   Blocks.flowerViolet,
   Blocks.flowerBlue,
-  Blocks.cherry,
   ...Blocks.bushes,
 ];
-
-/// The two pinks of a cherry tree in bloom.
-final List<BlockMaterial> cherryBlossoms = [Blocks.cherry, Blocks.flowerPink];
 
 /// The colours of the flowers in a garden: red, yellow, pink, violet, blue.
 final List<BlockMaterial> flowerColors = [

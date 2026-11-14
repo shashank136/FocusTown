@@ -54,7 +54,7 @@ void main() {
     });
 
     test('all 14 materials exist', () {
-      expect(allBlocks, hasLength(29));
+      expect(allBlocks, hasLength(28));
     });
 
     test('plank uses the same color on top and sides', () {

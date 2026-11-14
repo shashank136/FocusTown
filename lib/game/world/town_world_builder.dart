@@ -147,13 +147,13 @@ VoxelWorld buildTownWorld(
   }
   buildScenery(w);
   // A tree top hides what lies up to three tiles behind it, so the trees in a
-  // garden and the ones just in front of it (towards the viewer) are cherry
-  // trees in bloom, so they do not hide the garden with green.
+  // garden and the ones just in front of it (towards the viewer) are flower
+  // bushes, so they do not hide the garden with green.
   buildForest(
     w,
     cleared: inUse,
     parcels: town.parcels,
-    blossomZones: [
+    bushZones: [
       for (final p in gardens)
         (
           parcelOrigin(p.gx) - 1,

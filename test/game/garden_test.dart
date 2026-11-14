@@ -106,14 +106,14 @@ void main() {
     }
   });
 
-  test('the trees in and around a garden are cherry blossom, not green', () {
+  test('there are flower bushes in and around a garden, no trees', () {
     const cell = Parcel(5, 5, garden: true);
     final w = buildTownWorld(_town(const [cell]));
     final ox = parcelOrigin(5);
     final oy = parcelOrigin(5);
-    var cherry = 0;
-    // A tree top hides what lies up to three tiles behind it, so the trees in
-    // the garden and the 3 tiles in front of it (towards the viewer) blossom.
+    var bushes = 0;
+    // The forest trees in the garden and in the 3 tiles in front of it
+    // (towards the viewer) are flower bushes instead.
     for (final b in w.blocks) {
       if (b.x >= ox && b.x < ox + 10 && b.y >= oy && b.y < oy + 10) {
         expect(
@@ -121,23 +121,30 @@ void main() {
           isNot(Blocks.leaves),
           reason: '${b.x},${b.y},${b.z}',
         );
-        if (cherryBlossoms.contains(b.material)) cherry++;
+        expect(b.material, isNot(Blocks.log), reason: '${b.x},${b.y},${b.z}');
+        if (Blocks.bushes.contains(b.material)) bushes++;
       }
     }
-    expect(cherry, greaterThan(0));
-    // The forest elsewhere stays green.
+    expect(bushes, greaterThan(0));
+    // The forest elsewhere stays trees.
     expect(w.blocks.where((b) => b.material == Blocks.leaves), isNotEmpty);
   });
 
-  test('the garden trees themselves are cherry trees', () {
+  test('the garden trees are flower bushes: low, rounded, in many colours', () {
     for (final v in [0, 2]) {
       final w = VoxelWorld();
       buildGarden(w, 10, 10, v);
-      final tops = w.blocks.where((b) => b.z >= 3).toList();
-      expect(tops, isNotEmpty);
-      for (final b in tops.where((b) => b.material != Blocks.wool)) {
-        expect(cherryBlossoms, contains(b.material), reason: 'garden $v');
+      final blocks = w.blocks.toList();
+      for (final b in blocks) {
+        expect(b.material, isNot(Blocks.leaves), reason: 'garden $v');
+        expect(b.material, isNot(Blocks.log), reason: 'garden $v');
+        expect(b.z, lessThanOrEqualTo(2), reason: 'low: garden $v');
       }
+      final bush = blocks.where((b) => Blocks.bushes.contains(b.material));
+      expect(bush.map((b) => b.material).toSet().length, greaterThan(1));
+      // Each is 3 x 3 with a bump on top: 9 blocks at z = 1 and 5 at z = 2.
+      final count = v == 0 ? 2 : 4;
+      expect(bush.where((b) => b.z == 2).length, 5 * count);
     }
   });
 
