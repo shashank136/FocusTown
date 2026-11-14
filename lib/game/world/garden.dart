@@ -54,7 +54,6 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       for (final (dx, dy) in [(1, 1), (5, 1), (1, 5), (5, 5), (3, 1), (3, 5)]) {
         w.set(ox + dx, oy + dy, 1, Blocks.cobble);
       }
-      w.fill(ox, oy, 1, ox, oy, 2, Blocks.log);
       var i = 0;
       for (final (dx, dy) in [
         (1, 2),
@@ -71,6 +70,9 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       ]) {
         flower(dx, dy, i++);
       }
+      // Two bushes in the far corners, over the stones there.
+      buildFlowerBush(w, ox + 1, oy + 1, 1);
+      buildFlowerBush(w, ox + 5, oy + 5, 4);
     case 2: // orchard: four flower bushes, flowers in the grass
       var i = 0;
       for (final (dx, dy) in [
@@ -92,7 +94,7 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
       for (final (dx, dy) in [(1, 1), (5, 1), (1, 5), (5, 5)]) {
         buildFlowerBush(w, ox + dx, oy + dy, n++ * 2);
       }
-    default: // flower beds: rows of colour between low hedges
+    default: // flower beds: rows of colour, with a bush in each front corner
       for (var dx = 1; dx <= 5; dx++) {
         for (var dy = 1; dy <= 5; dy++) {
           // The even squares are taller blooms, the rest low ones.
@@ -103,5 +105,8 @@ void buildGarden(VoxelWorld w, int ox, int oy, int look) {
         }
       }
       w.fill(ox, oy, 1, ox + 6, oy, 1, Blocks.plank); // a fence on one side
+      // Two bushes in the corners at the front.
+      buildFlowerBush(w, ox + 1, oy + 5, 2);
+      buildFlowerBush(w, ox + 5, oy + 5, 5);
   }
 }

@@ -148,6 +148,42 @@ void main() {
     }
   });
 
+  test('every garden look has flower bushes and no tree or post', () {
+    for (var v = 0; v < kGardenLooks; v++) {
+      final w = VoxelWorld();
+      buildGarden(w, 10, 10, v);
+      final blocks = w.blocks.toList();
+      for (final b in blocks) {
+        expect(b.material, isNot(Blocks.log), reason: 'garden $v');
+        expect(b.material, isNot(Blocks.leaves), reason: 'garden $v');
+        expect(b.z, lessThanOrEqualTo(2), reason: 'garden $v');
+      }
+      // Each bush has a bump of five on top: at least two bushes.
+      final bumps = blocks.where(
+        (b) => Blocks.bushes.contains(b.material) && b.z == 2,
+      );
+      expect(bumps.length, greaterThanOrEqualTo(10), reason: 'garden $v');
+    }
+  });
+
+  test('a forest square turned into a garden has the bushes, and no tree', () {
+    // Squares of the island whose look is a pond or flower beds.
+    for (final (gx, gy) in [(5, 5), (4, 5), (6, 5), (5, 6)]) {
+      final cell = Parcel(gx, gy, garden: true);
+      final w = buildTownWorld(_town([cell]));
+      final ox = parcelOrigin(gx);
+      final oy = parcelOrigin(gy);
+      var bush = 0;
+      for (final b in w.blocks) {
+        if (b.x < ox || b.x >= ox + 7 || b.y < oy || b.y >= oy + 7) continue;
+        expect(b.material, isNot(Blocks.leaves), reason: '$gx,$gy');
+        expect(b.material, isNot(Blocks.log), reason: '$gx,$gy');
+        if (Blocks.bushes.contains(b.material)) bush++;
+      }
+      expect(bush, greaterThan(10), reason: '$gx,$gy');
+    }
+  });
+
   test('while a garden session runs its square is already a garden', () {
     const cell = Parcel(5, 5, garden: true);
     final session = Session(
