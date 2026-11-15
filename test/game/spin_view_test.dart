@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
+import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/vec2.dart';
 import 'package:focus_town/game/world/view_rotation.dart';
 
@@ -88,6 +89,44 @@ void main() {
         ..releaseSpin();
       _frames(g);
       expect(seen, [3]);
+    });
+  });
+
+  group('the axis is through the middle of the island', () {
+    // Where the middle of the island is on the screen.
+    Vec2 middle(TownGame g) {
+      final cam = g.renderer.camera!;
+      final p = g.renderer.spinPivot;
+      return project(p.x, p.y, 0, cam.tile, cam.origin);
+    }
+
+    test('it stays where it is while the view turns and settles', () {
+      // The camera is off to one side and zoomed in, so the middle of the
+      // island is not the middle of the screen.
+      final g = _game()
+        ..onPan(const Vec2(70, -40))
+        ..onPinch(const Vec2(200, 350), 1.5);
+      final before = middle(g);
+      g.spinBy(0.9);
+      expect(middle(g), before);
+      g.releaseSpin();
+      _frames(g);
+      expect(g.renderer.rotation, const ViewRotation(1));
+      final after = middle(g);
+      expect(after.x, closeTo(before.x, 1));
+      expect(after.y, closeTo(before.y, 1));
+    });
+
+    test('a turn by the buttons keeps it there too, from every side', () {
+      final g = _game()..onPan(const Vec2(-50, 30));
+      final before = middle(g);
+      for (var k = 0; k < 4; k++) {
+        g.turn(1);
+        _frames(g, 40);
+        final now = middle(g);
+        expect(now.x, closeTo(before.x, 1), reason: 'turn $k');
+        expect(now.y, closeTo(before.y, 1), reason: 'turn $k');
+      }
     });
   });
 
@@ -214,8 +253,11 @@ void main() {
       await tester.runAsync(() async {
         for (final k in [0, 1, 2, -1]) {
           final live = _game()..spinBy(k * _quarter);
-          // A quarter turn that has been finished.
-          final done = _game()..rotate(k);
+          // The same quarter turn, let go and settled.
+          final done = _game()
+            ..spinBy(k * _quarter)
+            ..releaseSpin();
+          _frames(done);
           final a = await _shot(live..update(0.01));
           final b = await _shot(done..update(0.01));
           expect(differ(a, b), lessThan(0.04), reason: 'turn $k');

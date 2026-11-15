@@ -385,7 +385,7 @@ class TownGame extends FlameGame
     _spin = 0;
     renderer.setSpin(0);
     final before = renderer.rotation;
-    rotate((target / _quarter).round());
+    rotate((target / _quarter).round(), aboutIsland: true);
     _redraw = true;
     if (renderer.rotation != before) onTurned?.call(renderer.rotation);
   }
@@ -438,18 +438,32 @@ class TownGame extends FlameGame
 
   /// Turns the view by [by] quarter turns at once, keeping the camera on the
   /// same spot of the island.
-  void rotate(int by) {
+  ///
+  /// With [aboutIsland] the middle of the island stays where it is on the
+  /// screen (a turn that has been made live about it), not the spot at the
+  /// middle of the screen.
+  void rotate(int by, {bool aboutIsland = false}) {
     final old = renderer.rotation;
     final next = ViewRotation(old.turns + by);
     if (next == old) return;
     final cam = renderer.camera;
     final center = cam?.centerWorld;
+    final pivot = renderer.spinPivot;
+    final held = cam == null
+        ? null
+        : project(pivot.x, pivot.y, 0, cam.tile, cam.origin);
     renderer.setRotation(next);
     view.value = next;
     if (cam != null && center != null) {
-      final (wx, wy) = old.unpoint(center.x, center.y);
-      final (nx, ny) = next.point(wx, wy);
-      cam.focusOn(Vec2(nx, ny));
+      if (aboutIsland && held != null) {
+        final now = renderer.spinPivot;
+        final at = project(now.x, now.y, 0, cam.tile, cam.origin);
+        cam.panBy(Vec2(held.x - at.x, held.y - at.y));
+      } else {
+        final (wx, wy) = old.unpoint(center.x, center.y);
+        final (nx, ny) = next.point(wx, wy);
+        cam.focusOn(Vec2(nx, ny));
+      }
     }
     // A glide began in the old view, and so was the pose to go back to.
     _transition = null;

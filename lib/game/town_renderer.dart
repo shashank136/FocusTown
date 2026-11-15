@@ -97,6 +97,10 @@ class TownRenderer {
   /// angle, in flat colors, and nothing else is drawn over it.
   double get spin => _spin;
 
+  /// The middle of the island in the current view: the axis the island turns
+  /// about while it is [spin]ning.
+  Vec2 get spinPivot => Vec2(_box.center.dx, _box.center.dy);
+
   /// Turns the view [radians] from [rotation] about the middle of the screen.
   // ignore: use_setters_to_change_properties, a command, not a property
   void setSpin(double radians) => _spin = radians;
@@ -376,7 +380,7 @@ class TownRenderer {
       canvas,
       _spinBlocks,
       angle: _spin,
-      center: cam.centerWorld,
+      center: spinPivot,
       tile: cam.tile,
       origin: cam.origin,
       viewSize: size,
