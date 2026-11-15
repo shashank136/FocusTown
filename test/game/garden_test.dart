@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
@@ -78,6 +79,35 @@ void main() {
       for (final b in w.blocks) {
         expect(b.material, isNot(Blocks.leaves), reason: 'garden $v');
         expect(b.material, isNot(Blocks.grass), reason: 'garden $v');
+      }
+    }
+  });
+
+  test('a pond does not cut the road round a building next to it', () {
+    // The 2 x 2 cells north of the pond: a castle block there reaches it.
+    final land = [
+      for (var gx = 7; gx <= 8; gx++)
+        for (var gy = -2; gy <= -1; gy++) Parcel(gx, gy),
+    ];
+    final plot = plotForTier(
+      plotAtCell(7, -2, land)!,
+      BuildingTier.castle,
+      land,
+    );
+    final town = _town(land).copyWith(
+      buildings: [
+        TownBuilding(
+          id: 'c',
+          tier: BuildingTier.castle,
+          status: BuildingStatus.complete,
+          plotIndex: plotAtCell(7, -2, land)!,
+        ),
+      ],
+    );
+    final w = buildTownWorld(town);
+    for (var x = plot.originX; x < plot.originX + plot.size; x++) {
+      for (final y in [plot.originY, plot.originY + plot.size - 1]) {
+        expect(w.get(x, y, 0), Blocks.path, reason: '$x,$y');
       }
     }
   });

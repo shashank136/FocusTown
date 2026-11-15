@@ -165,12 +165,13 @@ VoxelWorld buildTownWorld(
           [sitePlot.index],
     );
   }
+  // Scenery first, so the pond never covers a road.
+  buildScenery(w);
   // Roads: the main ones, a ring around every used plot or block, and the
   // connectors that join them up.
   for (final (x, y) in RoadNetwork(town, site: sitePlot).tiles) {
     if (w.has(x, y, 0)) w.set(x, y, 0, Blocks.path);
   }
-  buildScenery(w);
   // A tree top hides what lies up to three tiles behind it, so the trees in a
   // garden and the ones just in front of it (towards the viewer) are flower
   // bushes, so they do not hide the garden with green.
