@@ -1994,6 +1994,43 @@ Rules in `docs/spec.md` ("Gardens on forest squares").
 - [x] A land session of 15 minutes on a free square of the starting island makes it a garden for good (`TownRules.canClaim`, `gardenMinutes`, `landMinutesFor`; the island square is no plot: `plotAtCell`, `occupied`). Choose it with "Make garden…" on the session sheet (`PlacementController.beginGarden`).
 - [ ] [device] Make a garden on the iPhone.
 
+## Phase V14: landmark sizes (decided 2026-11-14)
+
+Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option C) are in `docs/reference/landmark_island.html`; the voxel shapes in it are the reference for each design. Each task: tests first, then commit.
+
+### T-V14.1 [ ] Rectangular footprints
+- Do: a landmark has a footprint of width x depth plots (`Landmark.footprint`, start with 2 x 2 for all, so nothing changes). `plot_grid.dart`: `footprintOf` takes a width and depth and checks the plots are one piece, claimed, not a garden, and not across the road; `Plot` has width and depth in tiles (replace `span`); `TownRules.occupied/isPlotFree/nextFreePlot` and the placement outlines, the ring roads, clearings and the camera use the rectangle.
+- Tests first: a 3 x 2 and a 5 x 4 footprint on land with and without a road, a garden or a building in the way; `plotForTier` for landmarks; the ring road runs round a rectangle; the placement outline for a rectangle.
+- Commit: `T-V14.1: rectangular footprints`
+
+### T-V14.2 [ ] Landmarks that grew move to room
+- Do: a pure `TownRules.settleLandmarks` run when the app opens (like the corner fill): a finished or running landmark whose footprint at its anchor no longer fits moves to the nearest free area of its size; if there is none it keeps its old 2 x 2 square and its old design (`landmark_defs.dart` stays as the classic design) and is tried again on every open.
+- Tests first: grows in place when free, moves when blocked, stays classic when there is no room, moves later when room appears, never overlaps another building.
+- Commit: `T-V14.2: settle landmarks`
+
+### T-V14.3 [ ] Unlock levels and times by size
+- Do: the table in the spec (`Landmark.minutesPerStage`, `unlockLevel`; `TownLevel.metropolis` is the top level). A landmark in progress keeps its minutes.
+- Tests first: every landmark's total time and unlock level; progress is kept.
+- Commit: `T-V14.3: landmark times and levels`
+
+### T-V14.4 [ ] "No room" message
+- Do: the landmark sheet and the Landmarks screen say what a landmark needs and link to Expand island when no free area of its size exists; Start is off then.
+- Tests first: widget tests for the message text with and without room.
+- Commit: `T-V14.4: no room message`
+
+### T-V14.5 [ ] The designs, one landmark per task
+- Do: for each landmark, in order Christ the Redeemer, Lighthouse of Alexandria, Easter Island Moai, Space Needle, Pagoda, Petra, Great Sphinx, Chichen Itza, Statue of Liberty, Eiffel Tower, Colosseum, Taj Mahal, Great Pyramid: set its footprint, draw its 12 stages at that size from the sketch, and update its card picture.
+- Tests first (each): the 12 stages grow block by block and stay inside the footprint; the finished block count is pinned; goldens.
+- Commit: `T-V14.5: <landmark> at its real size`
+
+### T-V14.6 [ ] Debug aid at the new sizes
+- Do: "Show every landmark on the map" lays all 13 out at their sizes (on extra land if needed).
+- Commit: `T-V14.6: show every landmark at its size`
+
+### T-V14.7 [ ] [device] Landmark sizes on the iPhone
+- Do: give the user steps (start each landmark that fits, see the no-room message, expand and place one), record in `docs/device_tests.md`.
+- Commit: `T-V14.7: record landmark size device check`
+
 ## Phase L: App Store submission (after V2 and LA)
 
 Everything outside the code that Apple asks for. None of these tasks needs new packages.

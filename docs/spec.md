@@ -483,22 +483,26 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 
 - The session sheet shows three choices at most: New building, Landmark and Expand island. All the landmarks that are open share the one Landmark chip; the landmark itself is picked from a dropdown (the one being built comes first), so the sheet stays the same size however many are unlocked.
 
-### The landmark list (decided 2026-11-12)
+### The landmark list (decided 2026-11-12, resized 2026-11-14)
 
-Each landmark is 12 stages on a 2 x 2 block. Only one is in progress at a time (the others say "Finish the X first").
+Each landmark is 12 stages. Only one is in progress at a time (the others say "Finish the X first"). The size follows the real building: the bigger the real thing, the more plots it takes (width x depth in plots, 1 plot = 7 x 7 tiles), the longer it takes and the later it unlocks. A landmark's footprint is a rectangle of free plots in one piece: it cannot lie across the starting island's road, and it cannot take a garden, a building or a ruin.
 
-| Landmark | Total time | Minutes per stage | Unlocks at |
-|---|---|---|---|
-| Great Pyramid | 2 hours | 10 | Village |
-| Eiffel Tower | 4 hours | 20 | Village |
-| Lighthouse of Alexandria | 3 hours | 15 | Village |
-| Pagoda | 4 hours | 20 | Town |
-| Taj Mahal | 5 hours | 25 | Town |
-| Statue of Liberty | 6 hours | 30 | Town |
-| Colosseum | 8 hours | 40 | City |
-| Easter Island Moai | 4 hours | 20 | Village |
-| Space Needle | 6 hours | 30 | Town |
-| Chichén Itzá | 5 hours | 25 | Town |
-| Petra | 6 hours | 30 | Town |
-| Christ the Redeemer | 8 hours | 40 | City |
-| Great Sphinx of Giza | 5 hours | 25 | Town |
+| Landmark | Plots | Total time | Minutes per stage | Unlocks at |
+|---|---|---|---|---|
+| Christ the Redeemer | 1 x 1 | 2 hours | 10 | Village |
+| Lighthouse of Alexandria | 2 x 2 | 4 hours | 20 | Village |
+| Easter Island Moai (one large statue) | 2 x 2 | 4 hours | 20 | Village |
+| Space Needle | 2 x 2 | 4 hours | 20 | Town |
+| Pagoda | 2 x 2 | 4 hours | 20 | Town |
+| Petra | 3 x 2 | 5 hours | 25 | Town |
+| Great Sphinx of Giza | 4 x 2 | 6 hours | 30 | Town |
+| Chichén Itzá | 3 x 3 | 7 hours | 35 | City |
+| Statue of Liberty | 3 x 3 | 7 hours | 35 | City |
+| Eiffel Tower | 3 x 3 | 7 hours | 35 | City |
+| Colosseum | 4 x 4 | 9 hours | 45 | Metropolis |
+| Taj Mahal | 5 x 4 | 10 hours | 50 | Metropolis |
+| Great Pyramid | 5 x 5 | 11 hours | 55 | Metropolis |
+
+No land is awarded. When no free area of the right size exists, the landmark cannot be started: the sheet says what it needs (for example "Great Pyramid needs 5 x 5 free plots. There is no such area on your island. Expand the island to make room.") and links to Expand island. The Great Pyramid and the Taj Mahal do not fit on the starting island at all (its quarters are 4 x 4 plots), so they need district land.
+
+The designs are drawn at these sizes with the real buildings' main features (see `docs/reference/landmark_island.html` for the sketches). A landmark finished before the resize moves to a free area of its new size when the app opens; if there is none it keeps its old 2 x 2 square and its old design until room appears.

@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Landmarks on one island</title>
+<style>
+:root{--bg:#d9ecf7;--ink:#16384f;--mut:#5b7587}
+body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1200px;margin:0 auto;padding:12px}
+h1{font-size:21px;margin:4px 0}
+p{font-size:14px;line-height:1.45;margin:6px 0;color:var(--mut)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+button{border:0;border-radius:10px;padding:9px 13px;font-size:15px;background:#fff;color:var(--ink);box-shadow:0 1px 3px #0003}
+button.on{background:var(--ink);color:#fff}
+label{font-size:14px}
+#view{background:linear-gradient(#8cc9ea,#d4ecf8);border-radius:12px;overflow:auto;max-height:78vh}
+canvas{display:block}
+#stats{background:#fff;border-radius:10px;padding:8px 12px;font-size:14px;line-height:1.5}
+b{color:var(--ink)}
+</style></head><body><div class="wrap">
+<h1>All the landmarks on one island</h1>
+<p>Same scale for everything. Roads (tan) mark the edge of each landmark's plots. The small house and the castle are there for scale. Scroll or use the zoom slider to look closer, and turn the island to see it from every side.</p>
+<div class="row">
+  <button id="o0">Today (2 x 2 each)</button>
+  <button id="oA" class="on">A. Big and ranked</button>
+  <button id="oB">B. Strict real scale</button>
+  <button id="oC">C. Bigger still</button>
+</div>
+<div class="row">
+  <button id="rl">Turn left</button><button id="rr">Turn right</button>
+  <label>Zoom <input id="zoom" type="range" min="40" max="200" value="100"></label>
+  <label><input id="names" type="checkbox" checked> names</label>
+</div>
+<div id="stats"></div>
+<div id="view"><canvas id="cv"></canvas></div>
+</div>
+<script>
+const LM=[
+ {n:'Taj Mahal',s:'taj',h:73,hb:16,0:[2,2],A:[4,3],B:[4,3],C:[5,4]},
+ {n:'Great Pyramid',s:'pyramid',h:139,hb:22,0:[2,2],A:[4,4],B:[3,3],C:[5,5]},
+ {n:'Easter Island Moai',s:'moai',h:10,hb:22,0:[2,2],A:[2,2],B:[1,1],C:[2,2]},
+ {n:'Colosseum',s:'colosseum',h:50,hb:9,0:[2,2],A:[3,3],B:[3,2],C:[4,4]},
+ {n:'Eiffel Tower',s:'eiffel',h:324,hb:44,0:[2,2],A:[2,2],B:[2,2],C:[3,3]},
+ {n:'Chichen Itza',s:'castillo',h:30,hb:9,0:[2,2],A:[2,2],B:[1,1],C:[3,3]},
+ {n:'Great Sphinx',s:'sphinx',h:20,hb:12,0:[2,2],A:[3,2],B:[1,1],C:[4,2]},
+ {n:'Petra Treasury',s:'petra',h:39,hb:12,0:[2,2],A:[2,2],B:[1,1],C:[3,2]},
+ {n:'Lighthouse of Alexandria',s:'lighthouse',h:120,hb:30,0:[2,2],A:[2,2],B:[1,1],C:[2,2]},
+ {n:'Pagoda',s:'pagoda',h:65,hb:20,0:[2,2],A:[2,2],B:[1,1],C:[2,2]},
+ {n:'Statue of Liberty',s:'liberty',h:93,hb:26,0:[2,2],A:[2,2],B:[1,1],C:[3,3]},
+ {n:'Space Needle',s:'needle',h:184,hb:36,0:[2,2],A:[2,2],B:[1,1],C:[2,2]},
+ {n:'Christ the Redeemer',s:'christ',h:38,hb:16,0:[2,2],A:[1,1],B:[1,1],C:[1,1]}
+];
+const REF=[{n:'house',s:'house',hb:5,fp:[1,1]},{n:'castle',s:'castle',hb:10,fp:[2,2]}];
+let opt='A',rot=0,zoom=1,names=true;
+function shade(hex,k){const n=parseInt(hex.slice(1),16);const r=Math.min(255,((n>>16)&255)*k)|0,g=Math.min(255,((n>>8)&255)*k)|0,b=Math.min(255,(n&255)*k)|0;return `rgb(${r},${g},${b})`;}
+// ---- detailed landmark shapes. Each takes the free tiles W x D (x 0..W-1, y 0..D-1) and the height H in blocks.
+// The viewer sees the +x side (right) and the +y side (left/front); fronts face +y.
+function VX(W,D){const m=new Map();const o={W,D,
+ set(x,y,z,c){x=Math.round(x);y=Math.round(y);z=Math.round(z);if(x<0||y<0||x>=W||y>=D||z<0)return o;m.set((x*256+y)*256+z,[x,y,z,c]);return o;},
+ del(x,y,z){m.delete((Math.round(x)*256+Math.round(y))*256+Math.round(z));return o;},
+ box(x0,y0,z0,x1,y1,z1,c){x0=Math.round(x0);y0=Math.round(y0);z0=Math.round(z0);x1=Math.round(x1);y1=Math.round(y1);z1=Math.round(z1);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(let z=z0;z<=z1;z++)o.set(x,y,z,c);return o;},
+ ring(x0,y0,x1,y1,z0,z1,c){x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)if(x===x0||x===x1||y===y0||y===y1)for(let z=Math.round(z0);z<=Math.round(z1);z++)o.set(x,y,z,c);return o;},
+ disc(cx,cy,r,z0,z1,c){for(let x=Math.floor(cx-r);x<=Math.ceil(cx+r);x++)for(let y=Math.floor(cy-r);y<=Math.ceil(cy+r);y++)if((x-cx)*(x-cx)+(y-cy)*(y-cy)<=r*r+0.25)for(let z=Math.round(z0);z<=Math.round(z1);z++)o.set(x,y,z,c);return o;},
+ list(){return [...m.values()];}};return o;}
+const P={sand:'#e4d2a0',sand2:'#d9bd78',sand3:'#cfb06a',cap:'#f3ecd8',stone:'#c9c2b0',stone2:'#b8b09c',dark:'#3d3126',marble:'#f4f1ea',red:'#b5543b',roof:'#b23a30',gold:'#e8b93f',water:'#4a86c5',grass:'#6fb35a',leaf:'#3f8a3b',path:'#e5d6b0',iron:'#6f5a4a',iron2:'#b79c7d',wood:'#6b4426',white:'#f1ebdd',teal:'#59a89d',teal2:'#4a9489',brown:'#7a5a3a',rock:'#7a7468',cliff:'#b9694c',cliff2:'#c9805f',pink:'#d9a283',blue:'#2a5ea8',flame:'#f08a24',skin:'#d9b878'};
+const SH={
+ pyramid(W,D,H){const v=VX(W,D);v.box(0,0,0,W-1,D-1,0,P.sand);
+  const M=Math.max(7,Math.floor(Math.min(W,D)*0.68)),x0=1,y0=1,cx=x0+(M>>1);
+  for(let z=1;z<=H;z++){const ins=Math.floor((z-1)*(M/2-1)/H);const col=z>H-2?P.cap:(z%2?P.sand2:P.sand3);v.box(x0+ins,y0+ins,z,x0+M-1-ins,y0+M-1-ins,z,col);}
+  // the entrance on the front, a dark slot, and the causeway up to it
+  const ez=Math.round(H*0.35),eIns=Math.floor((ez-1)*(M/2-1)/H);v.set(cx,y0+M-1-eIns,ez,P.dark).set(cx,y0+M-1-eIns,ez+1,P.dark);
+  v.box(cx-1,y0+M,0,cx,D-1,0,P.stone2);
+  // three small queens' pyramids on the east side
+  const Q=W-(x0+M)-2;if(Q>=3){const s=Math.min(Q,Math.max(3,Math.floor(M/3)));for(let i=0;i<3;i++){const yy=y0+i*(s+1);if(yy+s>D-1)break;for(let z=1;z<=Math.ceil(s/2);z++){const ins=z-1;v.box(x0+M+2+ins,yy+ins,z,x0+M+1+s-ins,yy+s-1-ins,z,z%2?P.sand2:P.sand3);}}}
+  // boat pits and a mortuary temple wall in front
+  v.box(x0+M+2,D-4,0,W-2,D-3,0,P.brown);v.ring(1,y0+M+1,cx-3,D-2,0,1,P.stone2);return v.list();},
+ castillo(W,D,H){const v=VX(W,D);v.box(0,0,0,W-1,D-1,0,'#cfc7a8');
+  const M=Math.min(W,D)-(W>=19?6:3),x0=Math.round((W-M)/2),y0=Math.round((D-M)/2),cx=x0+(M>>1),cy=y0+(M>>1);
+  const T=Math.min(9,H-3);const th=Math.max(1,Math.floor((H-3)/T));
+  for(let t=0;t<T;t++){const ins=Math.floor(t*(M/2-2)/T);for(let z=1+t*th;z<=(t+1)*th;z++){v.box(x0+ins,y0+ins,z,x0+M-1-ins,y0+M-1-ins,z,P.stone);}}
+  const top=T*th;
+  // four stairways, a light strip with a dark rail on each side
+  for(let z=1;z<=top;z++){const ins=Math.floor(((z-1)/th)*(M/2-2)/T);
+    for(const [sx,sy,dx,dy] of [[cx,y0+M-1-ins,1,0],[cx,y0+ins,1,0],[x0+M-1-ins,cy,0,1],[x0+ins,cy,0,1]]){v.set(sx,sy,z,P.white);v.set(sx+dx,sy+dy,z,P.white);v.set(sx-dx,sy-dy,z,P.stone2);v.set(sx+2*dx,sy+2*dy,z,P.stone2);}}
+  // the temple on top
+  const tw=Math.max(3,Math.floor((M/2-1)*0.9)),tx=cx-(tw>>1),ty=cy-(tw>>1);
+  v.ring(tx,ty,tx+tw,ty+tw,top+1,top+2,P.stone);v.set(cx,ty+tw,top+1,P.dark).set(cx,ty+tw,top+2,P.dark);
+  v.box(tx-1,ty-1,top+3,tx+tw+1,ty+tw+1,top+3,P.stone2);v.box(tx+1,ty+1,top+4,tx+tw-1,ty+tw-1,top+4,P.stone);
+  // the great ball court beside it, when there is room
+  if(W>=19){v.box(1,D-3,0,Math.max(4,x0-2),D-2,0,P.sand);v.box(1,D-4,1,Math.max(4,x0-2),D-4,2,P.stone2);v.box(1,D-1,1,Math.max(4,x0-2),D-1,2,P.stone2);}
+  return v.list();},
+ colosseum(W,D,H){const v=VX(W,D);const cx=(W-1)/2,cy=(D-1)/2,rx=W/2,ry=D/2;
+  const tierH=Math.max(2,Math.floor((H-1)/3));
+  for(let x=0;x<W;x++)for(let y=0;y<D;y++){const dx=(x-cx)/rx,dy=(y-cy)/ry,r=Math.sqrt(dx*dx+dy*dy);
+   if(r>1)continue;
+   if(r>0.86){ // the outer wall: three storeys of arches under a solid attic, ruined at the back
+     const back=(dx+dy)<-0.45;const hh=back?Math.max(2,H-2-Math.round((-(dx+dy)-0.45)*6)):H;
+     for(let z=0;z<hh;z++){const inArch=z>0&&z<H-1&&(z%tierH)!==0&&((x+y)%2===0);v.set(x,y,z+1,inArch?P.dark:(Math.floor(z/tierH)%2?'#dcc693':'#e6d6aa'));}
+     v.set(x,y,0,P.sand2);
+   } else if(r>0.5){ // the seats: rings that rise outwards, one step a ring
+     const ring=Math.floor((r-0.5)/0.36*(H-3));const top=1+ring;
+     for(let z=0;z<=top;z++)v.set(x,y,z+1,ring%2?'#cdbb8b':'#d9c999');v.set(x,y,0,P.sand2);
+   } else { // the arena floor with the lines of the hypogeum
+     v.set(x,y,0,(x%3===0||y%3===0)&&r<0.42?'#a88f5a':'#ecdcae');}
+  }
+  v.set(Math.round(cx),D-1,1,P.dark).set(Math.round(cx),D-1,2,P.dark);return v.list();},
+ eiffel(W,D,H){const v=VX(W,D);v.box(0,0,0,W-1,D-1,0,'#a9a393');
+  const c=(W-1)/2,P1=Math.round(H*0.30),P2=Math.round(H*0.56),P3=Math.round(H*0.82);
+  const hw=z=>Math.max(1,Math.round((W/2-1.5)*(1-Math.pow(z/H,0.62))));
+  let pa=null,pb=null;
+  // each leg is drawn as a continuous strip from the level below, so the diagonal lean leaves no gaps
+  const leg=(z)=>{const h=hw(z);const a=Math.round(c-h),b=Math.round(c+h);const qa=pa===null?a:pa,qb=pb===null?b:pb;
+    for(const [x,y,qx,qy] of[[a,a,qa,qa],[b,a,qb,qa],[a,b,qa,qb],[b,b,qb,qb]]){
+      const thick=z<P1-1?1:0;const x0=Math.min(x,qx)-(x===a?thick:0),x1=Math.max(x,qx)+(x===b?thick:0),y0=Math.min(y,qy)-(y===a?thick:0),y1=Math.max(y,qy)+(y===b?thick:0);
+      v.box(x0,y0,z,x1,y1,z,P.iron);}
+    pa=a;pb=b;return [a,b];};
+  for(let z=1;z<=H;z++){
+   const [a,b]=leg(z);
+   if(z===P1||z===P2||z===P3){const e=z===P3?1:0;v.box(a-1+e,a-1+e,z,b+1-e,b+1-e,z,P.iron2);v.ring(a-1+e,a-1+e,b+1-e,b+1-e,z+1,z+1,P.iron);}
+   else if(z<P1){ // the arches: beams between the legs at the top of the first stage
+     if(z===P1-1||z===P1-2){for(let t=a;t<=b;t++){v.set(t,a,z,P.iron);v.set(t,b,z,P.iron);v.set(a,t,z,P.iron);v.set(b,t,z,P.iron);}}
+   } else if(z<P3){ // lattice: cross beams every third level
+     if((z-P1)%3===0){for(let t=a;t<=b;t++){v.set(t,a,z,P.iron);v.set(t,b,z,P.iron);v.set(a,t,z,P.iron);v.set(b,t,z,P.iron);}}
+   }
+  }
+  // the cupola and the antenna
+  const cc=Math.round(c);v.box(cc-1,cc-1,P3+1,cc+1,cc+1,P3+2,P.iron2).box(cc,cc,P3+3,cc,cc,H,P.iron);return v.list();},
+ sphinx(W,D,H){const v=VX(W,D);const SK='#d9b878',SK2='#c9a868',SK3='#b99858',BLUE='#2a5ea8',GOLD='#e8b93f',DARK='#2a2118',PIT='#cdb482',WALL='#d8c9a0',WALL2='#bda878';
+  v.box(0,0,0,W-1,D-1,0,PIT);
+  const cy=Math.round((D-1)/2),hw=2;   // the body is five wide: cy-2 .. cy+2
+  const hx1=W-6,hx0=hx1-4,bodyEnd=hx0-2;
+  // the pit the Sphinx was cut from: low rock walls behind and at the sides, with rubble
+  v.box(0,0,1,Math.max(0,W-9),0,3,WALL2).box(0,D-1,1,Math.max(0,W-9),D-1,1,WALL2).box(0,0,1,0,D-1,3,WALL2);
+  for(const [x,y] of[[2,1],[4,D-2],[9,1],[7,D-2]])v.set(x,y,1,WALL);
+  // the lion's body: low and long, a rounded back, a raised haunch at the rear with the hind legs folded
+  for(let x=2;x<=bodyEnd;x++){const rear=x<=6;const top=rear?5:4;
+    v.box(x,cy-hw,1,x,cy+hw,top-1,SK);v.box(x,cy-hw+1,top,x,cy+hw-1,top,SK);   // the back is rounded: the top row is narrower
+    if(rear)v.box(x,cy-hw+1,top+1,x,cy+hw-1,top+1,SK2);}
+  for(const y of[cy-hw-1,cy+hw+1])v.box(3,y,1,6,y,2,SK2);                       // the folded hind legs
+  v.box(2,cy+hw+1,1,2,cy+hw+3,1,SK3).box(3,cy+hw+3,1,5,cy+hw+3,1,SK3);           // the tail curling round on the ground
+  // the chest rises to the neck, and the two forelegs stretch far out in front, with toes
+  v.box(bodyEnd+1,cy-hw,1,hx0+1,cy+hw,5,SK);
+  for(const y of[cy-hw-1,cy+hw]){v.box(hx0,y,1,W-3,y+1,2,SK);for(let x=W-5;x<=W-3;x+=1)if((x+y)%2===0)v.set(x,y,2,SK2);v.set(W-3,y,1,SK3).set(W-3,y+1,1,SK3);}
+  // the head: the headdress (gold and blue stripes) over the top, falling in two lappets at the sides and a tail behind; the flat face in front
+  v.box(hx0,cy-hw,5,hx1,cy+hw,11,SK);
+  for(let x=hx0;x<=hx1;x++)for(let y=cy-hw;y<=cy+hw;y++)v.set(x,y,11,GOLD);                      // the top
+  for(const y of[cy-hw-1,cy+hw+1])for(let x=hx0+1;x<=hx1-1;x++)for(let z=6;z<=10;z++)v.set(x,y,z,(z%2)?GOLD:BLUE);   // the lappets
+  for(let z=5;z<=10;z++)for(let y=cy-hw;y<=cy+hw;y++)v.set(hx0,y,z,(z%2)?GOLD:BLUE);               // the back of the headdress
+  for(let y=cy-hw;y<=cy+hw;y++){v.set(hx1,y,10,GOLD);}                                              // the band over the brow
+  v.set(hx1,cy-1,9,DARK).set(hx1,cy+1,9,DARK).set(hx1,cy-1,8,SK3).set(hx1,cy+1,8,SK3);             // eyes, with cheek shadows
+  v.set(hx1+1,cy,7,SK2);v.set(hx1,cy,7,DARK).set(hx1,cy,8,SK);                                     // the nose, which broke off long ago
+  v.box(hx1,cy-1,6,hx1,cy+1,6,DARK).box(hx1+1,cy-1,5,hx1+1,cy+1,5,SK);                             // the mouth and the chin
+  v.set(hx1+1,cy,10,GOLD).set(hx1+1,cy,11,GOLD);                                                    // the cobra on the brow
+  // the temple pillars in front
+  for(const y of[cy-3,cy,cy+3]){v.box(W-1,y,1,W-1,y,3,WALL);v.set(W-1,y,4,WALL2);}
+  v.box(Math.max(0,W-8),0,1,W-3,0,1,WALL2).box(Math.max(0,W-8),D-1,1,W-3,D-1,1,WALL2);
+  return v.list();},
+ moai(W,D,H){const v=VX(W,D);const BODY='#8c8271',HEAD='#a2988a',DARK='#1f1812',SHADE='#6a6050',LIP='#968c79',BROW='#857b69',HAND='#b3aa96',RED='#b5533c';
+  v.box(0,0,0,W-1,D-1,0,'#a59d88');
+  // the statue: one large figure facing the viewer, standing on a stone platform (the ahu)
+  const sw=W>=10?7:Math.max(3,W-2)|1,sd=Math.max(3,Math.min(5,D-6)),xs=Math.round((W-sw)/2),cx=xs+(sw>>1);
+  const y1=Math.max(sd,D-4),y0=y1-sd+1;
+  // the ahu: a platform of fitted stones with a sloping ramp and a paved apron in front
+  v.box(0,0,1,W-1,y1+1,2,'#7d7466');
+  for(let x=0;x<W;x++)for(let y=0;y<=y1+1;y++)if((x+y)%3===0)v.set(x,y,2,'#8a8270');
+  v.box(1,y1+2,1,W-2,y1+2,1,'#8a8270');v.box(0,y1+3,0,W-1,D-1,0,'#b3a98e');
+  for(const [x,y] of[[1,D-1],[W-2,D-2],[W-3,D-1]])v.set(x,y,1,'#7d7466');
+  const zb=3,hb=zb+6;
+  // the body: a plain slab, the arms carved down the sides, the hands meeting on the belly with finger lines
+  v.box(xs,y0,zb,xs+sw-1,y1,zb+5,BODY);
+  for(let z=zb+1;z<=zb+4;z++){v.set(xs+1,y1,z,SHADE).set(xs+sw-2,y1,z,SHADE);}
+  v.box(xs+1,y1+1,zb+2,xs+sw-2,y1+1,zb+3,HAND);
+  for(let x=xs+2;x<=xs+sw-3;x+=2)v.set(x,y1+1,zb+3,'#8f8672');
+  v.box(xs+1,y1,zb+5,xs+sw-2,y1,zb+5,SHADE);                       // the line of the collarbone
+  // the head: tall, flat-topped, with every feature carved in layers from the chin up
+  v.box(xs,y0,hb,xs+sw-1,y1,hb+8,HEAD);
+  v.box(xs+1,y1+1,hb,xs+sw-2,y1+1,hb+1,LIP);                         // the jutting chin
+  v.box(xs+1,y1,hb+2,xs+sw-2,y1,hb+2,DARK);                          // the thin mouth
+  v.box(xs+1,y1+1,hb+3,xs+sw-2,y1+1,hb+3,LIP);                       // the lips
+  v.box(cx,y1+1,hb+4,cx,y1+1,hb+7,HEAD).box(cx,y1+2,hb+4,cx,y1+2,hb+5,HEAD);   // the long nose
+  v.box(cx-1,y1+1,hb+4,cx+1,y1+1,hb+4,HEAD);v.set(cx-1,y1+1,hb+4,DARK).set(cx+1,y1+1,hb+4,DARK); // its flare and nostrils
+  for(const ex of[xs+1,xs+sw-3]){v.box(ex,y1,hb+5,ex+1,y1,hb+6,DARK);}  // the deep eye sockets
+  v.box(xs,y1+1,hb+7,xs+sw-1,y1+1,hb+7,BROW).box(xs,y1+2,hb+7,xs+sw-1,y1+2,hb+7,BROW); // the heavy brow
+  for(const ex of[xs-1,xs+sw]){v.box(ex,y1-2,hb+3,ex,y1-1,hb+6,HEAD);v.set(ex,y1-1,hb+2,HEAD);}   // the long ears with lobes
+  // the red topknot of scoria
+  const kr=Math.max(1.2,sw/2-1.1);v.disc(cx,(y0+y1)/2,kr,hb+9,hb+11,RED);v.disc(cx,(y0+y1)/2,kr,hb+10,hb+10,'#9d4330');
+  return v.list();},
+ petra(W,D,H){const v=VX(W,D);v.box(0,0,0,W-1,D-1,0,'#dcc592');
+  // the cliff round the facade and the narrow canyon (the Siq)
+  v.box(0,0,1,W-1,2,H+3,P.cliff);
+  for(let y=0;y<D;y++){const hs=Math.max(2,H+2-Math.round(y*1.3));v.box(0,y,1,2,y,hs,P.cliff);v.box(W-3,y,1,W-1,y,hs,P.cliff);}
+  for(let z=2;z<=H+3;z+=2){v.box(0,0,z,W-1,2,z,P.cliff2);for(let y=0;y<D;y++){const hs=Math.max(2,H+2-Math.round(y*1.3));if(z<=hs){v.box(0,y,z,2,y,z,P.cliff2);v.box(W-3,y,z,W-1,y,z,P.cliff2);}}}
+  const fy=3,cx=Math.round((W-1)/2),fw=Math.max(5,W-8),fx0=cx-(fw>>1),fx1=fx0+fw-1,lo=Math.max(3,Math.round(H*0.5));
+  // lower storey: a row of columns under a pediment
+  for(let x=fx0;x<=fx1;x+=2)v.box(x,fy,1,x,fy,lo,P.pink);
+  v.box(fx0,fy,lo+1,fx1,fy,lo+1,P.pink);
+  // the doorway
+  v.box(cx,fy,1,cx,fy,Math.max(2,lo-1),P.dark);v.box(cx-1,fy,1,cx-1,fy,Math.max(2,lo-1),P.dark);
+  // upper storey: the round tholos between two half pediments, with the urn on top
+  v.box(cx-1,fy,lo+2,cx,fy,H,P.pink).box(cx-1,fy,H+1,cx,fy,H+1,P.cliff2).set(cx,fy,H+2,P.pink);
+  v.box(fx0,fy,lo+2,cx-3,fy,lo+3,P.pink);v.box(cx+2,fy,lo+2,fx1,fy,lo+3,P.pink);
+  v.set(cx-1,fy,H+3,P.pink);
+  // steps down to the canyon floor
+  v.box(fx0,fy+1,1,fx1,fy+1,1,'#e8d6a8').box(fx0,fy+2,1,fx1,fy+2,0,'#e8d6a8');return v.list();},
+ lighthouse(W,D,H){const v=VX(W,D);const c=(W-1)/2,R=Math.min(W,D)/2-0.5;
+  for(let x=0;x<W;x++)for(let y=0;y<D;y++){const d=Math.hypot(x-c,y-c);v.set(x,y,0,d>R?P.water:(d>R-1?P.sand:'#b9ad8f'));}
+  const s1=Math.max(5,Math.round(W*0.5))|1,a=Math.round(c-(s1>>1)),b=a+s1-1,h1=Math.round(H*0.42),h2=Math.round(H*0.30);
+  // the square base with its door and windows
+  for(let z=1;z<=h1;z++){v.ring(a,a,b,b,z,z,z%3?P.stone:P.stone2);}
+  v.set(Math.round(c),b,1,P.dark).set(Math.round(c),b,2,P.dark);
+  for(let z=3;z<h1;z+=3){v.set(Math.round(c)+1,b,z,P.dark);v.set(Math.round(c)-1,b,z,P.dark);v.set(b,Math.round(c),z,P.dark);}
+  v.box(a+1,a+1,h1,b-1,b-1,h1,P.stone2);
+  // the octagonal middle
+  const s2=s1-2,a2=a+1,b2=b-1;for(let z=h1+1;z<=h1+h2;z++){v.ring(a2,a2,b2,b2,z,z,z%3?P.white:'#e6dfcf');v.del(a2,a2,z).del(b2,b2,z).del(a2,b2,z).del(b2,a2,z);}
+  // the round top and the lantern with its fire, and Poseidon on the roof
+  const z0=h1+h2+1,r=Math.max(1,(s2>>1)-1);v.disc(c,c,r,z0,z0+Math.max(1,Math.round(H*0.12)),P.white);
+  const zl=z0+Math.max(1,Math.round(H*0.12))+1;for(const dx of[-1,1])for(const dy of[-1,1])v.box(Math.round(c)+dx,Math.round(c)+dy,zl,Math.round(c)+dx,Math.round(c)+dy,zl+1,P.stone2);
+  v.set(Math.round(c),Math.round(c),zl,P.flame).set(Math.round(c),Math.round(c),zl+1,P.gold).box(Math.round(c)-1,Math.round(c)-1,zl+2,Math.round(c)+1,Math.round(c)+1,zl+2,P.stone2).set(Math.round(c),Math.round(c),zl+3,P.gold).set(Math.round(c),Math.round(c),zl+4,P.gold);
+  // the causeway to the shore
+  v.box(Math.round(c)-1,Math.round(c)+Math.ceil(R-1),0,Math.round(c),D-1,0,'#b9ad8f');
+  for(let i=0;i<3;i++)v.box(Math.round(c)-1,b+1+i,0,Math.round(c),b+1+i,Math.max(0,2-i),P.stone2);return v.list();},
+ pagoda(W,D,H){const v=VX(W,D);v.box(0,0,0,W-1,D-1,0,'#d7d0bf');
+  const c=(W-1)/2,bs=W-3,a=Math.round(c-bs/2),b=a+bs-1;
+  v.box(a,a,1,b,b,1,P.stone).box(a+1,a+1,2,b-1,b-1,2,P.stone2);
+  // the stairs in front
+  v.box(Math.round(c)-1,b+1,1,Math.round(c),b+1,1,P.stone2);
+  const tiers=5,th=Math.max(3,Math.floor((H-5)/tiers));let z=3;
+  for(let t=0;t<tiers;t++){const s=Math.max(3,(W-6-t*Math.max(1,Math.floor((W-7)/tiers))))|1,h=s>>1,lo=Math.round(c-h),hi=Math.round(c+h);
+   // walls: white, dark wood corners; a door on the first tier
+   for(let q=z;q<z+th-1;q++){v.ring(lo,lo,hi,hi,q,q,P.white);for(const [x,y] of[[lo,lo],[hi,lo],[lo,hi],[hi,hi]])v.set(x,y,q,P.wood);}
+   if(t===0){v.set(Math.round(c),hi,z,P.dark).set(Math.round(c),hi,z+1,P.dark);}
+   // the roof, one wider each side, tiles in rings, the corners turned up
+   const rz=z+th-1;v.box(lo-1,lo-1,rz,hi+1,hi+1,rz,P.roof);v.box(lo,lo,rz+1,hi,hi,rz+1,'#8e2c25');
+   for(const [x,y] of[[lo-1,lo-1],[hi+1,lo-1],[lo-1,hi+1],[hi+1,hi+1]])v.set(x,y,rz+1,P.roof);
+   z=rz+2;}
+  // the spire with its rings
+  for(let i=0;i<4;i++)v.set(Math.round(c),Math.round(c),z+i,i%2?P.gold:'#caa238');v.box(Math.round(c)-1,Math.round(c),z+1,Math.round(c)+1,Math.round(c),z+1,P.gold);
+  // trees in the courtyard corners
+  for(const [x,y] of[[0,0],[W-1,0],[0,D-1],[W-1,D-1]]){v.box(x,y,1,x,y,2,P.wood);v.box(x-1,y-1,3,x+1,y+1,3,P.leaf);v.set(x,y,4,P.leaf);}
+  return v.list();},
+ liberty(W,D,H){const v=VX(W,D);const c=(W-1)/2,cc=Math.round(c),r=Math.min(W,D)/2-0.5;
+  // Fort Wood: an eleven-point star fort, with water round it
+  for(let x=0;x<W;x++)for(let y=0;y<D;y++){const dx=Math.abs(x-c),dy=Math.abs(y-c);const inSq=dx<=r-1&&dy<=r-1,inDia=dx+dy<=r*1.5;
+    const on=inSq||inDia;v.set(x,y,0,on?'#a7a396':P.water);
+    if(on&&inSq&&inDia&&(dx>r-2.6||dy>r-2.6||dx+dy>r*1.5-1.6)){v.set(x,y,1,P.stone2);if((x+y)%2===0)v.set(x,y,2,P.stone2);}}
+  const ph=Math.max(4,Math.round(H*0.25)),pw=Math.max(2,Math.round(r*0.42));
+  v.box(cc-pw-2,cc-pw-2,1,cc+pw+2,cc+pw+2,2,P.stone).box(cc-pw-1,cc-pw-1,3,cc+pw+1,cc+pw+1,3,P.stone2);
+  v.box(cc-pw,cc-pw,4,cc+pw,cc+pw,ph,P.stone);
+  for(let z=ph-3;z<=ph-1;z++)for(let t=-pw;t<=pw;t+=2){for(const [x,y] of[[cc+t,cc-pw],[cc+t,cc+pw],[cc-pw,cc+t],[cc+pw,cc+t]])v.set(x,y,z,P.stone2);}
+  v.ring(cc-pw-1,cc-pw-1,cc+pw+1,cc+pw+1,ph+1,ph+1,P.stone2);
+  // the statue: a draped woman standing straight, one leg a step forward. Folds run down the robe.
+  const G='#59a89d',G2='#3f8c80',G3='#74bdb0';
+  const z0=ph+2,top=H-5;               // she stands from z0 up to the crown
+  const robeTop=z0+Math.round((top-z0)*0.45),chestZ=z0+Math.round((top-z0)*0.74);
+  const fold=(x,z)=>((x*3+Math.floor(z/3))%4<2)?G:G2;
+  for(let z=z0;z<=robeTop;z++){const k=(z-z0)/Math.max(1,robeTop-z0);const hw=k<0.35?2:1;
+    for(let x=cc-hw;x<=cc+hw;x++)for(let y=cc-1;y<=cc+(hw>1?1:1);y++)v.set(x,y,z,fold(x,z));}
+  v.set(cc-1,cc+2,z0,G2).set(cc-1,cc+2,z0+1,G2).set(cc-1,cc+2,z0+2,G);        // the forward leg, pushing the robe out in front
+  // the bust, the drape over the shoulder
+  for(let z=robeTop+1;z<=chestZ;z++){for(let x=cc-1;x<=cc+1;x++)for(let y=cc-1;y<=cc+1;y++)v.set(x,y,z,fold(x,z));}
+  for(let x=cc-2;x<=cc+2;x++)for(let y=cc-1;y<=cc+1;y++)v.set(x,y,chestZ+1,G3);               // the shoulders
+  // the neck and the head with a face: eyes and nose, and the crown of seven rays fanning out
+  const neck=chestZ+2;v.set(cc,cc,neck,G);
+  const hz=neck+1;for(let z=hz;z<=hz+2;z++)for(let x=cc-1;x<=cc+1;x++)for(let y=cc-1;y<=cc+1;y++)v.set(x,y,z,G3);
+  v.set(cc-1,cc+1,hz+1,P.dark).set(cc+1,cc+1,hz+1,P.dark).set(cc,cc+2,hz,G3);
+  const cz=hz+3;for(let x=cc-1;x<=cc+1;x++)for(let y=cc-1;y<=cc+1;y++)v.set(x,y,cz,G2);
+  for(const [dx,dy,up] of[[-3,0,1],[-2,-2,2],[0,-3,2],[2,-2,2],[3,0,1],[-2,2,1],[2,2,1]]){v.set(cc+dx,cc+dy,cz,G3);v.set(cc+Math.round(dx*0.66),cc+Math.round(dy*0.66),cz,G3);v.set(cc+dx,cc+dy,cz+up,G3);}
+  // the right arm held straight up beside the head, with a sleeve, the hand, and the great torch
+  const ax=cc+3;for(let z=chestZ;z<=H+2;z++){v.set(ax,cc,z,G);if(z<chestZ+3)v.set(ax-1,cc,z,G3);}
+  v.box(ax-1,cc-1,H+3,ax+1,cc+1,H+3,'#caa238');v.box(ax,cc,H+4,ax,cc,H+5,P.flame).box(ax-1,cc,H+5,ax+1,cc,H+5,P.gold).box(ax,cc,H+6,ax,cc,H+7,P.gold).set(ax,cc,H+8,P.flame);
+  // the left arm bent, holding the tablet against the body, its edge towards us
+  v.set(cc-2,cc,chestZ-1,G).set(cc-3,cc,chestZ-1,G).set(cc-3,cc+1,chestZ-2,G);
+  v.box(cc-4,cc-1,chestZ-4,cc-3,cc+2,chestZ-1,P.white);v.box(cc-4,cc-1,chestZ-4,cc-4,cc+2,chestZ-4,'#cfc7b0');
+  return v.list();},
+ needle(W,D,H){const v=VX(W,D);const c=(W-1)/2,cc=Math.round(c);v.box(0,0,0,W-1,D-1,0,'#cfc9b8');
+  // the footprint is set by the saucer, the wide head; the legs under it are far narrower
+  const sr=Math.max(1.5,c-0.2),baseHalf=Math.max(1,Math.round(c*0.42));
+  const sz=Math.round(H*0.74),legTop=Math.round(sz*0.28),waistTop=Math.round(sz*0.52);
+  // three legs that lean in from the narrow base, tied by rings, then one slim waist
+  for(let z=1;z<=waistTop;z++){
+   if(z<=legTop){const r=Math.max(0,Math.round(baseHalf*(1-(z-1)/legTop)));
+     for(const [x,y] of[[cc-r,cc-r],[cc+r,cc-r],[cc,cc+r]]){v.set(x,y,z,P.white);v.set(x+1,y,z,P.white);}
+     v.set(cc,cc,z,P.white);
+     if(z%4===0&&r>0)for(let t=cc-r;t<=cc+r;t++){v.set(t,cc-r,z,'#e6e1d3');v.set(t,cc+r,z,'#e6e1d3');v.set(cc-r,t,z,'#e6e1d3');v.set(cc+r,t,z,'#e6e1d3');}}
+   else{v.set(cc,cc,z,P.white);v.set(cc+1,cc,z,P.white);if(z%4===0)v.box(cc-1,cc,z,cc+2,cc,z,'#e6e1d3');}
+  }
+  // above the waist the shaft opens out like a trumpet, wider and wider up to the saucer
+  for(let z=waistTop+1;z<=sz;z++){const k=(z-waistTop)/(sz-waistTop);const r=0.9+(sr-0.9)*Math.pow(k,2.2);v.disc(c,c,r,z,z,z%3===0?'#e6e1d3':P.white);}
+  // the saucer: the orange halo, a glass level with window posts, the roof, the lip
+  v.disc(c,c,sr,sz+1,sz+1,'#d96b2b');
+  for(const z of[sz+2,sz+3]){v.disc(c,c,sr,z,z,'#6fb8d8');}
+  const posts=Math.max(8,Math.round(sr*3));for(let a=0;a<posts;a++){const x=c+Math.cos(a*2*Math.PI/posts)*sr,y=c+Math.sin(a*2*Math.PI/posts)*sr;v.set(x,y,sz+2,P.white).set(x,y,sz+3,P.white);}
+  v.disc(c,c,sr,sz+4,sz+4,P.white);v.disc(c,c,Math.max(0.8,sr*0.55),sz+5,sz+5,P.white);v.disc(c,c,Math.max(0.6,sr*0.3),sz+6,sz+6,P.white);
+  // the spire with the beacon
+  v.box(cc,cc,sz+7,cc,cc,H,P.iron).set(cc,cc,H+1,P.red);return v.list();},
+ christ(W,D,H){const v=VX(W,D);const c=(W-1)/2,cc=Math.round(c);
+  // the hill: stepped rock under grass, with the chapel pedestal on the top
+  v.box(0,0,0,W-1,D-1,0,P.grass);v.box(0,0,1,W-1,D-1,1,P.rock);v.box(1,1,2,W-2,D-2,2,P.rock);v.box(1,1,3,W-2,D-2,3,P.grass);
+  const ph=Math.max(5,Math.round(H*0.3));v.box(cc-1,cc-1,3,cc+1,cc+1,ph,P.stone);v.set(cc,cc+1,4,P.dark).set(cc,cc+1,5,P.dark);
+  // the robe, long and white, the torso, the arms stretched out, the hands, the head
+  const sk=ph+1,sh=H-3;
+  for(let z=sk;z<=sk+2;z++)v.box(cc-1,cc,z,cc+1,cc,z,P.marble);                 // the wide skirt of the robe
+  for(let z=sk+3;z<=sh;z++)v.box(cc-1,cc,z,cc+1,cc,z,P.marble).set(cc,cc+1,z,'#e6e1d3');
+  v.box(0,cc,sh,W-1,cc,sh,P.marble).box(0,cc,sh-1,0,cc,sh-1,P.marble).box(W-1,cc,sh-1,W-1,cc,sh-1,P.marble); // arms and hands
+  v.box(cc,cc,sh+1,cc,cc,sh+2,P.marble).set(cc,cc,sh+3,'#e6e1d3');                    // neck and head
+  return v.list();},
+ taj(W,D,H){const v=VX(W,D);const cx=Math.round((W-1)/2);
+  // the garden: lawns, a cross of water with a pool, paths, and rows of cypress
+  v.box(0,0,0,W-1,D-1,0,P.grass);
+  const gy0=Math.round(D*0.42),gy1=D-5;
+  v.box(cx-1,gy0,0,cx+1,gy1,0,P.path);v.box(0,Math.round((gy0+gy1)/2)-1,0,W-1,Math.round((gy0+gy1)/2)+1,0,P.path);
+  v.box(cx,gy0,0,cx,gy1,0,P.water);v.box(1,Math.round((gy0+gy1)/2),0,W-2,Math.round((gy0+gy1)/2),0,P.water);
+  const my=Math.round((gy0+gy1)/2);v.box(cx-2,my-2,0,cx+2,my+2,0,P.marble).box(cx-1,my-1,0,cx+1,my+1,0,P.water);
+  for(let y=gy0+1;y<=gy1;y+=2){for(const x of[cx-3,cx+3]){if(Math.abs(y-my)>2){v.set(x,y,1,P.leaf).set(x,y,2,P.leaf);}}}
+  // the tomb on its white platform with four minarets
+  const pw=Math.round(W*0.5),px0=cx-(pw>>1),px1=px0+pw-1,py1=Math.max(5,gy0-1);
+  v.box(px0,0,1,px1,py1,2,P.marble);
+  for(const x of[px0,px1])for(const y of[0,py1]){v.box(x,y,3,x,y,Math.round(H*0.78),P.white);v.box(x-1,y-1,Math.round(H*0.5),x+1,y+1,Math.round(H*0.5),P.white);v.box(x-1,y-1,Math.round(H*0.74),x+1,y+1,Math.round(H*0.74),P.white);v.box(x,y,Math.round(H*0.79),x,y,Math.round(H*0.85),P.gold);}
+  const tb=Math.max(5,(pw>>1)|1),tx0=cx-(tb>>1),ty0=Math.max(1,Math.round((py1-tb)/2)),th=Math.round(H*0.46);
+  for(let z=3;z<=th;z++){v.box(tx0,ty0,z,tx0+tb-1,ty0+tb-1,z,P.marble);v.del(tx0,ty0,z).del(tx0+tb-1,ty0,z).del(tx0,ty0+tb-1,z).del(tx0+tb-1,ty0+tb-1,z);}
+  // the big arched iwan in front, and small arches at the sides
+  v.box(cx-1,ty0+tb-1,4,cx+1,ty0+tb-1,Math.round(th*0.8),'#9aa0a8');v.box(cx,ty0+tb-1,4,cx,ty0+tb-1,3+Math.round(th*0.6),P.dark);
+  // the dome: a drum, then an onion that swells and narrows, the finial on top
+  const dr=Math.max(2,(tb/2)-1),zb=th+1;v.disc(cx,ty0+(tb>>1),dr,zb,zb+1,P.marble);
+  const n=Math.max(4,Math.round(H*0.38));for(let k=0;k<n;k++){const r=dr*(0.6+0.55*Math.sin((k+1)/n*Math.PI*0.85))*(1-k/n*0.7);v.disc(cx,ty0+(tb>>1),Math.max(0.4,r),zb+2+k,zb+2+k,P.marble);}
+  v.box(cx,ty0+(tb>>1),zb+2+n,cx,ty0+(tb>>1),zb+4+n,P.gold);
+  // four small domed kiosks round the dome
+  for(const [x,y] of[[tx0,ty0],[tx0+tb-1,ty0],[tx0,ty0+tb-1],[tx0+tb-1,ty0+tb-1]]){v.box(x,y,th+1,x,y,th+2,P.white);v.set(x,y,th+3,P.marble);}
+  // the two red sandstone buildings beside the platform, each with three white domes
+  const sw=px0-3;if(sw>=3){for(const [x0,x1] of[[1,px0-2],[px1+2,W-2]]){v.box(x0,0,1,x1,Math.min(py1,9),4,P.red);for(let x=x0;x<=x1;x+=2)v.set(x,Math.min(py1,9),5,P.marble);}}
+  // the gate at the front, red with a white row of small domes and a dark arch
+  const gw=Math.round(W*0.5),gx0=cx-(gw>>1);v.box(gx0,D-3,0,gx0+gw-1,D-1,Math.round(H*0.34),P.red);v.box(cx-1,D-1,0,cx,D-1,Math.round(H*0.24),P.dark);
+  for(let x=gx0;x<gx0+gw;x+=2)v.set(x,D-2,Math.round(H*0.34)+1,P.marble);
+  v.box(1,D-1,0,gx0-1,D-1,2,P.red).box(gx0+gw,D-1,0,W-2,D-1,2,P.red);return v.list();},
+ house(W,D,H){const v=VX(W,D);for(let z=0;z<3;z++)v.ring(0,0,W-1,D-1,z,z,z===0?P.stone:P.wood);v.box(0,0,3,W-1,D-1,3,P.roof);v.box(1,1,4,W-2,D-2,4,P.roof);v.box(2,2,5,W-3,D-3,5,P.roof);v.set(W>>1,D-1,1,P.dark);return v.list();},
+ castle(W,D,H){const v=VX(W,D);for(let z=0;z<5;z++)v.ring(0,0,W-1,D-1,z,z,P.stone);for(const [tx,ty] of[[0,0],[W-3,0],[0,D-3],[W-3,D-3]])v.box(tx,ty,0,tx+2,ty+2,7,P.stone2);v.box(4,4,0,W-5,D-5,8,'#a9a091');v.box(3,3,9,W-4,D-4,9,P.roof);v.box(5,5,10,W-6,D-6,10,P.roof);return v.list();}
+};
+
+
+// ---- layout: shelf packing, every item has a one-plot gap round it (the road)
+function layout(){
+  const items=LM.map(l=>({name:l.n,shape:l.s,hb:l.hb,w:l[opt][0],d:l[opt][1],real:true}));
+  items.sort((a,b)=>b.w*b.d-a.w*a.d);
+  for(const r of REF)items.push({name:r.n,shape:r.s,hb:r.hb,w:r.fp[0],d:r.fp[1],real:false});
+  let area=0;for(const it of items)area+=(it.w+1)*(it.d+1);
+  const rowW=Math.max(Math.max(...items.map(i=>i.w))+1,Math.ceil(Math.sqrt(area*1.35)));
+  let x=0,y=0,rowH=0,maxX=0;
+  for(const it of items){
+    if(x+it.w+1>rowW){x=0;y+=rowH;rowH=0;}
+    it.px=x;it.py=y;x+=it.w+1;rowH=Math.max(rowH,it.d+1);maxX=Math.max(maxX,x);
+  }
+  return {items,W:maxX,D:y+rowH};
+}
+function plotsUsed(items){return items.filter(i=>i.real).reduce((a,i)=>a+i.w*i.d,0);}
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+function cube(x,y,z,col,ox,oy,t){
+  const sx=ox+(x-y)*t,sy=oy+(x+y)*t/2-z*t;
+  ctx.fillStyle=col.top;ctx.beginPath();ctx.moveTo(sx,sy-t);ctx.lineTo(sx+t,sy-t/2);ctx.lineTo(sx,sy);ctx.lineTo(sx-t,sy-t/2);ctx.closePath();ctx.fill();
+  ctx.fillStyle=col.r;ctx.beginPath();ctx.moveTo(sx+t,sy-t/2);ctx.lineTo(sx+t,sy+t/2);ctx.lineTo(sx,sy+t);ctx.lineTo(sx,sy);ctx.closePath();ctx.fill();
+  ctx.fillStyle=col.l;ctx.beginPath();ctx.moveTo(sx-t,sy-t/2);ctx.lineTo(sx-t,sy+t/2);ctx.lineTo(sx,sy+t);ctx.lineTo(sx,sy);ctx.closePath();ctx.fill();
+}
+const cache={};function colr(hex){return cache[hex]||(cache[hex]={top:shade(hex,1),r:shade(hex,0.82),l:shade(hex,0.62)});}
+function turn(x,y,W,D,k){for(let i=0;i<k;i++){const nx=D-1-y,ny=x;x=nx;y=ny;const tw=W;W=D;D=tw;}return [x,y,W,D];}
+function render(){
+  const L=layout();const P=7;
+  // world tiles: the island is the plots plus a margin of one plot
+  const margin=P;const WT=L.W*P+margin*2,DT=L.D*P+margin*2;
+  // all voxels and ground in world tiles
+  const vox=[];
+  for(const it of L.items){
+    const W=it.w*P-2,D=it.d*P-2;
+    const shape=SH[it.shape](it.real?W:(it.shape==='house'?5:12),it.real?D:(it.shape==='house'?5:12),it.hb);
+    const ox=margin+it.px*P+1,oy=margin+it.py*P+1; // one tile in from the road
+    const refOff=it.real?0:(it.shape==='house'?1:1);
+    for(const [x,y,z,c] of shape)vox.push([x+ox+refOff,y+oy+refOff,z,c]);
+    it.cx=margin+it.px*P+it.w*P/2;it.cy=margin+it.py*P+it.d*P/2;it.top=it.hb+1;
+  }
+  // turn the world
+  const k=((rot%4)+4)%4;let W2=WT,D2=DT;{const r=turn(0,0,WT,DT,k);W2=r[2];D2=r[3];}
+  const tp=(x,y)=>{const r=turn(Math.floor(x),Math.floor(y),WT,DT,k);return [r[0],r[1]];};
+  const maxH=Math.max(...L.items.map(i=>i.hb))+4;
+  let t=Math.min(6,1100/(W2+D2))*zoom;
+  const width=Math.ceil((W2+D2)*t+60),height=Math.ceil((W2+D2)*t/2+maxH*t+90);
+  cv.width=width;cv.height=height;
+  const ox=D2*t+30,oy=maxH*t+50;
+  ctx.clearRect(0,0,width,height);
+  // ground: grass, with a road ring one tile wide round every item
+  const road=new Set();
+  for(const it of L.items){const x0=margin+it.px*P,y0=margin+it.py*P,x1=x0+it.w*P-1,y1=y0+it.d*P-1;
+    for(let x=x0;x<=x1;x++){road.add(x+','+y0);road.add(x+','+y1);}for(let y=y0;y<=y1;y++){road.add(x0+','+y);road.add(x1+','+y);}}
+  const ground=[];
+  for(let x=0;x<WT;x++)for(let y=0;y<DT;y++){const [rx,ry]=tp(x,y);ground.push([rx,ry,road.has(x+','+y)?'#c8b78e':(((x+y)&1)?'#79bd62':'#72b65b')]);}
+  ground.sort((a,b)=>(a[0]+a[1])-(b[0]+b[1]));
+  const dirt=colr('#7a5a3a');
+  for(const [x,y,c] of ground){cube(x,y,-2,dirt,ox,oy,t);cube(x,y,-1,colr(c),ox,oy,t);}
+  // everything standing up, back to front in the turned view
+  const tv=vox.map(([x,y,z,c])=>{const [rx,ry]=tp(x,y);return [rx,ry,z,c];});
+  tv.sort((a,b)=>(a[0]+a[1]+a[2])-(b[0]+b[1]+b[2])||a[2]-b[2]);
+  for(const [x,y,z,c] of tv)cube(x,y,z,colr(c),ox,oy,t);
+  // names
+  if(names){
+    ctx.font=`600 ${Math.max(11,Math.round(t*2.1))}px -apple-system,system-ui,sans-serif`;ctx.textAlign='center';
+    for(const it of L.items){const [rx,ry]=tp(it.cx,it.cy);const sx=ox+(rx-ry)*t,sy=oy+(rx+ry)*t/2-(it.top+2)*t;
+      const label=it.real?`${it.name} ${it.w}x${it.d}`:it.name;
+      ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.strokeText(label,sx,sy);ctx.fillStyle='#16384f';ctx.fillText(label,sx,sy);}
+  }
+  const used=plotsUsed(L.items);
+  document.getElementById('stats').innerHTML=`Option <b>${{0:'Today',A:'A',B:'B',C:'C'}[opt]}</b>: the 13 landmarks need <b>${used} plots</b> of land. A new island has 64 plots, so `+
+    (used>64?`they do not even fit on one island; a player would need land awards or districts.`:`they would fill about <b>${Math.round(used/64*100)}%</b> of a new island.`)+
+    ` Today they take 13 x 4 = 52.`;
+  for(const o of['0','A','B','C'])document.getElementById('o'+o).classList.toggle('on',o===opt);
+}
+for(const o of['0','A','B','C'])document.getElementById('o'+o).onclick=()=>{opt=o;render();};
+document.getElementById('rl').onclick=()=>{rot--;render();};
+document.getElementById('rr').onclick=()=>{rot++;render();};
+document.getElementById('zoom').oninput=e=>{zoom=e.target.value/100;render();};
+document.getElementById('names').onchange=e=>{names=e.target.checked;render();};
+render();
+</script></body></html>
