@@ -13,6 +13,7 @@ import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/platform/testing/fake_live_status_sink.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
+import 'package:focus_town/ui/landmark_text.dart';
 import 'package:focus_town/ui/landmarks_screen.dart';
 
 late AppDatabase _db;
@@ -188,7 +189,9 @@ void main() {
     );
   });
 
-  testWidgets('with no free block it says so', (tester) async {
+  testWidgets('with no free area it says what is needed and offers more land', (
+    tester,
+  ) async {
     final crowded = _town(
       extra: [
         for (var gx = 0; gx < 8; gx++)
@@ -203,12 +206,47 @@ void main() {
       ],
     );
     await _open(tester, crowded);
-    expect(
-      find.text(
-        'No free 2 x 2 block of plots. Extend your land or clear a plot.',
-      ),
-      findsNWidgets(_unlockedAt300),
-    );
+    final open = Landmark.values.where((l) => l.unlockLevel.minXp <= 300);
+    for (final l in open) {
+      expect(
+        find.text(noRoomText(l.title, l.footprint)),
+        findsOneWidget,
+        reason: l.title,
+      );
+    }
+    // No Start or Continue, but a way to make room on each of them.
     expect(find.byType(FilledButton), findsNothing);
+    expect(
+      find.widgetWithText(OutlinedButton, 'Expand island'),
+      findsNWidgets(open.length),
+    );
   });
+
+  testWidgets(
+    'the Expand island button opens the sheet on growing the island',
+    (tester) async {
+      final crowded = _town(
+        extra: [
+          for (var gx = 0; gx < 8; gx++)
+            for (var gy = 0; gy < 8; gy++)
+              if ((gx + gy).isEven)
+                TownBuilding(
+                  id: 'h$gx$gy',
+                  tier: BuildingTier.hut,
+                  status: BuildingStatus.complete,
+                  plotIndex: plotAtCell(gx, gy, const [])!,
+                ),
+        ],
+      );
+      await _open(tester, crowded);
+      await tester.tap(
+        find.widgetWithText(OutlinedButton, 'Expand island').first,
+      );
+      await _settle(tester);
+      final chip = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, 'Expand island'),
+      );
+      expect(chip.selected, isTrue);
+    },
+  );
 }

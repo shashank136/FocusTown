@@ -6,6 +6,7 @@ import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
+import 'package:focus_town/ui/landmark_text.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
 
 /// The landmarks: one card each, with its picture, its total time and where
@@ -59,7 +60,7 @@ class _Card extends ConsumerWidget {
       ),
       LandmarkState.busy => ('Finish the ${_inProgress(town)} first.', null),
       LandmarkState.noRoom => (
-        'No free 2 x 2 block of plots. Extend your land or clear a plot.',
+        noRoomText(landmark.title, landmark.footprint),
         null,
       ),
       LandmarkState.ready => ('Not started', 'Start'),
@@ -101,6 +102,16 @@ class _Card extends ConsumerWidget {
                         value: project!.progress / landmark.totalMinutes,
                       ),
                     ),
+                  if (state == LandmarkState.noRoom)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: OutlinedButton(
+                        onPressed: busy
+                            ? null
+                            : () => unawaited(_choose(context, expand: true)),
+                        child: const Text('Expand island'),
+                      ),
+                    ),
                   if (button != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -122,11 +133,13 @@ class _Card extends ConsumerWidget {
 
   // Opens the session sheet on this landmark; once a session has started,
   // returns to the island.
-  Future<void> _choose(BuildContext context) async {
+  Future<void> _choose(BuildContext context, {bool expand = false}) async {
     final started = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      builder: (_) => SessionSetupSheet(landmark: landmark),
+      builder: (_) => expand
+          ? const SessionSetupSheet(expandIsland: true)
+          : SessionSetupSheet(landmark: landmark),
     );
     if ((started ?? false) && context.mounted) Navigator.of(context).pop();
   }

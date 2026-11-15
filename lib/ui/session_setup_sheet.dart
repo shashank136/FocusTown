@@ -14,6 +14,7 @@ import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
+import 'package:focus_town/ui/landmark_text.dart';
 
 const _recoveryBanner =
     'The Last Builder. All your builders are gone. A wanderer will build '
@@ -24,10 +25,13 @@ const _recoveryBanner =
 /// risk, then start (on the next free plot) or choose the plot first.
 class SessionSetupSheet extends ConsumerStatefulWidget {
   /// Creates the sheet.
-  const new({this.landmark, super.key});
+  const new({this.landmark, this.expandIsland = false, super.key});
 
   /// The landmark to put the time into, or null for a new building.
   final Landmark? landmark;
+
+  /// Whether the sheet opens on growing the island.
+  final bool expandIsland;
 
   @override
   ConsumerState<SessionSetupSheet> createState() => _SessionSetupSheetState();
@@ -41,7 +45,8 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
   int? _selected; // minutes
   int _look = 0; // the look of the building, 0 is the classic one
   late Landmark? _landmark = widget.landmark;
-  bool _expand = false; // the time goes into growing the island
+  late bool _expand =
+      widget.expandIsland; // the time goes into growing the island
   DistrictSide? _side;
   DistrictSide? _previewed; // the side lit up on the island
   late final DistrictPreview _preview;
@@ -86,9 +91,13 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     );
     final option = options.firstWhere((o) => o.minutes == minutes);
     final theme = Theme.of(context);
+    // The landmarks open to work on: one that cannot start for lack of room is
+    // listed too, with what it needs.
     final landmarks = [
       for (final l in Landmark.values)
-        if (TownRules.canStartLandmark(town, l)) l,
+        if (TownRules.canStartLandmark(town, l) ||
+            TownRules.landmarkState(town, l) == LandmarkState.noRoom)
+          l,
     ];
     final landmark = landmarks.contains(_landmark) ? _landmark : null;
     // The sides a district can be built on now: the one being built, or any
@@ -324,6 +333,8 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     int minutes,
   ) {
     final started = TownRules.landmarkProject(town, landmark) != null;
+    final noRoom =
+        TownRules.landmarkState(town, landmark) == LandmarkState.noRoom;
     final stages = minutes ~/ landmark.minutesPerStage;
     final rest = minutes % landmark.minutesPerStage;
     final text = stages > 0 && rest > 0
@@ -351,29 +362,44 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           onChanged: (l) => setState(() => _landmark = l),
         ),
       ),
-      Text(text),
-      const Text(
-        'Nothing is at risk but progress: leaving costs one stage.',
-        textAlign: TextAlign.center,
-      ),
-      const SizedBox(height: 12),
-      Wrap(
-        alignment: WrapAlignment.center,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 12,
-        children: [
-          // A landmark already started stays where it stands.
-          if (!started)
-            TextButton(
-              onPressed: () => _choosePlot(minutes, landmark: landmark),
-              child: const Text('Choose plot…'),
+      if (noRoom) ...[
+        Text(
+          noRoomText(landmark.title, landmark.footprint),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(
+          onPressed: () => setState(() {
+            _landmark = null;
+            _expand = true;
+          }),
+          child: const Text('Expand island'),
+        ),
+      ] else ...[
+        Text(text),
+        const Text(
+          'Nothing is at risk but progress: leaving costs one stage.',
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          children: [
+            // A landmark already started stays where it stands.
+            if (!started)
+              TextButton(
+                onPressed: () => _choosePlot(minutes, landmark: landmark),
+                child: const Text('Choose plot…'),
+              ),
+            FilledButton(
+              onPressed: () => unawaited(_startLandmark(landmark, minutes)),
+              child: const Text('Start'),
             ),
-          FilledButton(
-            onPressed: () => unawaited(_startLandmark(landmark, minutes)),
-            child: const Text('Start'),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     ];
   }
 

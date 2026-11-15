@@ -21,6 +21,7 @@ import 'package:focus_town/domain/testing/fake_clock.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/platform/testing/fake_notifier.dart';
+import 'package:focus_town/ui/landmark_text.dart';
 import 'package:focus_town/ui/session_setup_sheet.dart';
 
 late AppDatabase _db;
@@ -542,6 +543,41 @@ void main() {
         c.read(focusControllerProvider).requireValue.active!.landmark,
         Landmark.lighthouse,
       );
+    });
+
+    testWidgets('a landmark with no free area says so and offers more land', (
+      tester,
+    ) async {
+      final crowded = village().copyWith(
+        buildings: [
+          ...village().buildings,
+          for (var gx = 0; gx < 8; gx++)
+            for (var gy = 0; gy < 8; gy++)
+              if ((gx + gy).isEven)
+                TownBuilding(
+                  id: 'h$gx$gy',
+                  tier: BuildingTier.hut,
+                  status: BuildingStatus.complete,
+                  plotIndex: plotAtCell(gx, gy, const [])!,
+                ),
+        ],
+      );
+      await _open(tester, seed: crowded, landmark: Landmark.lighthouse);
+      expect(
+        find.text(
+          noRoomText(Landmark.lighthouse.title, Landmark.lighthouse.footprint),
+        ),
+        findsOneWidget,
+      );
+      // It cannot be started or placed, but the island can grow.
+      expect(find.widgetWithText(FilledButton, 'Start'), findsNothing);
+      expect(find.text('Choose plot…'), findsNothing);
+      await tester.tap(find.widgetWithText(OutlinedButton, 'Expand island'));
+      await tester.pump();
+      final chip = tester.widget<ChoiceChip>(
+        find.widgetWithText(ChoiceChip, 'Expand island'),
+      );
+      expect(chip.selected, isTrue);
     });
 
     testWidgets('a landmark not started yet can have its place chosen', (

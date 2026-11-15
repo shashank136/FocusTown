@@ -2016,7 +2016,8 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Tests first: every landmark's total time and unlock level; progress is kept.
 - Commit: `T-V14.3: landmark times and levels`
 
-### T-V14.4 [ ] "No room" message
+### T-V14.4 [x] "No room" message
+- Done 2026-11-15: `noRoomText(title, footprint)` (`lib/ui/landmark_text.dart`) says what a landmark needs and to expand the island (a block bigger than 4 both ways also says to expand two neighbouring sides); the Landmarks screen shows it on a card with no room and an "Expand island" button that opens the sheet on growing the island (`SessionSetupSheet(expandIsland: true)`); the landmark sheet lists a landmark with no room, shows the text, hides Start and Choose plot and offers the same button. Tests: `test/ui/landmark_text_test.dart`, `landmarks_screen_test.dart`, `session_setup_sheet_test.dart`.
 - Do: the landmark sheet and the Landmarks screen say what a landmark needs and link to Expand island when no free area of its size exists; Start is off then.
 - Tests first: widget tests for the message text with and without room.
 - Commit: `T-V14.4: no room message`
