@@ -94,24 +94,27 @@ App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focu
 - Name / subtitle: see above (`Focus Town` / `Build While You Focus`).
 - Category: Productivity (primary), Lifestyle (secondary).
 - Age rating: 4+. No violence, no user content, no web access, no purchases, no gambling.
+- Price: **Free**. No in-app purchases, no subscriptions, no ads, now or planned. Leave the paid-apps agreement, tax and banking empty in App Store Connect; only the free-apps agreement is needed.
 - Keywords (max 100 characters): `focus,timer,pomodoro,study,productivity,habit,streak,town,builder,deep work`
-- Promotional text (max 170): `Start a focus session and your builders raise a block town. Leave the app and they stop. Build a streak, grow your town.`
-- Description:
+- Promotional text (max 170): `Start a focus session and your builders raise a block town. Leave the app and they stop. Grow your island and build famous landmarks. Free, no ads.`
+- Description (updated 2026-11-15):
 
   Focus Town turns focus time into a town you can see.
 
   Pick how long you want to focus, from 10 minutes to 2 hours. Little builders start work on a new building. Put your phone down, and watch them finish. Leave the app before the time is up, and they stop and leave a ruin behind.
 
-  - A block-style town that grows with every session
+  - A block-style island town that grows with every session
   - Bigger sessions build bigger buildings: huts, houses, workshops, towers and castles
-  - A daily streak, and land you can extend whenever you want more room
+  - Thirteen famous landmarks to unlock and build over many sessions, from Christ the Redeemer to the Great Pyramid, each at the size of the real thing: the bigger the real building, the more land it needs
+  - Grow your island with districts, turn forest squares into gardens, and turn the island with one finger to see it from every side
+  - A daily streak, and workers who grow your town
   - Lock your phone and keep going: locking never counts as leaving
   - A countdown on your lock screen and Dynamic Island
   - A weekly emergency pause for the day something really comes up
   - Repair a ruin with a short session
-  - Works fully offline. No account, no ads, no tracking
+  - Completely free: no purchases, no subscriptions, no ads. Works fully offline. No account, no tracking
 
-- Screenshots (6.9-inch and 6.5-inch iPhone): onboarding page 2, a running build, the finished town, the setup dial, the lock screen card. Capture on the iPhone or the simulator; the user reviews them.
+- Screenshots (6.9-inch and 6.5-inch iPhone): onboarding page 2, a running build, the finished town, the setup dial, a landmark on the island (for example the Great Pyramid or the Eiffel Tower), the lock screen card. Capture on the iPhone or the simulator; the user reviews them.
 - URLs (GitHub Pages from `/docs`, live 2026-11-12): privacy policy `https://shashank136.github.io/FocusTown/privacy`, support `https://shashank136.github.io/FocusTown/support`. The contact email on both pages is the user's main Gmail (chosen by the user, 2026-11-12).
 - Copyright: the user's name and year.
 
