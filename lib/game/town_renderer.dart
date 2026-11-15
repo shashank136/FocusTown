@@ -376,15 +376,72 @@ class TownRenderer {
       _spinBlocks = SpinBlocks.of(world);
       _spinBlocksVersion = _worldVersion;
     }
+    final pivot = spinPivot;
+    // Workers and smoke are drawn with the blocks, so a wall hides them.
+    final fade = _particleAlpha.clamp(0.0, 1.0);
+    final boxes = [
+      for (final w in _workers)
+        for (final b in boxesFor(w.worker, w.pose))
+          SpinBox(
+            x: b.x,
+            y: b.y,
+            z: b.z,
+            w: b.w,
+            d: b.d,
+            h: b.h,
+            top: b.color.top,
+            sideX: b.color.sideX,
+            sideY: b.color.sideY,
+          ),
+      for (final p in _particles)
+        SpinBox(
+          x: p.x - 0.125,
+          y: p.y - 0.125,
+          z: p.z,
+          w: 0.25,
+          d: 0.25,
+          h: 0.25,
+          top: FlatColor.of(p.color).top,
+          sideX: FlatColor.of(p.color).sideX,
+          sideY: FlatColor.of(p.color).sideY,
+          alpha: fade,
+        ),
+    ];
     paintSpin(
       canvas,
       _spinBlocks,
       angle: _spin,
-      center: spinPivot,
+      center: pivot,
       tile: cam.tile,
       origin: cam.origin,
       viewSize: size,
+      boxes: boxes,
     );
+    if (_outlines.isNotEmpty) {
+      paintPlotOutlines(
+        canvas,
+        _outlines,
+        _selected,
+        selectedSpan: _selectedSpan,
+        parcels: parcels,
+        rotation: _rotation,
+        tile: cam.tile,
+        origin: cam.origin,
+        spin: _spin,
+        pivot: pivot,
+      );
+    }
+    if (_rowHighlight.isNotEmpty) {
+      paintRowHighlight(
+        canvas,
+        _rowHighlight,
+        tile: cam.tile,
+        origin: cam.origin,
+        rotation: _rotation,
+        spin: _spin,
+        pivot: pivot,
+      );
+    }
   }
 
   /// The claimed land, for picking and outlines.

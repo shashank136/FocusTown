@@ -17,19 +17,21 @@ void paintPlotOutlines(
   int selectedSpan = 1,
   List<Parcel> parcels = const [],
   ViewRotation rotation = ViewRotation.none,
+  double spin = 0,
+  Vec2 pivot = const Vec2(0, 0),
 }) {
   Path diamond(Plot p, [int span = 1]) {
     final side = kPlotSize * span;
     // The plot's square as it lies in the current view.
     final (vx, vy, _, _) = rotation.rect(p.originX, p.originY, side, side);
     Offset at(int dx, int dy) {
-      final v = project(
+      final turned = turnAbout(
         (vx + dx).toDouble(),
         (vy + dy).toDouble(),
-        1,
-        tile,
-        origin,
+        pivot,
+        spin,
       );
+      final v = project(turned.x, turned.y, 1, tile, origin);
       return Offset(v.x, v.y);
     }
 
@@ -70,6 +72,8 @@ void paintRowHighlight(
   required double tile,
   required Vec2 origin,
   ViewRotation rotation = ViewRotation.none,
+  double spin = 0,
+  Vec2 pivot = const Vec2(0, 0),
 }) {
   final fill = Paint()..color = const Color(0x77FFD54F);
   final stroke = Paint()
@@ -84,13 +88,13 @@ void paintRowHighlight(
       kPlotSize,
     );
     Offset at(int dx, int dy) {
-      final v = project(
+      final turned = turnAbout(
         (vx + dx).toDouble(),
         (vy + dy).toDouble(),
-        1,
-        tile,
-        origin,
+        pivot,
+        spin,
       );
+      final v = project(turned.x, turned.y, 1, tile, origin);
       return Offset(v.x, v.y);
     }
 
