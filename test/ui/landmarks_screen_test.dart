@@ -26,12 +26,12 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 300));
 }
 
-TownBuilding _eiffel(int progress, BuildingStatus status) => TownBuilding(
-  id: 'landmark-eiffel',
+TownBuilding _lighthouse(int progress, BuildingStatus status) => TownBuilding(
+  id: 'landmark-lighthouse',
   tier: BuildingTier.castle,
   status: status,
   plotIndex: plotAtCell(0, 0, const [])!,
-  landmark: Landmark.eiffel,
+  landmark: Landmark.lighthouse,
   progress: progress,
 );
 
@@ -107,10 +107,10 @@ void main() {
     tester,
   ) async {
     await _open(tester, _town(xp: 100));
-    expect(find.text('Eiffel Tower'), findsOneWidget);
+    expect(find.text('Lighthouse of Alexandria'), findsOneWidget);
     expect(
       find.descendant(
-        of: _card('Eiffel Tower'),
+        of: _card('Lighthouse of Alexandria'),
         matching: find.text('About 4 hours over many sessions'),
       ),
       findsOneWidget,
@@ -131,7 +131,7 @@ void main() {
     expect(find.text('Not started'), findsNWidgets(_unlockedAt300));
     await tester.tap(
       find.descendant(
-        of: _card('Eiffel Tower'),
+        of: _card('Lighthouse of Alexandria'),
         matching: find.widgetWithText(FilledButton, 'Start'),
       ),
     );
@@ -142,7 +142,7 @@ void main() {
     await _settle(tester);
     final s = c.read(focusControllerProvider).requireValue.active!;
     expect(s.isLandmark, isTrue);
-    expect(s.landmark, Landmark.eiffel);
+    expect(s.landmark, Landmark.lighthouse);
     expect(s.plannedMinutes, 25);
     // Back on the island, not on the screen.
     await _settle(tester);
@@ -152,15 +152,21 @@ void main() {
   testWidgets('a landmark in progress shows its stage and can continue', (
     tester,
   ) async {
-    await _open(tester, _town(extra: [_eiffel(85, BuildingStatus.building)]));
+    await _open(
+      tester,
+      _town(extra: [_lighthouse(85, BuildingStatus.building)]),
+    );
     expect(find.text('Stage 4 of 12 (85 of 240 minutes)'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Continue'), findsOneWidget);
   });
 
   testWidgets('one landmark at a time: the others wait for it', (tester) async {
-    await _open(tester, _town(extra: [_eiffel(85, BuildingStatus.building)]));
+    await _open(
+      tester,
+      _town(extra: [_lighthouse(85, BuildingStatus.building)]),
+    );
     expect(
-      find.text('Finish the Eiffel Tower first.'),
+      find.text('Finish the Lighthouse of Alexandria first.'),
       findsNWidgets(_unlockedAt300 - 1),
     );
     // Only the landmark in progress has a button.
@@ -168,11 +174,14 @@ void main() {
   });
 
   testWidgets('a finished landmark says it is built', (tester) async {
-    await _open(tester, _town(extra: [_eiffel(240, BuildingStatus.complete)]));
+    await _open(
+      tester,
+      _town(extra: [_lighthouse(240, BuildingStatus.complete)]),
+    );
     expect(find.text('Built'), findsOneWidget);
     expect(
       find.descendant(
-        of: _card('Eiffel Tower'),
+        of: _card('Lighthouse of Alexandria'),
         matching: find.byType(FilledButton),
       ),
       findsNothing,

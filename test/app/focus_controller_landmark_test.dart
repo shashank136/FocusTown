@@ -35,7 +35,7 @@ FocusState _state(ProviderContainer c) =>
 
 TownBuilding? _project(ProviderContainer c) {
   for (final b in _state(c).town.buildings) {
-    if (b.landmark == Landmark.eiffel) return b;
+    if (b.landmark == Landmark.lighthouse) return b;
   }
   return null;
 }
@@ -82,7 +82,7 @@ void main() {
 
   test('the first session takes a block and starts the project', () async {
     final (c, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 45);
+    await n.startLandmark(Landmark.lighthouse, 45);
     final s = _state(c).active!;
     expect(s.isLandmark, isTrue);
     expect(s.plannedMinutes, 45);
@@ -95,13 +95,13 @@ void main() {
 
   test('a finished session adds its minutes and counts for xp', () async {
     final (c, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 45);
+    await n.startLandmark(Landmark.lighthouse, 45);
     _clock.advance(const Duration(minutes: 46));
     await n.tick();
     expect(_project(c)!.progress, 45);
     final r = _state(c).lastResult!;
     expect(r.outcome, SessionOutcome.completed);
-    expect(r.landmark, Landmark.eiffel);
+    expect(r.landmark, Landmark.lighthouse);
     expect(r.landmarkStage, 2);
     expect(r.landmarkFinished, isFalse);
     expect(r.xpGained, 45);
@@ -110,10 +110,10 @@ void main() {
 
   test('the next session continues the same project', () async {
     final (c, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 30);
+    await n.startLandmark(Landmark.lighthouse, 30);
     await finish(c, n, 30);
     final first = _project(c)!;
-    await n.startLandmark(Landmark.eiffel, 30);
+    await n.startLandmark(Landmark.lighthouse, 30);
     await finish(c, n, 30);
     final second = _project(c)!;
     expect(second.plotIndex, first.plotIndex);
@@ -126,15 +126,15 @@ void main() {
 
   test('giving up costs one stage and no workers', () async {
     final (c, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 60);
+    await n.startLandmark(Landmark.lighthouse, 60);
     await finish(c, n, 60);
-    await n.startLandmark(Landmark.eiffel, 30);
+    await n.startLandmark(Landmark.lighthouse, 30);
     final workers = _state(c).town.workers;
     await n.abandon();
     expect(_project(c)!.progress, 40); // 60 - one stage of 20
     final r = _state(c).lastResult!;
     expect(r.outcome, SessionOutcome.failed);
-    expect(r.landmark, Landmark.eiffel);
+    expect(r.landmark, Landmark.lighthouse);
     expect(r.landmarkStage, 2);
     expect(r.workersLost, 0);
     expect(_state(c).town.workers, workers);
@@ -143,7 +143,7 @@ void main() {
   test('240 minutes finish the landmark', () async {
     final (c, n) = await ready();
     for (var i = 0; i < 4; i++) {
-      await n.startLandmark(Landmark.eiffel, 60);
+      await n.startLandmark(Landmark.lighthouse, 60);
       if (i < 3) await finish(c, n, 60);
     }
     _clock.advance(const Duration(minutes: 61));
@@ -151,18 +151,27 @@ void main() {
     final p = _project(c)!;
     expect(p.status, BuildingStatus.complete);
     expect(_state(c).lastResult!.landmarkFinished, isTrue);
-    await expectLater(n.startLandmark(Landmark.eiffel, 30), throwsStateError);
+    await expectLater(
+      n.startLandmark(Landmark.lighthouse, 30),
+      throwsStateError,
+    );
   });
 
   test('a bad length is refused', () async {
     final (_, n) = await ready();
-    await expectLater(n.startLandmark(Landmark.eiffel, 7), throwsStateError);
-    await expectLater(n.startLandmark(Landmark.eiffel, 130), throwsStateError);
+    await expectLater(
+      n.startLandmark(Landmark.lighthouse, 7),
+      throwsStateError,
+    );
+    await expectLater(
+      n.startLandmark(Landmark.lighthouse, 130),
+      throwsStateError,
+    );
   });
 
   test('the project survives a restart', () async {
     final (c, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 30);
+    await n.startLandmark(Landmark.lighthouse, 30);
     await finish(c, n, 30);
     final again = _container();
     final town = (await again.read(focusControllerProvider.future)).town;
@@ -174,7 +183,7 @@ void main() {
     () async {
       final (c, n) = await ready();
       c.read(shortSessionsProvider.notifier).toggle();
-      await n.startLandmark(Landmark.eiffel, 60);
+      await n.startLandmark(Landmark.lighthouse, 60);
       expect(_state(c).active!.plannedMinutes, 1);
       _clock.advance(const Duration(seconds: 61));
       await n.tick();
@@ -184,11 +193,11 @@ void main() {
 
   test('resetting a landmark (a testing aid) lets it be built again', () async {
     final (c, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 60);
+    await n.startLandmark(Landmark.lighthouse, 60);
     await finish(c, n, 60);
-    await n.resetLandmark(Landmark.eiffel);
+    await n.resetLandmark(Landmark.lighthouse);
     expect(_project(c), isNull);
-    await n.startLandmark(Landmark.eiffel, 30);
+    await n.startLandmark(Landmark.lighthouse, 30);
     expect(_project(c)!.progress, 0);
     // It is saved, not just shown.
     final again = _container();
@@ -198,13 +207,16 @@ void main() {
 
   test('a landmark cannot be reset while a session is running', () async {
     final (_, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 30);
-    await expectLater(n.resetLandmark(Landmark.eiffel), throwsStateError);
+    await n.startLandmark(Landmark.lighthouse, 30);
+    await expectLater(n.resetLandmark(Landmark.lighthouse), throwsStateError);
   });
 
   test('a landmark that is not unlocked cannot be started', () async {
     final (_, n) = await ready(xp: 299);
-    await expectLater(n.startLandmark(Landmark.eiffel, 30), throwsStateError);
+    await expectLater(
+      n.startLandmark(Landmark.lighthouse, 30),
+      throwsStateError,
+    );
   });
 
   test('the debug tool sets the focus minutes and saves them', () async {
@@ -219,7 +231,7 @@ void main() {
 
   test('the focus minutes cannot be set while a session is running', () async {
     final (_, n) = await ready();
-    await n.startLandmark(Landmark.eiffel, 30);
+    await n.startLandmark(Landmark.lighthouse, 30);
     await expectLater(n.setFocusMinutes(1500), throwsStateError);
   });
 }

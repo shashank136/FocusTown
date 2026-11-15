@@ -17,11 +17,11 @@ TimeStamp _at(int s) => TimeStamp(
 int _plot(int gx, int gy) => plotAtCell(gx, gy, const [])!;
 
 TownBuilding _project(int progress, {int plot = 0}) => TownBuilding(
-  id: 'landmark-eiffel',
+  id: 'landmark-lighthouse',
   tier: BuildingTier.castle,
   status: BuildingStatus.building,
   plotIndex: plot,
-  landmark: Landmark.eiffel,
+  landmark: Landmark.lighthouse,
   progress: progress,
 );
 
@@ -38,7 +38,7 @@ TownState _town([List<TownBuilding> buildings = const [], int xp = 300]) =>
 Session _session(int minutes, {SessionState? state}) {
   final s = SessionEngine.startLandmark(
     id: 'l1',
-    landmark: Landmark.eiffel,
+    landmark: Landmark.lighthouse,
     minutes: minutes,
     now: _at(0),
   );
@@ -46,31 +46,34 @@ Session _session(int minutes, {SessionState? state}) {
 }
 
 void main() {
-  test('the Eiffel Tower has 12 stages of 20 minutes, 240 in all', () {
-    expect(Landmark.eiffel.stages, 12);
-    expect(Landmark.eiffel.minutesPerStage, 20);
-    expect(Landmark.eiffel.totalMinutes, 240);
-    expect(Landmark.eiffel.title, 'Eiffel Tower');
-  });
+  test(
+    'the Lighthouse of Alexandria has 12 stages of 20 minutes, 240 in all',
+    () {
+      expect(Landmark.lighthouse.stages, 12);
+      expect(Landmark.lighthouse.minutesPerStage, 20);
+      expect(Landmark.lighthouse.totalMinutes, 240);
+      expect(Landmark.lighthouse.title, 'Lighthouse of Alexandria');
+    },
+  );
 
-  test('the Eiffel Tower unlocks at Village', () {
-    expect(Landmark.eiffel.unlockLevel, TownLevel.village);
+  test('the Lighthouse of Alexandria unlocks at Village', () {
+    expect(Landmark.lighthouse.unlockLevel, TownLevel.village);
   });
 
   group('unlocking', () {
     test('a new landmark needs the level; a started one does not', () {
       expect(
-        TownRules.canStartLandmark(_town(const [], 299), Landmark.eiffel),
+        TownRules.canStartLandmark(_town(const [], 299), Landmark.lighthouse),
         isFalse,
       );
-      expect(TownRules.canStartLandmark(_town(), Landmark.eiffel), isTrue);
+      expect(TownRules.canStartLandmark(_town(), Landmark.lighthouse), isTrue);
       final started = _town([_project(40)], 0);
-      expect(TownRules.canStartLandmark(started, Landmark.eiffel), isTrue);
+      expect(TownRules.canStartLandmark(started, Landmark.lighthouse), isTrue);
     });
 
     test('the state of a landmark for the screen', () {
       LandmarkState state(TownState t) =>
-          TownRules.landmarkState(t, Landmark.eiffel);
+          TownRules.landmarkState(t, Landmark.lighthouse);
       expect(state(_town(const [], 0)), LandmarkState.locked);
       expect(state(_town()), LandmarkState.ready);
       expect(state(_town([_project(40)])), LandmarkState.inProgress);
@@ -78,11 +81,11 @@ void main() {
         state(
           _town([
             const TownBuilding(
-              id: 'landmark-eiffel',
+              id: 'landmark-lighthouse',
               tier: BuildingTier.castle,
               status: BuildingStatus.complete,
               plotIndex: 0,
-              landmark: Landmark.eiffel,
+              landmark: Landmark.lighthouse,
               progress: 240,
             ),
           ]),
@@ -107,28 +110,31 @@ void main() {
   test('only one landmark is built at a time', () {
     final busy = _town([_project(40)]);
     expect(
-      TownRules.landmarkState(busy, Landmark.greatPyramid),
+      TownRules.landmarkState(busy, Landmark.christRedeemer),
       LandmarkState.busy,
     );
-    expect(TownRules.canStartLandmark(busy, Landmark.greatPyramid), isFalse);
+    expect(TownRules.canStartLandmark(busy, Landmark.christRedeemer), isFalse);
     // Once the first is finished the next can start.
     final done = _town([
       const TownBuilding(
-        id: 'landmark-eiffel',
+        id: 'landmark-lighthouse',
         tier: BuildingTier.castle,
         status: BuildingStatus.complete,
         plotIndex: 0,
-        landmark: Landmark.eiffel,
+        landmark: Landmark.lighthouse,
         progress: 240,
       ),
     ]);
     expect(
-      TownRules.landmarkState(done, Landmark.greatPyramid),
+      TownRules.landmarkState(done, Landmark.christRedeemer),
       LandmarkState.ready,
     );
     // A landmark that is still locked stays locked, not busy.
     expect(
-      TownRules.landmarkState(_town([_project(40)], 0), Landmark.greatPyramid),
+      TownRules.landmarkState(
+        _town([_project(40)], 0),
+        Landmark.christRedeemer,
+      ),
       LandmarkState.locked,
     );
   });
@@ -151,7 +157,7 @@ void main() {
     test('risks no workers and carries its landmark', () {
       final s = _session(45);
       expect(s.isLandmark, isTrue);
-      expect(s.landmark, Landmark.eiffel);
+      expect(s.landmark, Landmark.lighthouse);
       expect(s.plannedMinutes, 45);
       expect(s.workersAssigned, 0);
     });
@@ -163,26 +169,26 @@ void main() {
 
   group('starting', () {
     test('needs a free 2 x 2 block, and not a second project', () {
-      expect(TownRules.landmarkProject(_town(), Landmark.eiffel), isNull);
-      expect(TownRules.canStartLandmark(_town(), Landmark.eiffel), isTrue);
+      expect(TownRules.landmarkProject(_town(), Landmark.lighthouse), isNull);
+      expect(TownRules.canStartLandmark(_town(), Landmark.lighthouse), isTrue);
       final busy = _town([_project(40, plot: _plot(0, 0))]);
-      expect(TownRules.landmarkProject(busy, Landmark.eiffel), isNotNull);
+      expect(TownRules.landmarkProject(busy, Landmark.lighthouse), isNotNull);
       // A project in progress can always be worked on.
-      expect(TownRules.canStartLandmark(busy, Landmark.eiffel), isTrue);
+      expect(TownRules.canStartLandmark(busy, Landmark.lighthouse), isTrue);
     });
 
     test('a finished landmark cannot be built again', () {
       final done = _town([
         TownBuilding(
-          id: 'landmark-eiffel',
+          id: 'landmark-lighthouse',
           tier: BuildingTier.castle,
           status: BuildingStatus.complete,
           plotIndex: _plot(0, 0),
-          landmark: Landmark.eiffel,
+          landmark: Landmark.lighthouse,
           progress: 240,
         ),
       ]);
-      expect(TownRules.canStartLandmark(done, Landmark.eiffel), isFalse);
+      expect(TownRules.canStartLandmark(done, Landmark.lighthouse), isFalse);
     });
 
     test('with no free block it cannot start', () {
@@ -197,13 +203,17 @@ void main() {
                 plotIndex: _plot(gx, gy),
               ),
       ]);
-      expect(TownRules.canStartLandmark(crowded, Landmark.eiffel), isFalse);
+      expect(TownRules.canStartLandmark(crowded, Landmark.lighthouse), isFalse);
     });
 
     test('beginning takes a block and starts at no progress', () {
       final block = _plot(0, 0);
-      final town = TownRules.beginLandmark(_town(), Landmark.eiffel, block)!;
-      final p = TownRules.landmarkProject(town, Landmark.eiffel)!;
+      final town = TownRules.beginLandmark(
+        _town(),
+        Landmark.lighthouse,
+        block,
+      )!;
+      final p = TownRules.landmarkProject(town, Landmark.lighthouse)!;
       expect(p.plotIndex, block);
       expect(p.progress, 0);
       expect(p.status, BuildingStatus.building);
@@ -212,7 +222,7 @@ void main() {
 
     test('beginning on a block that is not free gives nothing', () {
       expect(
-        TownRules.beginLandmark(_town(), Landmark.eiffel, _plot(3, 0)),
+        TownRules.beginLandmark(_town(), Landmark.lighthouse, _plot(3, 0)),
         isNull,
       );
     });
@@ -225,7 +235,10 @@ void main() {
         town,
         _session(45, state: SessionState.completed),
       );
-      expect(TownRules.landmarkProject(done, Landmark.eiffel)!.progress, 85);
+      expect(
+        TownRules.landmarkProject(done, Landmark.lighthouse)!.progress,
+        85,
+      );
     });
 
     test('the landmark is complete at 240 minutes, not before', () {

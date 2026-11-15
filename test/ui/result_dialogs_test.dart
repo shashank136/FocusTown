@@ -161,28 +161,31 @@ void main() {
       workersGained: 0,
       newStreak: 2,
       xpGained: outcome == SessionOutcome.completed ? 45 : 0,
-      landmark: Landmark.eiffel,
+      landmark: Landmark.lighthouse,
       landmarkStage: stage,
       landmarkFinished: finished,
     );
 
     testWidgets('progress shows the stage, xp and no workers', (tester) async {
       await _show(tester, landmark());
-      expect(find.text('Eiffel Tower: stage 4 of 12'), findsOneWidget);
+      expect(
+        find.text('Lighthouse of Alexandria: stage 4 of 12'),
+        findsOneWidget,
+      );
       expect(find.text('+45 XP'), findsOneWidget);
       expect(find.textContaining('worker'), findsNothing);
     });
 
     testWidgets('finishing says it is built', (tester) async {
       await _show(tester, landmark(stage: 12, finished: true));
-      expect(find.text('Eiffel Tower finished!'), findsOneWidget);
+      expect(find.text('Lighthouse of Alexandria finished!'), findsOneWidget);
     });
 
     testWidgets('a failed session says it lost a stage, and no workers', (
       tester,
     ) async {
       await _show(tester, landmark(outcome: SessionOutcome.failed, stage: 3));
-      expect(find.text('Eiffel Tower damaged'), findsOneWidget);
+      expect(find.text('Lighthouse of Alexandria damaged'), findsOneWidget);
       expect(
         find.text(
           'It lost a stage and is at stage 3 of 12. No workers were lost.',

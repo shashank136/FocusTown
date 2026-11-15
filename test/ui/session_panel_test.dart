@@ -286,10 +286,13 @@ void main() {
         final n = c.read(focusControllerProvider.notifier);
         await n.abandon();
         _clock.advance(const Duration(minutes: 1));
-        await n.startLandmark(Landmark.eiffel, 30);
+        await n.startLandmark(Landmark.lighthouse, 30);
       });
       await _settle(tester);
-      expect(find.text('Building the Eiffel Tower'), findsOneWidget);
+      expect(
+        find.text('Building the Lighthouse of Alexandria'),
+        findsOneWidget,
+      );
       expect(find.text('Emergency pause'), findsNothing);
     });
 

@@ -14,10 +14,10 @@ VoxelWorld _pyramid(int stage) {
 }
 
 void main() {
-  test('it is 12 stages of 10 minutes, 2 hours, unlocked at Village', () {
+  test('it is 12 stages of 55 minutes, 11 hours, unlocked at Metropolis', () {
     expect(Landmark.greatPyramid.stages, 12);
-    expect(Landmark.greatPyramid.minutesPerStage, 10);
-    expect(Landmark.greatPyramid.totalMinutes, 120);
+    expect(Landmark.greatPyramid.minutesPerStage, 55);
+    expect(Landmark.greatPyramid.totalMinutes, 660);
   });
 
   test('each stage is one more level, from a 12 wide base to the top', () {

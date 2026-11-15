@@ -17,12 +17,12 @@ VoxelWorld _taj(int stage) {
 bool _has(VoxelWorld w, int x, int y, int z) => w.has(_ox + x, _oy + y, z);
 
 void main() {
-  test('it is 12 stages of 25 minutes, 5 hours, unlocked at Town', () {
+  test('it is 12 stages of 50 minutes, 10 hours, unlocked at Metropolis', () {
     expect(Landmark.tajMahal.title, 'Taj Mahal');
     expect(Landmark.tajMahal.stages, 12);
-    expect(Landmark.tajMahal.minutesPerStage, 25);
-    expect(Landmark.tajMahal.totalMinutes, 300);
-    expect(Landmark.tajMahal.unlockLevel, TownLevel.town);
+    expect(Landmark.tajMahal.minutesPerStage, 50);
+    expect(Landmark.tajMahal.totalMinutes, 600);
+    expect(Landmark.tajMahal.unlockLevel, TownLevel.metropolis);
   });
 
   test('a two-step platform, then the hall with its door', () {

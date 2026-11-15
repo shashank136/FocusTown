@@ -15,11 +15,11 @@ VoxelWorld _lighthouse(int stage) {
 }
 
 void main() {
-  test('it is 12 stages of 15 minutes, 3 hours, unlocked at Village', () {
+  test('it is 12 stages of 20 minutes, 4 hours, unlocked at Village', () {
     expect(Landmark.lighthouse.title, 'Lighthouse of Alexandria');
     expect(Landmark.lighthouse.stages, 12);
-    expect(Landmark.lighthouse.minutesPerStage, 15);
-    expect(Landmark.lighthouse.totalMinutes, 180);
+    expect(Landmark.lighthouse.minutesPerStage, 20);
+    expect(Landmark.lighthouse.totalMinutes, 240);
     expect(Landmark.lighthouse.unlockLevel, TownLevel.village);
   });
 

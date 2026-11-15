@@ -128,7 +128,7 @@ void main() {
     );
     final c = await _ready(extra: [hut], xp: 300);
     final p = c.read(placementProvider.notifier)
-      ..begin(60, landmark: Landmark.eiffel)
+      ..begin(60, landmark: Landmark.lighthouse)
       ..select(_at(0, 0)); // the hut stands in this block
     expect(c.read(placementProvider)!.plot, isNull);
     p.select(_at(0, 4));
@@ -137,11 +137,11 @@ void main() {
     await p.confirm();
     final town = c.read(focusControllerProvider).requireValue.town;
     final project = town.buildings.singleWhere(
-      (b) => b.landmark == Landmark.eiffel,
+      (b) => b.landmark == Landmark.lighthouse,
     );
     expect(project.plotIndex, _at(0, 4));
     final s = c.read(focusControllerProvider).requireValue.active!;
-    expect(s.landmark, Landmark.eiffel);
+    expect(s.landmark, Landmark.lighthouse);
     expect(s.plannedMinutes, 60);
     expect(c.read(placementProvider), isNull);
   });

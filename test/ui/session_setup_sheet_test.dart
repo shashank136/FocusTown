@@ -506,12 +506,12 @@ void main() {
       tester,
     ) async {
       final c = await _open(tester, seed: village(), lastDuration: 60);
-      await pickLandmark(tester, 'Eiffel Tower');
+      await pickLandmark(tester, 'Lighthouse of Alexandria');
       expect(find.text('Adds 3 stages'), findsOneWidget);
       await tester.tap(find.widgetWithText(FilledButton, 'Start'));
       await _settle(tester);
       final s = c.read(focusControllerProvider).requireValue.active!;
-      expect(s.landmark, Landmark.eiffel);
+      expect(s.landmark, Landmark.lighthouse);
       expect(s.plannedMinutes, 60);
     });
 
@@ -519,7 +519,7 @@ void main() {
       tester,
     ) async {
       await _open(tester, seed: village(), lastDuration: 25);
-      await pickLandmark(tester, 'Eiffel Tower');
+      await pickLandmark(tester, 'Lighthouse of Alexandria');
       expect(find.text('Adds 1 stage and 5 min toward the next'), findsOne);
       _jumpTo(tester, 10);
       await tester.pump();
@@ -535,7 +535,7 @@ void main() {
         lastDuration: 40,
         landmark: Landmark.lighthouse,
       );
-      expect(find.text('Adds 2 stages and 10 min toward the next'), findsOne);
+      expect(find.text('Adds 2 stages'), findsOne);
       await tester.tap(find.widgetWithText(FilledButton, 'Start'));
       await _settle(tester);
       expect(
@@ -548,28 +548,28 @@ void main() {
       tester,
     ) async {
       final c = await _open(tester, seed: village(), lastDuration: 60);
-      await pickLandmark(tester, 'Eiffel Tower');
+      await pickLandmark(tester, 'Lighthouse of Alexandria');
       await tester.tap(find.text('Choose plot…'));
       await _settle(tester);
       final p = c.read(placementProvider)!;
-      expect(p.landmark, Landmark.eiffel);
+      expect(p.landmark, Landmark.lighthouse);
       expect(p.minutes, 60);
     });
 
     testWidgets('a landmark already started stays where it is', (tester) async {
-      const eiffel = TownBuilding(
-        id: 'landmark-eiffel',
+      const lighthouse = TownBuilding(
+        id: 'landmark-lighthouse',
         tier: BuildingTier.castle,
         status: BuildingStatus.building,
         plotIndex: 0,
-        landmark: Landmark.eiffel,
+        landmark: Landmark.lighthouse,
         progress: 40,
       );
       final seed = village().copyWith(
-        buildings: [...village().buildings, eiffel],
+        buildings: [...village().buildings, lighthouse],
       );
       await _open(tester, seed: seed);
-      await pickLandmark(tester, 'Eiffel Tower');
+      await pickLandmark(tester, 'Lighthouse of Alexandria');
       expect(find.text('Choose plot…'), findsNothing);
     });
 
@@ -604,16 +604,16 @@ void main() {
     testWidgets(
       'a landmark being built is the one selected, and the only one',
       (tester) async {
-        const eiffel = TownBuilding(
-          id: 'landmark-eiffel',
+        const lighthouse = TownBuilding(
+          id: 'landmark-lighthouse',
           tier: BuildingTier.castle,
           status: BuildingStatus.building,
           plotIndex: 0,
-          landmark: Landmark.eiffel,
+          landmark: Landmark.lighthouse,
           progress: 40,
         );
         final seed = village().copyWith(
-          buildings: [...village().buildings, eiffel],
+          buildings: [...village().buildings, lighthouse],
         );
         await _open(tester, seed: seed);
         expect(find.byType(ChoiceChip), findsNWidgets(3));
@@ -621,13 +621,18 @@ void main() {
         await tester.pump();
         final menu = find.byType(DropdownButton<Landmark>);
         expect(
-          find.descendant(of: menu, matching: find.text('Eiffel Tower')),
+          find.descendant(
+            of: menu,
+            matching: find.text('Lighthouse of Alexandria'),
+          ),
           findsOneWidget,
         );
         await tester.tap(menu);
         await tester.pump(const Duration(milliseconds: 400));
         // No other landmark is offered.
-        for (final l in Landmark.values.where((l) => l != Landmark.eiffel)) {
+        for (final l in Landmark.values.where(
+          (l) => l != Landmark.lighthouse,
+        )) {
           expect(find.text(l.title), findsNothing, reason: l.title);
         }
       },

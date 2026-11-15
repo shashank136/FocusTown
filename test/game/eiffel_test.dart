@@ -108,7 +108,7 @@ void main() {
         .fold(0, (m, b) => b.z > m ? b.z : m);
 
     test('a project is drawn at the stage its progress has reached', () {
-      final w = buildTownWorld(town(85, BuildingStatus.building));
+      final w = buildTownWorld(town(140, BuildingStatus.building));
       final direct = VoxelWorld();
       buildLandmark(
         direct,
@@ -122,7 +122,7 @@ void main() {
     });
 
     test('a finished landmark is drawn whole', () {
-      final w = buildTownWorld(town(240, BuildingStatus.complete));
+      final w = buildTownWorld(town(420, BuildingStatus.complete));
       expect(top(w), greaterThanOrEqualTo(24));
     });
 
@@ -141,7 +141,7 @@ void main() {
       final live = buildTownWorld(
         town(20, BuildingStatus.building),
         active: session,
-        progress: 0.5, // 30 of 60 minutes: 20 + 30 = 50 minutes = stage 2
+        progress: 0.5, // 30 of 60 minutes: 20 + 30 = 50 minutes = stage 1
       );
       expect(live.blockCount, greaterThan(base.blockCount));
     });

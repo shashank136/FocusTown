@@ -17,12 +17,12 @@ VoxelWorld _statue(int stage) {
 bool _has(VoxelWorld w, int x, int y, int z) => w.has(_ox + x, _oy + y, z);
 
 void main() {
-  test('it is 12 stages of 30 minutes, 6 hours, unlocked at Town', () {
+  test('it is 12 stages of 35 minutes, 7 hours, unlocked at City', () {
     expect(Landmark.statueOfLiberty.title, 'Statue of Liberty');
     expect(Landmark.statueOfLiberty.stages, 12);
-    expect(Landmark.statueOfLiberty.minutesPerStage, 30);
-    expect(Landmark.statueOfLiberty.totalMinutes, 360);
-    expect(Landmark.statueOfLiberty.unlockLevel, TownLevel.town);
+    expect(Landmark.statueOfLiberty.minutesPerStage, 35);
+    expect(Landmark.statueOfLiberty.totalMinutes, 420);
+    expect(Landmark.statueOfLiberty.unlockLevel, TownLevel.city);
   });
 
   test('a star-cut base, a cobble step, then the pedestal with a door', () {

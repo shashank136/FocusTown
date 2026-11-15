@@ -59,10 +59,14 @@ class TownBuilding {
   /// The plots it covers: one, a 2 x 2 block, or its landmark's rectangle.
   Footprint get footprint => footprintFor(tier, landmark);
 
-  /// The landmark's stage: how many stages its progress has reached.
+  /// The landmark's stage: how many stages its progress has reached. A
+  /// finished landmark is always at its last stage, whatever the stage length
+  /// was when it was finished.
   int get stage {
     final l = landmark;
-    return l == null ? 0 : (progress ~/ l.minutesPerStage).clamp(0, l.stages);
+    if (l == null) return 0;
+    if (status == BuildingStatus.complete) return l.stages;
+    return (progress ~/ l.minutesPerStage).clamp(0, l.stages);
   }
 
   /// The look it is drawn with.

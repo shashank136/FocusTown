@@ -17,12 +17,12 @@ VoxelWorld _colosseum(int stage) {
 bool _has(VoxelWorld w, int x, int y, int z) => w.has(_ox + x, _oy + y, z);
 
 void main() {
-  test('it is 12 stages of 40 minutes, 8 hours, unlocked at City', () {
+  test('it is 12 stages of 45 minutes, 9 hours, unlocked at Metropolis', () {
     expect(Landmark.colosseum.title, 'Colosseum');
     expect(Landmark.colosseum.stages, 12);
-    expect(Landmark.colosseum.minutesPerStage, 40);
-    expect(Landmark.colosseum.totalMinutes, 480);
-    expect(Landmark.colosseum.unlockLevel, TownLevel.city);
+    expect(Landmark.colosseum.minutesPerStage, 45);
+    expect(Landmark.colosseum.totalMinutes, 540);
+    expect(Landmark.colosseum.unlockLevel, TownLevel.metropolis);
   });
 
   test('the arena floor comes first, the wall after it', () {

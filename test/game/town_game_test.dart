@@ -273,11 +273,11 @@ void main() {
         final g = _game();
         final block = plotAtCell(0, 0, const [])!;
         final project = TownBuilding(
-          id: 'landmark-eiffel',
+          id: 'landmark-lighthouse',
           tier: BuildingTier.castle,
           status: BuildingStatus.building,
           plotIndex: block,
-          landmark: Landmark.eiffel,
+          landmark: Landmark.lighthouse,
           progress: 20,
         );
         final session = Session(
@@ -287,7 +287,7 @@ void main() {
           workersAssigned: 0,
           state: SessionState.running,
           startedAt: TimeStamp(DateTime(2026), Duration.zero),
-          landmark: Landmark.eiffel,
+          landmark: Landmark.lighthouse,
           plotIndex: block,
         );
         g.setFocus(
@@ -300,7 +300,7 @@ void main() {
         );
         _drawn(g);
         final site = g.renderer.site!;
-        expect(site.landmark, Landmark.eiffel);
+        expect(site.landmark, Landmark.lighthouse);
         // The session has not run yet: the project's 20 minutes, stage 1.
         expect(site.stage, 1);
       },

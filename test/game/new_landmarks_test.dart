@@ -21,11 +21,11 @@ void main() {
   test('their lengths and levels', () {
     for (final (l, minutes, level) in [
       (Landmark.easterIsland, 20, TownLevel.village),
-      (Landmark.sphinx, 25, TownLevel.town),
-      (Landmark.spaceNeedle, 30, TownLevel.town),
-      (Landmark.chichenItza, 25, TownLevel.town),
-      (Landmark.petra, 30, TownLevel.town),
-      (Landmark.christRedeemer, 40, TownLevel.city),
+      (Landmark.sphinx, 30, TownLevel.town),
+      (Landmark.spaceNeedle, 20, TownLevel.town),
+      (Landmark.chichenItza, 35, TownLevel.city),
+      (Landmark.petra, 25, TownLevel.town),
+      (Landmark.christRedeemer, 10, TownLevel.village),
     ]) {
       expect(l.stages, 12);
       expect(l.minutesPerStage, minutes);

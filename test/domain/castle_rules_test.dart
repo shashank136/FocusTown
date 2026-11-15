@@ -77,11 +77,7 @@ void main() {
     expect(footprintOf(Footprint.block, anchor, const []), isNotNull);
     // It is the first anchor in plot order that fits.
     for (var i = 0; i < anchor; i++) {
-      expect(
-        footprintOf(Footprint.block, i, const []),
-        isNull,
-        reason: '$i',
-      );
+      expect(footprintOf(Footprint.block, i, const []), isNull, reason: '$i');
     }
   });
 

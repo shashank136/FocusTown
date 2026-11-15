@@ -104,7 +104,7 @@ void main() {
     await _db
         .into(_db.towns)
         .insert(
-          townToRow(TownState.initial().copyWith(xp: 300))
+          townToRow(TownState.initial().copyWith(xp: 6000))
               .copyWith(id: const Value(1), createdAt: const Value(0)),
         );
     await _db.batch(

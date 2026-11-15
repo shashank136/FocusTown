@@ -2010,7 +2010,8 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Tests first: grows in place when free, moves when blocked, stays classic when there is no room, moves later when room appears, never overlaps another building.
 - Commit: `T-V14.2: settle landmarks`
 
-### T-V14.3 [ ] Unlock levels and times by size
+### T-V14.3 [x] Unlock levels and times by size
+- Done 2026-11-15: the spec table is in `lib/domain/landmark.dart` (minutes per stage 10 to 55, 120 to 660 minutes in all; Village: Christ, Lighthouse, Moai; Town: Space Needle, Pagoda, Petra, Sphinx; City: Chichén Itzá, Statue of Liberty, Eiffel; Metropolis: Colosseum, Taj Mahal, Great Pyramid). A finished landmark is always at its last stage (`TownBuilding.stage`), a landmark in progress keeps its minutes. Old tests that used the Eiffel Tower as the generic landmark (20-minute stages, Village) now use the Lighthouse, which has those numbers. Tests: `test/domain/landmark_table_test.dart`. The debug screen's reset button is still Eiffel only (T-V14.6).
 - Do: the table in the spec (`Landmark.minutesPerStage`, `unlockLevel`; `TownLevel.metropolis` is the top level). A landmark in progress keeps its minutes.
 - Tests first: every landmark's total time and unlock level; progress is kept.
 - Commit: `T-V14.3: landmark times and levels`
