@@ -360,7 +360,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 56),
+                  // Right: clear of the compass, the turn buttons and Recenter.
+                  padding: const EdgeInsets.only(
+                    left: 8,
+                    right: 80,
+                    bottom: 56,
+                  ),
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(12),

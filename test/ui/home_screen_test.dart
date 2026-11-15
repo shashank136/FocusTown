@@ -191,6 +191,30 @@ void main() {
     expect(tester.getSize(recenter).height, tester.getSize(start).height);
   });
 
+  testWidgets('the choose-a-plot card stays clear of the turn buttons', (
+    tester,
+  ) async {
+    final c = await _pump(tester);
+    c.read(placementProvider.notifier).beginGarden();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final card = find.ancestor(
+      of: find.textContaining('Choose a forest square'),
+      matching: find.byType(Card),
+    );
+    expect(card, findsOneWidget);
+    // The card ends before the column of compass and turn buttons begins, so
+    // nothing of its text is hidden under them.
+    final cardRight = tester.getTopRight(card).dx;
+    for (final tip in ['Turn left', 'Turn right', 'Recenter town']) {
+      expect(
+        cardRight,
+        lessThanOrEqualTo(tester.getTopLeft(find.byTooltip(tip)).dx),
+        reason: tip,
+      );
+    }
+  });
+
   testWidgets('a previewed district side lights up the next row', (
     tester,
   ) async {
