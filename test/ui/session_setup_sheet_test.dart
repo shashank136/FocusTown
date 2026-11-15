@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/app/district_preview.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
@@ -750,6 +751,39 @@ void main() {
         ),
       );
       expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsNothing);
+    });
+
+    testWidgets('the side you pick is the one previewed on the island', (
+      tester,
+    ) async {
+      final c = await _open(tester, seed: city());
+      expect(c.read(districtPreviewProvider), isNull);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      await tester.pump();
+      await tester.pump(); // the preview is set after the frame
+      expect(c.read(districtPreviewProvider), DistrictSide.north);
+      await tester.tap(find.widgetWithText(ChoiceChip, 'West'));
+      await tester.pump();
+      await tester.pump();
+      expect(c.read(districtPreviewProvider), DistrictSide.west);
+      // Back to a normal building: nothing is previewed.
+      await tester.tap(find.widgetWithText(ChoiceChip, 'New building'));
+      await tester.pump();
+      await tester.pump();
+      expect(c.read(districtPreviewProvider), isNull);
+    });
+
+    testWidgets('closing the sheet clears the preview', (tester) async {
+      final c = await _open(tester, seed: city());
+      await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
+      await tester.pump();
+      await tester.pump();
+      expect(c.read(districtPreviewProvider), isNotNull);
+      // Tap outside the sheet to close it.
+      await tester.tapAt(const Offset(5, 5));
+      await _settle(tester);
+      expect(find.byType(SessionSetupSheet), findsNothing);
+      expect(c.read(districtPreviewProvider), isNull);
     });
   });
 }

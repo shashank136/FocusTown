@@ -4,6 +4,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/district_preview.dart';
 import 'package:focus_town/app/focus_state.dart';
 import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/placement.dart';
@@ -99,6 +100,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       if (next) _game.showIsland();
     });
     ref.listenManual(placementProvider, (prev, next) => _syncPlacement());
+    // The session sheet is looking at a side for a district: light up the row
+    // it would build next.
+    ref.listenManual(districtPreviewProvider, (prev, side) {
+      final town = ref.read(focusControllerProvider).value?.town;
+      _game.setRowHighlight(
+        side == null || town == null
+            ? const []
+            : TownRules.nextDistrictRow(town, side),
+      );
+    });
     // The free pass was just spent: explain it, once.
     ref.listenManual(focusControllerProvider, (prev, next) {
       final used = next.value?.active?.passUsed ?? false;

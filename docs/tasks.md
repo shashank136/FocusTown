@@ -1952,7 +1952,7 @@ Spec: `docs/spec.md` ("Districts"). Each task: tests first, then commit.
 
 ### T-V11.4 [x] Choose it in the session sheet
 - Do: an "Expand island" choice in the session sheet beside New building and the landmarks, with the direction picker (only directions with room), the rows the time makes, and the row about to be built highlighted on the island.
-- Done: an "Expand island" chip in the session sheet (always, until 3 districts): the sides that are ready or being built (only the one being built while a project runs), the rows the wheel time makes and the leftover, "N of 8 rows built", then Start (`FocusController.startDistrict`). Not done: highlighting the row about to be built on the island before starting (the sheet covers the island; a small addition later).
+- Done: an "Expand island" chip in the session sheet (always, until 3 districts): the sides that are ready or being built (only the one being built while a project runs), the rows the wheel time makes and the leftover, "N of 8 rows built", then Start (`FocusController.startDistrict`). Done later (2026-11-14): the row about to be built is lit up in gold on the island while a side is chosen in the sheet (`districtPreviewProvider`, `TownRules.nextDistrictRow`, `paintRowHighlight`, `TownGame.setRowHighlight` also moves the camera above the sheet).
 - Commit: `T-V11.4: expand island in the session sheet`
 
 ### T-V11.5 [x] Debug aid and docs

@@ -454,6 +454,41 @@ void main() {
     });
   });
 
+  group('the next row', () {
+    test('the first row of a side, then the one after the rows built', () {
+      final t = _city();
+      expect(
+        TownRules.nextDistrictRow(t, DistrictSide.east),
+        districtRow(DistrictSide.east, 0, 0),
+      );
+      var built = TownRules.beginDistrict(t, DistrictSide.east)!;
+      built = TownRules.applyDistrictMinutes(built, 130); // two rows
+      expect(
+        TownRules.nextDistrictRow(built, DistrictSide.east),
+        districtRow(DistrictSide.east, 0, 2),
+      );
+      // A side with nothing built still starts at its first row.
+      expect(
+        TownRules.nextDistrictRow(built, DistrictSide.west),
+        districtRow(DistrictSide.west, 0, 0),
+      );
+    });
+
+    test('after a finished district it is the next one on that side', () {
+      var t = TownRules.beginDistrict(_city(), DistrictSide.west)!;
+      t = TownRules.applyDistrictMinutes(t, 480);
+      expect(
+        TownRules.nextDistrictRow(t, DistrictSide.west),
+        districtRow(DistrictSide.west, 1, 0),
+      );
+    });
+
+    test('nothing where there is no room', () {
+      final t = _city(done: [DistrictSide.east]);
+      expect(TownRules.nextDistrictRow(t, DistrictSide.east), isEmpty);
+    });
+  });
+
   group('live land', () {
     test('the rows a running session has reached so far', () {
       final t = TownRules.beginDistrict(_city(), DistrictSide.east)!;

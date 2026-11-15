@@ -61,3 +61,47 @@ void paintPlotOutlines(
       );
   }
 }
+
+/// Lights up the [parcels] (the row a district is about to build) on the
+/// ground: a gold fill and outline over each square, seen from [rotation].
+void paintRowHighlight(
+  Canvas canvas,
+  List<Parcel> parcels, {
+  required double tile,
+  required Vec2 origin,
+  ViewRotation rotation = ViewRotation.none,
+}) {
+  final fill = Paint()..color = const Color(0x77FFD54F);
+  final stroke = Paint()
+    ..style = PaintingStyle.stroke
+    ..strokeWidth = 3
+    ..color = const Color(0xFFFFB300);
+  for (final p in parcels) {
+    final (vx, vy, _, _) = rotation.rect(
+      parcelOrigin(p.gx),
+      parcelOrigin(p.gy),
+      kPlotSize,
+      kPlotSize,
+    );
+    Offset at(int dx, int dy) {
+      final v = project(
+        (vx + dx).toDouble(),
+        (vy + dy).toDouble(),
+        1,
+        tile,
+        origin,
+      );
+      return Offset(v.x, v.y);
+    }
+
+    final path = Path()
+      ..moveTo(at(0, 0).dx, at(0, 0).dy)
+      ..lineTo(at(kPlotSize, 0).dx, at(kPlotSize, 0).dy)
+      ..lineTo(at(kPlotSize, kPlotSize).dx, at(kPlotSize, kPlotSize).dy)
+      ..lineTo(at(0, kPlotSize).dx, at(0, kPlotSize).dy)
+      ..close();
+    canvas
+      ..drawPath(path, fill)
+      ..drawPath(path, stroke);
+  }
+}

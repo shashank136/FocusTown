@@ -4,6 +4,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/app/district_preview.dart';
 import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
@@ -11,6 +12,7 @@ import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
 import 'package:focus_town/data/town_repository.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -187,6 +189,22 @@ void main() {
     // Same size, so they read as one row.
     expect(tester.getSize(landmarks).height, tester.getSize(start).height);
     expect(tester.getSize(recenter).height, tester.getSize(start).height);
+  });
+
+  testWidgets('a previewed district side lights up the next row', (
+    tester,
+  ) async {
+    final c = await _pump(tester);
+    expect(_game.renderer.rowHighlight, isEmpty);
+    c.read(districtPreviewProvider.notifier).set(DistrictSide.east);
+    await tester.pump();
+    expect(_game.renderer.rowHighlight, districtRow(DistrictSide.east, 0, 0));
+    c.read(districtPreviewProvider.notifier).set(DistrictSide.north);
+    await tester.pump();
+    expect(_game.renderer.rowHighlight, districtRow(DistrictSide.north, 0, 0));
+    c.read(districtPreviewProvider.notifier).set(null);
+    await tester.pump();
+    expect(_game.renderer.rowHighlight, isEmpty);
   });
 
   testWidgets('the turn buttons look at the island from the other sides', (

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:focus_town/app/district_preview.dart';
 import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/session_setup.dart';
@@ -42,10 +43,20 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
   late Landmark? _landmark = widget.landmark;
   bool _expand = false; // the time goes into growing the island
   DistrictSide? _side;
+  DistrictSide? _previewed; // the side lit up on the island
+  late final DistrictPreview _preview;
+
+  @override
+  void initState() {
+    super.initState();
+    _preview = ref.read(districtPreviewProvider.notifier);
+  }
 
   @override
   void dispose() {
     _wheel?.dispose();
+    // The island stops lighting up a row once the sheet is gone.
+    unawaited(Future.microtask(() => _preview.set(null)));
     super.dispose();
   }
 
@@ -98,6 +109,14 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         : sides.contains(building)
         ? building!
         : (sides.isEmpty ? null : sides.first);
+    // Tell the island which side to light up (after this frame).
+    final previewSide = expand ? side : null;
+    if (previewSide != _previewed) {
+      _previewed = previewSide;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _preview.set(previewSide);
+      });
+    }
     return SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -441,6 +441,15 @@ class TownRules {
     return DistrictState.ready;
   }
 
+  /// The 8 squares of the row that [side] would build next (empty when the
+  /// side has no room left): the first row after the ones already built.
+  static List<Parcel> nextDistrictRow(TownState town, DistrictSide side) {
+    final index = town.districts.where((d) => d == side).length;
+    final built = builtRows(town, side);
+    if (!districtFits(side, index) || built >= kDistrictRows) return const [];
+    return districtRow(side, index, built);
+  }
+
   /// Starts (or goes on with) the district on [side]. On another side than
   /// the one being built, the minutes toward that side's next row are lost
   /// and the rows already built stay; the new side goes on from the rows it

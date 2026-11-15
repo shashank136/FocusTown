@@ -325,6 +325,36 @@ class TownGame extends FlameGame
     _redraw = true;
   }
 
+  /// Lights up [row] on the ground (empty turns it off). A row that is lit up
+  /// is brought into view, above the session sheet that opened it.
+  void setRowHighlight(List<Parcel> row) {
+    renderer.setRowHighlight(row);
+    _redraw = true;
+    final cam = renderer.camera;
+    if (row.isEmpty || cam == null) return;
+    var minX = double.infinity;
+    var minY = double.infinity;
+    var maxX = -double.infinity;
+    var maxY = -double.infinity;
+    for (final p in row) {
+      final x = parcelOrigin(p.gx);
+      final y = parcelOrigin(p.gy);
+      minX = math.min(minX, x.toDouble());
+      minY = math.min(minY, y.toDouble());
+      maxX = math.max(maxX, (x + kPlotSize).toDouble());
+      maxY = math.max(maxY, (y + kPlotSize).toDouble());
+    }
+    // The row with 12 tiles round it, so some island shows beside it.
+    final region = renderer.turnedRect(
+      Rect.fromLTRB(minX - 12, minY - 12, maxX + 12, maxY + 12),
+    );
+    final target = TownCamera(cam.viewSize, box: cam.box)
+      ..fitToRegion(region)
+      // The sheet covers the lower part of the screen: look from higher up.
+      ..panBy(Vec2(0, -cam.viewSize.y * 0.18));
+    _transition = CameraTransition(from: cam.pose, to: target.pose);
+  }
+
   /// Glides out to show the whole island (choosing land).
   void showIsland() {
     final cam = renderer.camera;

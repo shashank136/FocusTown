@@ -64,6 +64,7 @@ class TownRenderer {
   int _worldVersion = 0;
   TownState? _town;
   List<Parcel> _extraLand = const [];
+  List<Parcel> _rowHighlight = const [];
   ActiveSite? _site;
   Set<int> _regionPlots = {for (var i = 0; i < 6; i++) i};
   TownCamera? _camera;
@@ -97,6 +98,14 @@ class TownRenderer {
     _camera?.box = _box;
     _rebuild();
   }
+
+  /// The squares lit up as the row a district is about to build.
+  List<Parcel> get rowHighlight => _rowHighlight;
+
+  /// Lights up [row] on the ground (an empty list turns it off). Drawn over the
+  /// cached town every frame, so it never re-records it.
+  // ignore: use_setters_to_change_properties, a command, not a property
+  void setRowHighlight(List<Parcel> row) => _rowHighlight = row;
 
   /// The blocks that show a face, back to front, as drawn (a spy for tests).
   List<VisibleBlock> get visibleBlocks => _visible ?? const [];
@@ -288,6 +297,15 @@ class TownRenderer {
         origin: cam.origin,
       );
     }
+    if (_rowHighlight.isNotEmpty) {
+      paintRowHighlight(
+        canvas,
+        _rowHighlight,
+        tile: cam.tile,
+        origin: cam.origin,
+        rotation: _rotation,
+      );
+    }
     if (_workers.isNotEmpty) {
       paintWorkers(
         canvas,
@@ -343,6 +361,9 @@ class TownRenderer {
       ),
     );
   }
+
+  /// A rectangle of world tiles as it lies in the current view.
+  Rect turnedRect(Rect r) => _turned(r);
 
   // A rectangle of world tiles as it lies in the current view.
   Rect _turned(Rect r) {
