@@ -164,8 +164,8 @@ VoxelWorld buildTownWorld(
   ];
   final inUse = {...TownRules.occupied(town)};
   if (making != null && making.garden) {
-    final base = kBaseCells.indexOf((making.gx, making.gy));
-    if (base >= 0) inUse.add(base);
+    final plot = rawPlotAtCell(making.gx, making.gy, town.parcels);
+    if (plot != null) inUse.add(plot);
   }
   if (sitePlot != null) {
     inUse.addAll(

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session.dart';
@@ -103,5 +104,52 @@ void main() {
     // Cell (4,4) with its neighbours (5,4), (4,5), (5,5): the garden is one.
     final anchor = plotAtCell(4, 4, done.parcels)!;
     expect(footprintOf(BuildingTier.castle, anchor, done.parcels), isNull);
+  });
+
+  group('forest squares of new district land', () {
+    // Two rows of the east district: parcels at columns 8 and 9.
+    final land = [
+      ...districtRow(DistrictSide.east, 0, 0),
+      ...districtRow(DistrictSide.east, 0, 1),
+    ];
+    TownState town([List<TownBuilding> buildings = const []]) =>
+        TownState.initial().copyWith(parcels: land, buildings: buildings);
+    // The garden marker for the parcel at column 9, row 2.
+    const mark = Parcel(9, 2, garden: true);
+    final plot = plotAtCell(9, 2, land)!;
+
+    test('a claimed forest square can become a garden', () {
+      expect(TownRules.canClaim(town(), mark), isTrue);
+      // Only squares that are land, only forest squares with nothing on them.
+      expect(
+        TownRules.canClaim(town(), const Parcel(20, 2, garden: true)),
+        isFalse,
+      );
+      final hut = TownBuilding(
+        id: 'h',
+        tier: BuildingTier.hut,
+        status: BuildingStatus.complete,
+        plotIndex: plot,
+      );
+      expect(TownRules.canClaim(town([hut]), mark), isFalse);
+    });
+
+    test('it stops being a plot, and no other plot changes its number', () {
+      final done = TownRules.applyLandCompleted(town(), _session(mark));
+      expect(plotAtCell(9, 2, done.parcels), isNull);
+      expect(TownRules.occupied(done), contains(plot));
+      expect(TownRules.isPlotFree(done, plot), isFalse);
+      // Squares after it keep their plot numbers (buildings stand on them).
+      for (final p in land) {
+        if (p.gx == 9 && p.gy == 2) continue;
+        expect(
+          plotAtCell(p.gx, p.gy, done.parcels),
+          plotAtCell(p.gx, p.gy, land),
+          reason: '${p.gx},${p.gy}',
+        );
+      }
+      // It cannot be made a garden twice.
+      expect(TownRules.canClaim(done, mark), isFalse);
+    });
   });
 }

@@ -67,8 +67,7 @@ class TownRules {
     for (final b in town.buildings)
       ...(footprintOf(b.tier, b.plotIndex, town.parcels) ?? [b.plotIndex]),
     for (final p in town.parcels)
-      if (p.garden && kBaseCells.contains((p.gx, p.gy)))
-        kBaseCells.indexOf((p.gx, p.gy)),
+      if (p.garden) ?rawPlotAtCell(p.gx, p.gy, town.parcels),
   };
 
   /// Whether the town may still take a building of [tier]: some block of free
@@ -250,15 +249,13 @@ class TownRules {
   /// Minutes it takes to turn a forest square of the island into a garden.
   static const gardenMinutes = 15;
 
-  static bool _isIsland(Parcel p) => kBaseCells.contains((p.gx, p.gy));
-
-  /// Whether [parcel] can be made: a free forest square of the island that is
-  /// to become a garden. (The island grows with districts, not square by
-  /// square.)
-  static bool canClaim(TownState town, Parcel parcel) =>
-      _isIsland(parcel) &&
-      parcel.garden &&
-      !occupied(town).contains(kBaseCells.indexOf((parcel.gx, parcel.gy)));
+  /// Whether [parcel] can be made: a forest square (of the island, or of land
+  /// a district added) with nothing on it, that is to become a garden.
+  static bool canClaim(TownState town, Parcel parcel) {
+    if (!parcel.garden) return false;
+    final plot = rawPlotAtCell(parcel.gx, parcel.gy, town.parcels);
+    return plot != null && !occupied(town).contains(plot);
+  }
 
   /// Applies a completed garden [session]: its square becomes a garden. A
   /// square that cannot be made one any more changes nothing.

@@ -10,8 +10,8 @@ import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town_rules.dart';
 
 /// A build the user is about to start: how long, and which plot (if chosen).
-/// With [garden] it is a garden session: the chosen plot, a forest square of
-/// the island, becomes open space.
+/// With [garden] it is a garden session: the chosen plot, a forest square,
+/// becomes open space.
 class Placement {
   /// Creates a pending placement.
   const new(
@@ -67,7 +67,7 @@ class PlacementController extends Notifier<Placement?> {
     state = Placement(minutes, look: look, landmark: landmark);
   }
 
-  /// Starts choosing a forest square of the island to turn into a garden.
+  /// Starts choosing a forest square to turn into a garden.
   /// Ignored while a session is running.
   void beginGarden() {
     final focus = ref.read(focusControllerProvider).value;
@@ -80,10 +80,7 @@ class PlacementController extends Notifier<Placement?> {
     final current = state;
     final focus = ref.read(focusControllerProvider).value;
     if (current == null || focus == null) return;
-    if (!TownRules.isPlotFree(focus.town, i, current.tier) ||
-        (current.garden && i >= kBaseCells.length)) {
-      return;
-    }
+    if (!TownRules.isPlotFree(focus.town, i, current.tier)) return;
     state = Placement(
       current.minutes,
       plot: i,
@@ -104,7 +101,9 @@ class PlacementController extends Notifier<Placement?> {
     if (current == null || plot == null) return;
     final controller = ref.read(focusControllerProvider.notifier);
     if (current.garden) {
-      final cell = kBaseCells[plot];
+      // The square of this plot: of the island, or of land a district added.
+      final town = ref.read(focusControllerProvider).requireValue.town;
+      final cell = plotCell(plot, town.parcels)!;
       await controller.startLand(Parcel(cell.$1, cell.$2, garden: true));
     } else if (current.landmark != null) {
       await controller.startLandmark(

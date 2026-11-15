@@ -49,12 +49,19 @@ List<(int, int)> _sortedCells() {
 /// The plot at grid cell ([gx], [gy]), or null when the cell is not a plot
 /// (open sea, unclaimed land, or a garden).
 int? plotAtCell(int gx, int gy, List<Parcel> parcels) {
+  final raw = rawPlotAtCell(gx, gy, parcels);
+  if (raw == null) return null;
+  // A square turned into a garden is no plot, but keeps its number so that the
+  // plots after it do not move.
+  final garden = parcels.any((p) => p.garden && p.gx == gx && p.gy == gy);
+  return garden ? null : raw;
+}
+
+/// The plot number the cell ([gx], [gy]) has (or had, once it became a
+/// garden), or null when it was never a plot.
+int? rawPlotAtCell(int gx, int gy, List<Parcel> parcels) {
   final base = kBaseCells.indexOf((gx, gy));
-  if (base >= 0) {
-    // A square of the island that was turned into a garden is no plot.
-    final garden = parcels.any((p) => p.garden && p.gx == gx && p.gy == gy);
-    return garden ? null : base;
-  }
+  if (base >= 0) return base;
   var k = kBaseCells.length;
   for (final p in parcels) {
     if (p.garden) continue;

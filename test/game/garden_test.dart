@@ -206,6 +206,36 @@ void main() {
     }
   });
 
+  test('the same on land a district added', () {
+    final land = [
+      ...districtRow(DistrictSide.east, 0, 0),
+      ...districtRow(DistrictSide.east, 0, 1),
+    ];
+    const cell = Parcel(9, 3, garden: true);
+    final session = Session(
+      id: 'g',
+      plannedMinutes: 15,
+      tier: BuildingTier.hut,
+      workersAssigned: 0,
+      state: SessionState.running,
+      startedAt: TimeStamp(DateTime(2026), Duration.zero),
+      land: cell,
+    );
+    final w = buildTownWorld(_town(land), active: session);
+    final ox = parcelOrigin(9);
+    final oy = parcelOrigin(3);
+    expect(flowerColors, contains(w.get(ox + 3, oy + 3, 0)));
+    for (final b in w.blocks) {
+      if (b.z >= 3 && b.x >= ox && b.x < ox + 7 && b.y >= oy && b.y < oy + 7) {
+        expect(
+          b.material,
+          isNot(Blocks.leaves),
+          reason: '${b.x},${b.y},${b.z}',
+        );
+      }
+    }
+  });
+
   test('while a garden session runs its square is already a garden', () {
     const cell = Parcel(5, 5, garden: true);
     final session = Session(

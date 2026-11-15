@@ -6,6 +6,7 @@ import 'package:focus_town/app/placement.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/data/database.dart';
 import 'package:focus_town/data/mappers.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -19,8 +20,8 @@ late FakeClock _clock;
 const _cell = Parcel(5, 5, garden: true);
 final int _plot = plotAtCell(5, 5, const [])!;
 
-Future<ProviderContainer> _ready() async {
-  final seed = TownState.initial();
+Future<ProviderContainer> _ready({List<Parcel> parcels = const []}) async {
+  final seed = TownState.initial().copyWith(parcels: parcels);
   await _db.transaction(() async {
     await _db
         .into(_db.towns)
@@ -117,4 +118,25 @@ void main() {
       expect(c.read(placementProvider), isNull);
     },
   );
+
+  test('forest squares of district land can be chosen too', () async {
+    final land = [
+      ...districtRow(DistrictSide.east, 0, 0),
+      ...districtRow(DistrictSide.east, 0, 1),
+    ];
+    final c = await _ready(parcels: land);
+    final p = c.read(placementProvider.notifier)
+      ..beginGarden()
+      ..select(64); // the first square of the land is plot 64
+    expect(c.read(placementProvider)!.plot, 64);
+    p
+      ..select(79)
+      ..select(80); // there is no plot 80
+    expect(c.read(placementProvider)!.plot, 79);
+    p.select(70);
+    await p.confirm();
+    final s = c.read(focusControllerProvider).requireValue.active!;
+    // Plot 70 is the 7th square of land: column 8, row 6.
+    expect(s.land, Parcel(land[6].gx, land[6].gy, garden: true));
+  });
 }

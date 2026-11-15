@@ -425,7 +425,7 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 
 ## Gardens on forest squares (decided 2026-11-12)
 
-- A free forest square of the starting island can be turned into a garden for good: a land session of 15 minutes ("Make garden…" on the session sheet), nothing at risk. It is the same land session as claiming land, with a parcel that lies inside the starting island.
+- A free forest square (of the starting island, or of land a district added) can be turned into a garden for good: a land session of 15 minutes ("Make garden…" on the session sheet), nothing at risk. It is a land session for that square: a garden marker is added over the square's parcel, so the square keeps its plot number and no other plot moves.
 - The square must have nothing on it (no building and no ruin) and not be a garden already. Once done it is no plot any more: nothing can be built on it, and a castle or landmark block cannot include it. The number of plots stays 64 plus the claimed non-garden parcels.
 - A garden is colourful: the ground is a carpet of flowers (never grass) and each garden look adds trees, paths or water, and flowers in five colours.
 

@@ -498,6 +498,21 @@ void main() {
       expect(_game.renderer.plotOutlines, {for (var i = 1; i < 64; i++) i});
     });
 
+    testWidgets('with district land, its forest squares are outlined too', (
+      tester,
+    ) async {
+      final land = districtRow(DistrictSide.east, 0, 0);
+      await _pump(tester, seed: TownState.initial().copyWith(parcels: land));
+      final c = ProviderScope.containerOf(
+        tester.element(find.byType(HomeScreen)),
+      );
+      c.read(placementProvider.notifier).beginGarden();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+      // The island's free squares, and the 8 squares of the land.
+      expect(_game.renderer.plotOutlines, {for (var i = 1; i < 72; i++) i});
+    });
+
     testWidgets('tapping a square selects it, Confirm starts the garden', (
       tester,
     ) async {

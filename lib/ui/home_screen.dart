@@ -183,14 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       placement == null || town == null
           ? const {}
           : {
-              for (
-                var i = 0;
-                i <
-                    (placement.garden
-                        ? kBaseCells.length
-                        : TownRules.plotCountOf(town));
-                i++
-              )
+              for (var i = 0; i < TownRules.plotCountOf(town); i++)
                 if (TownRules.isPlotFree(town, i, placement.tier)) i,
             },
       placement?.plot,
