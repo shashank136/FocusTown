@@ -390,35 +390,20 @@ class TownGame extends FlameGame
     if (renderer.rotation != before) onTurned?.call(renderer.rotation);
   }
 
-  // One finger: the first sideways glide of a touch turns the view, the first
-  // up and down glide pans it, and the touch stays that way till it is lifted.
-  bool? _glideTurns;
-  Vec2 _glideTravel = const Vec2(0, 0);
+  // One finger turns the view by its sideways movement, in any direction it
+  // glides; panning and zooming take two fingers.
+  bool _glided = false;
 
   /// One finger moved by [delta] pixels.
   void onOneFinger(Vec2 delta) {
-    var turns = _glideTurns;
-    var move = delta;
-    if (turns == null) {
-      _glideTravel = Vec2(_glideTravel.x + delta.x, _glideTravel.y + delta.y);
-      final far = _glideTravel.x.abs() + _glideTravel.y.abs();
-      if (far < 8) return;
-      turns = _glideTravel.x.abs() > _glideTravel.y.abs() * 1.2;
-      _glideTurns = turns;
-      move = _glideTravel;
-    }
-    if (turns) {
-      spinBy(-move.x * _turnPerPixel);
-    } else {
-      onPan(move);
-    }
+    _glided = true;
+    spinBy(-delta.x * _turnPerPixel);
   }
 
   /// The finger is up (moving at [velocityX] pixels a second sideways).
   void endOneFinger({double velocityX = 0}) {
-    final turned = _glideTurns ?? false;
-    _glideTurns = null;
-    _glideTravel = const Vec2(0, 0);
+    final turned = _glided;
+    _glided = false;
     if (turned) releaseSpin(-velocityX * _turnPerPixel);
   }
 

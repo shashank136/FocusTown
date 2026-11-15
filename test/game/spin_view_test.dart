@@ -148,26 +148,26 @@ void main() {
       expect(g.spin, lessThan(0));
     });
 
-    test('an up and down glide pans, and does not turn', () {
+    test('a slanting glide turns it too, by its sideways part', () {
       final g = _game();
       final before = g.renderer.camera!.origin;
       g
-        ..onOneFinger(const Vec2(1, 30))
-        ..onOneFinger(const Vec2(2, 30));
-      expect(g.spin, 0);
-      expect(g.renderer.camera!.origin, isNot(before));
+        ..onOneFinger(const Vec2(-10, 40))
+        ..onOneFinger(const Vec2(-10, 40));
+      expect(g.spin, closeTo(20 * 0.006, 1e-9));
+      expect(g.renderer.camera!.origin, before);
     });
 
-    test('the first move decides, until the finger is lifted', () {
-      final g = _game()
-        ..onOneFinger(const Vec2(30, 1))
-        ..onOneFinger(const Vec2(0, 60)); // now going down: still a turn
-      final spin = g.spin;
+    test('a glide straight up and down leaves the view as it is', () {
+      final g = _game();
+      final before = g.renderer.camera!.origin;
       g
-        ..endOneFinger()
-        ..onOneFinger(const Vec2(0, 30)) // a new glide, now down: a pan
-        ..onOneFinger(const Vec2(0, 30));
-      expect(g.spin, spin);
+        ..onOneFinger(const Vec2(0, 50))
+        ..endOneFinger();
+      _frames(g);
+      expect(g.spin, 0);
+      expect(g.renderer.rotation, ViewRotation.none);
+      expect(g.renderer.camera!.origin, before);
     });
 
     test('lifting the finger lets the view settle', () {
