@@ -61,14 +61,138 @@ class TownRules {
   static int plotCountOf(TownState town) =>
       plotCount + town.parcels.where((p) => !p.garden).length;
 
+  static Footprint _tableSize(Landmark l) => l.footprint;
+
+  // Resolves what every building really covers. First every building claims
+  // what it always had: the plots of its tier, or a landmark's old 2 x 2
+  // block. Then each landmark takes its new footprint when that area is on the
+  // island, in one piece, and free of everything else (a garden, another
+  // building's own area, or an earlier landmark that already grew); otherwise
+  // it keeps its old block. A smaller new footprint gives the rest back.
+  // [sizeOf] gives a landmark's footprint (the table by default).
+  static ({Map<String, Footprint> sizes, Set<int> taken}) _resolve(
+    TownState town,
+    Footprint Function(Landmark) sizeOf,
+  ) {
+    final taken = <int>{
+      for (final p in town.parcels)
+        if (p.garden) ?rawPlotAtCell(p.gx, p.gy, town.parcels),
+    };
+    final sizes = <String, Footprint>{};
+    final own = <String, List<int>>{};
+    for (final b in town.buildings) {
+      final old = b.landmark == null ? footprintFor(b.tier) : Footprint.block;
+      sizes[b.id] = old;
+      own[b.id] = footprintOf(old, b.plotIndex, town.parcels) ?? [b.plotIndex];
+      taken.addAll(own[b.id]!);
+    }
+    for (final b in town.buildings) {
+      final l = b.landmark;
+      if (l == null) continue;
+      final want = sizeOf(l);
+      if (want == sizes[b.id]) continue;
+      final plots = footprintOf(want, b.plotIndex, town.parcels);
+      if (plots == null) continue;
+      final mine = own[b.id]!;
+      if (plots.any((p) => taken.contains(p) && !mine.contains(p))) continue;
+      taken
+        ..removeAll(mine)
+        ..addAll(plots);
+      sizes[b.id] = want;
+    }
+    return (sizes: sizes, taken: taken);
+  }
+
   /// The plots covered by the buildings and ruins of [town], and the squares
   /// of the island that were turned into gardens.
-  static Set<int> occupied(TownState town) => {
-    for (final b in town.buildings)
-      ...(footprintOf(b.footprint, b.plotIndex, town.parcels) ?? [b.plotIndex]),
-    for (final p in town.parcels)
-      if (p.garden) ?rawPlotAtCell(p.gx, p.gy, town.parcels),
-  };
+  static Set<int> occupied(TownState town) => _resolve(town, _tableSize).taken;
+
+  /// The footprint each building of [town] really covers, by building id (a
+  /// landmark's own, or its old 2 x 2 while its new area is not free).
+  /// [sizeOf] overrides the landmark table, for tests.
+  static Map<String, Footprint> footprints(
+    TownState town, {
+    Footprint Function(Landmark)? sizeOf,
+  }) => _resolve(town, sizeOf ?? _tableSize).sizes;
+
+  /// The footprint [b] really covers in [town].
+  static Footprint footprintOfBuilding(TownState town, TownBuilding b) =>
+      footprints(town)[b.id] ?? b.footprint;
+
+  /// Moves every landmark whose new footprint is not free where it stands to
+  /// the nearest free area of that size, so it never overlaps another
+  /// building or a garden. A landmark with no such area stays on its old 2 x 2
+  /// and is tried again the next time. The landmark [except] (the one being
+  /// worked on) is left alone. [sizeOf] overrides the landmark table, for
+  /// tests.
+  static TownState settleLandmarks(
+    TownState town, {
+    Footprint Function(Landmark)? sizeOf,
+    Landmark? except,
+  }) {
+    final size = sizeOf ?? _tableSize;
+    var t = town;
+    for (final b in town.buildings) {
+      final l = b.landmark;
+      if (l == null || l == except) continue;
+      final want = size(l);
+      if (_resolve(t, size).sizes[b.id] == want) continue;
+      final others = t.copyWith(
+        buildings: [
+          for (final x in t.buildings)
+            if (x.id != b.id) x,
+        ],
+      );
+      final spot = _nearestFree(others, want, b.plotIndex, size);
+      if (spot == null || spot == b.plotIndex) continue;
+      t = t.copyWith(
+        buildings: [
+          for (final x in t.buildings)
+            if (x.id == b.id)
+              TownBuilding(
+                id: x.id,
+                tier: x.tier,
+                status: x.status,
+                plotIndex: spot,
+                look: x.look,
+                landmark: x.landmark,
+                progress: x.progress,
+              )
+            else
+              x,
+        ],
+      );
+    }
+    return t;
+  }
+
+  // The anchor plot nearest to plot [from] whose [want] area is on the island
+  // and free of what [town] holds; ties go to the lower plot.
+  static int? _nearestFree(
+    TownState town,
+    Footprint want,
+    int from,
+    Footprint Function(Landmark) sizeOf,
+  ) {
+    final taken = _resolve(town, sizeOf).taken;
+    final origin = plotCell(from, town.parcels);
+    if (origin == null) return null;
+    int? best;
+    var bestDistance = 1 << 30;
+    for (var i = 0; i < plotCountOf(town); i++) {
+      final area = footprintOf(want, i, town.parcels);
+      if (area == null || area.any(taken.contains)) continue;
+      final c = plotCell(i, town.parcels)!;
+      final dx = c.$1 - origin.$1;
+      final dy = c.$2 - origin.$2;
+      final d = dx * dx + dy * dy;
+      if (d < bestDistance) {
+        best = i;
+        bestDistance = d;
+      }
+    }
+    return best;
+  }
 
   /// Whether the town may still take a building of [size]: some area of free
   /// plots in one piece can hold it. Space is the only limit; the player
@@ -221,7 +345,11 @@ class TownRules {
   static TownBuilding? _ruinOn(TownState town, int plot) {
     for (final b in town.buildings) {
       if (b.status != BuildingStatus.ruin) continue;
-      final plots = footprintOf(b.footprint, b.plotIndex, town.parcels);
+      final plots = footprintOf(
+        footprintOfBuilding(town, b),
+        b.plotIndex,
+        town.parcels,
+      );
       if ((plots ?? [b.plotIndex]).contains(plot)) return b;
     }
     return null;

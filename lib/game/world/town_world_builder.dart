@@ -196,8 +196,7 @@ VoxelWorld buildTownWorld(
     // view, so no trunk stands within 4 tiles of a building or its site: the
     // road round it stays in sight.
     clearings: [
-      for (final b in town.buildings)
-        ..._clearing(plotForBuilding(b, town.parcels)),
+      for (final b in town.buildings) ..._clearing(plotForBuilding(town, b)),
       if (sitePlot != null) ..._clearing(sitePlot),
     ],
     bushZones: [
@@ -235,7 +234,11 @@ VoxelWorld buildTownWorld(
     } else {
       // A castle ruin is a ruin on each plot of its block.
       for (final i
-          in footprintOf(b.footprint, b.plotIndex, town.parcels) ??
+          in footprintOf(
+                TownRules.footprintOfBuilding(town, b),
+                b.plotIndex,
+                town.parcels,
+              ) ??
               [b.plotIndex]) {
         final q = plotFor(i, town.parcels);
         buildRuin(w, q.originX, q.originY);

@@ -4,6 +4,7 @@ import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
+import 'package:focus_town/domain/town_rules.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
 /// Width and depth of the town map in tiles.
@@ -110,9 +111,13 @@ Plot plotForFootprint(int index, Footprint size, List<Parcel> parcels) {
 Plot plotForTier(int index, BuildingTier tier, List<Parcel> parcels) =>
     plotForFootprint(index, footprintFor(tier), parcels);
 
-/// The plot [b] stands on: its own footprint, so a landmark's rectangle.
-Plot plotForBuilding(TownBuilding b, List<Parcel> parcels) =>
-    plotForFootprint(b.plotIndex, b.footprint, parcels);
+/// The plot [b] stands on in [town]: what it really covers, so a landmark's
+/// rectangle (or its old 2 x 2 while its new area is not free).
+Plot plotForBuilding(TownState town, TownBuilding b) => plotForFootprint(
+  b.plotIndex,
+  TownRules.footprintOfBuilding(town, b),
+  town.parcels,
+);
 
 /// The plot covering tile ([x], [y]) in a town with the claimed [parcels], or
 /// null for roads, scenery and unclaimed land.

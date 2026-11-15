@@ -2004,7 +2004,8 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Tests first: a 3 x 2 and a 5 x 4 footprint on land with and without a road, a garden or a building in the way; `plotForTier` for landmarks; the ring road runs round a rectangle; the placement outline for a rectangle.
 - Commit: `T-V14.1: rectangular footprints`
 
-### T-V14.2 [ ] Landmarks that grew move to room
+### T-V14.2 [x] Landmarks that grew move to room
+- Done 2026-11-14: `TownRules.footprints` (what each building really covers: a landmark takes its new footprint only when that area is on the island, in one piece and free of every other building's own area, a garden or an earlier landmark that already grew; else its old 2 x 2), `footprintOfBuilding`, `settleLandmarks` (moves a landmark to the nearest free area of its size, ties to the lower plot; the landmark with a running session stays), run when the app opens in `FocusController.build`. `occupied`, the ring roads, clearings and the world builder use the real footprint (`plotForBuilding(town, b)`). The classic 12 x 12 designs stay in `landmark_defs.dart` for the old-block case; T-V14.5 picks the design by the real footprint. Tests: `test/domain/settle_landmarks_test.dart`.
 - Do: a pure `TownRules.settleLandmarks` run when the app opens (like the corner fill): a finished or running landmark whose footprint at its anchor no longer fits moves to the nearest free area of its size; if there is none it keeps its old 2 x 2 square and its old design (`landmark_defs.dart` stays as the classic design) and is tried again on every open.
 - Tests first: grows in place when free, moves when blocked, stays classic when there is no room, moves later when room appears, never overlaps another building.
 - Commit: `T-V14.2: settle landmarks`

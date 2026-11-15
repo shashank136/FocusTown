@@ -146,7 +146,7 @@ Iterable<Tile> _ring(Plot p) sync* {
 
 Set<Tile> _build(TownState town, Plot? site) {
   final blocks = [
-    for (final b in town.buildings) plotForBuilding(b, town.parcels),
+    for (final b in town.buildings) plotForBuilding(town, b),
     ?site,
   ];
   // The two main roads run on across any land added to the island, as wide
