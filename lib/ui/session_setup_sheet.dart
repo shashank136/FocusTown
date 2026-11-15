@@ -244,6 +244,13 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
     ),
   );
 
+  // A side's name, and how many of its rows are built once it has some.
+  String _sideLabel(TownState town, DistrictSide d) {
+    final name = '${d.name[0].toUpperCase()}${d.name.substring(1)}';
+    final rows = TownRules.builtRows(town, d);
+    return rows > 0 ? '$name · $rows/$kDistrictRows' : name;
+  }
+
   // The time goes into a district on [side]: how many whole rows it makes
   // (a district is 8 rows of 8 squares, 64 plots), and the minutes left over,
   // which count toward the next row. Nothing is at risk but those minutes.
@@ -275,7 +282,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         children: [
           for (final d in sides)
             ChoiceChip(
-              label: Text('${d.name[0].toUpperCase()}${d.name.substring(1)}'),
+              label: Text(_sideLabel(town, d)),
               selected: d == side,
               onSelected: (_) => setState(() => _side = d),
             ),

@@ -716,7 +716,8 @@ void main() {
       await _open(tester, seed: built);
       await tester.tap(find.widgetWithText(ChoiceChip, 'Expand island'));
       await tester.pump();
-      for (final side in ['North', 'East', 'South', 'West']) {
+      // A side with rows built says how many on its chip.
+      for (final side in ['North', 'East', 'South · 2/8', 'West']) {
         expect(find.widgetWithText(ChoiceChip, side), findsOneWidget);
       }
       // It opens on the side being built, with its rows.
@@ -727,7 +728,7 @@ void main() {
       expect(find.text('2 of 8 rows built'), findsNothing);
       expect(find.textContaining('Switching drops the 10 min'), findsOneWidget);
       // Going back to a side that has rows shows them again.
-      await tester.tap(find.widgetWithText(ChoiceChip, 'South'));
+      await tester.tap(find.widgetWithText(ChoiceChip, 'South · 2/8'));
       await tester.pump();
       expect(find.text('2 of 8 rows built'), findsOneWidget);
       expect(find.textContaining('Switching drops'), findsNothing);
