@@ -172,45 +172,6 @@ void main() {
       expect(wy, closeTo(32, 12));
     });
 
-    group('twisting two fingers', () {
-      void frames(TownGame g) {
-        for (var i = 0; i < 20; i++) {
-          g
-            ..update(0.05)
-            ..render(ui.Canvas(ui.PictureRecorder()));
-        }
-      }
-
-      test('a small twist while pinching changes nothing', () {
-        final g = _game()..onTwist(0.2);
-        frames(g);
-        expect(g.renderer.rotation, ViewRotation.none);
-      });
-
-      test('a clockwise twist turns right, an anticlockwise one left', () {
-        final right = _game()..onTwist(0.8);
-        frames(right);
-        expect(right.renderer.rotation, const ViewRotation(1));
-        final left = _game()..onTwist(-0.8);
-        frames(left);
-        expect(left.renderer.rotation, const ViewRotation(3));
-      });
-
-      test('one gesture turns once, the next gesture turns again', () {
-        final g = _game()
-          ..onTwist(0.8)
-          ..onTwist(1.5)
-          ..onTwist(2.5);
-        frames(g);
-        expect(g.renderer.rotation, const ViewRotation(1));
-        g
-          ..endTwist()
-          ..onTwist(0.8);
-        frames(g);
-        expect(g.renderer.rotation, const ViewRotation(2));
-      });
-    });
-
     test('turning back undoes a turn', () {
       final g = _game()
         ..rotate(1)

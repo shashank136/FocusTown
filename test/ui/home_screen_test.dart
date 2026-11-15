@@ -193,7 +193,7 @@ void main() {
     expect(tester.getSize(recenter).height, tester.getSize(start).height);
   });
 
-  testWidgets('the choose-a-plot card stays clear of the turn buttons', (
+  testWidgets('the choose-a-plot card stays clear of the compass and buttons', (
     tester,
   ) async {
     final c = await _pump(tester);
@@ -205,10 +205,10 @@ void main() {
       matching: find.byType(Card),
     );
     expect(card, findsOneWidget);
-    // The card ends before the column of compass and turn buttons begins, so
+    // The card ends before the column of compass and buttons begins, so
     // nothing of its text is hidden under them.
     final cardRight = tester.getTopRight(card).dx;
-    for (final tip in ['Turn left', 'Turn right', 'Recenter town']) {
+    for (final tip in ['Recenter town']) {
       expect(
         cardRight,
         lessThanOrEqualTo(tester.getTopLeft(find.byTooltip(tip)).dx),
@@ -233,29 +233,22 @@ void main() {
     expect(_game.renderer.rowHighlight, isEmpty);
   });
 
-  testWidgets('the turn buttons look at the island from the other sides', (
+  testWidgets('there are no turn buttons: a finger turns the island', (
     tester,
   ) async {
-    await _pump(tester, reducedMotion: true);
-    expect(_game.renderer.rotation, ViewRotation.none);
-    await tester.tap(find.byTooltip('Turn right'));
-    await tester.pump();
-    expect(_game.renderer.rotation, const ViewRotation(1));
-    await tester.tap(find.byTooltip('Turn right'));
-    await tester.tap(find.byTooltip('Turn right'));
-    await tester.tap(find.byTooltip('Turn right'));
-    await tester.pump();
-    expect(_game.renderer.rotation, ViewRotation.none); // all the way round
-    await tester.tap(find.byTooltip('Turn left'));
-    await tester.pump();
-    expect(_game.renderer.rotation, const ViewRotation(3));
+    await _pump(tester);
+    expect(find.byTooltip('Turn left'), findsNothing);
+    expect(find.byTooltip('Turn right'), findsNothing);
+    expect(find.byTooltip('Recenter town'), findsOneWidget);
   });
 
   testWidgets('a turn takes a moment, and the side it ends on is remembered', (
     tester,
   ) async {
     final c = await _pump(tester);
-    await tester.tap(find.byTooltip('Turn right'));
+    _game
+      ..spinBy(1)
+      ..releaseSpin();
     await tester.pump();
     expect(_game.renderer.rotation, ViewRotation.none); // not yet turned
     for (var i = 0; i < 20; i++) {
@@ -282,20 +275,14 @@ void main() {
     await _pump(tester, reducedMotion: true);
     expect(find.byType(Compass), findsOneWidget);
     final before = tester.widget<Compass>(find.byType(Compass)).rotation;
-    await tester.tap(find.byTooltip('Turn right'));
+    _game
+      ..spinBy(1)
+      ..releaseSpin();
     await tester.pump();
     expect(
       tester.widget<Compass>(find.byType(Compass)).rotation,
       isNot(before),
     );
-  });
-
-  testWidgets('the turn buttons stay while a session runs', (tester) async {
-    final c = await _pump(tester);
-    await c.read(focusControllerProvider.notifier).start(25);
-    await tester.pump();
-    expect(find.byTooltip('Turn right'), findsOneWidget);
-    expect(find.byTooltip('Turn left'), findsOneWidget);
   });
 
   testWidgets('a completed hut reaches the game as a new town', (tester) async {

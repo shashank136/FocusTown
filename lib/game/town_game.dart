@@ -343,25 +343,12 @@ class TownGame extends FlameGame
   }
 
   void _settle(double target) {
-    if (_spin == target) {
+    if (_spin == target || reducedMotion) {
       _finishSpin(target);
       return;
     }
     final turns = ((target - _spin).abs() / _quarter).clamp(0.0, 2.0);
     _spinTween = _SpinTween(_spin, target, 0.25 + 0.45 * turns);
-  }
-
-  /// Turns the view by [by] quarter turns, slowly (at once when the system
-  /// asked for less motion). Turns asked for during a turn are added to it.
-  void turn(int by) {
-    if (reducedMotion || guard.degraded) {
-      rotate(by);
-      onTurned?.call(renderer.rotation);
-      return;
-    }
-    _takeOver();
-    final resting = _spinTween?.to ?? _spin;
-    _settle((resting / _quarter).round() * _quarter + by * _quarter);
   }
 
   void _stepSpin(double dt) {
@@ -406,20 +393,6 @@ class TownGame extends FlameGame
     _glided = false;
     if (turned) releaseSpin(-velocityX * _turnPerPixel);
   }
-
-  static const _twistToTurn = 0.6; // radians, about 35 degrees
-  bool _twisted = false;
-
-  /// Two fingers twisted by [radians] since the gesture began (clockwise is
-  /// positive): far enough turns the view one step, once per gesture.
-  void onTwist(double radians) {
-    if (_twisted || radians.abs() < _twistToTurn) return;
-    _twisted = true;
-    turn(radians > 0 ? 1 : -1);
-  }
-
-  /// The two-finger gesture is over: the next one may turn again.
-  void endTwist() => _twisted = false;
 
   /// Turns the view by [by] quarter turns at once, keeping the camera on the
   /// same spot of the island.
@@ -694,13 +667,11 @@ class TownGame extends FlameGame
   @override
   void onScaleStart(ScaleStartInfo info) {
     _lastScale = 1;
-    endTwist();
     endOneFinger();
   }
 
   @override
   void onScaleEnd(ScaleEndInfo info) {
-    endTwist();
     endOneFinger(velocityX: info.raw.velocity.pixelsPerSecond.dx);
   }
 
@@ -716,7 +687,6 @@ class TownGame extends FlameGame
       final p = info.eventPosition.widget;
       onPinch(Vec2(p.x, p.y), scale / _lastScale);
       _lastScale = scale;
-      onTwist(info.raw.rotation);
     }
   }
 

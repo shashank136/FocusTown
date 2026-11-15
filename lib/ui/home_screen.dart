@@ -491,8 +491,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
           ),
-          // Look at the island from the other sides: the compass and two turn
-          // buttons above the bottom row, on the right.
+          // The compass above the bottom row, on the right (a finger turns the
+          // island).
           SafeArea(
             child: Align(
               alignment: Alignment.bottomRight,
@@ -507,20 +507,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     ValueListenableBuilder<ViewRotation>(
                       valueListenable: _game.view,
                       builder: (_, rotation, _) => Compass(rotation: rotation),
-                    ),
-                    const SizedBox(height: 8),
-                    _roundButton(
-                      tooltip: 'Turn left',
-                      icon: Icons.rotate_left,
-                      size: 44,
-                      onPressed: () => _game.turn(-1),
-                    ),
-                    const SizedBox(height: 8),
-                    _roundButton(
-                      tooltip: 'Turn right',
-                      icon: Icons.rotate_right,
-                      size: 44,
-                      onPressed: () => _game.turn(1),
                     ),
                   ],
                 ),

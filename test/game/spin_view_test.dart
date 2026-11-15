@@ -117,11 +117,13 @@ void main() {
       expect(after.y, closeTo(before.y, 1));
     });
 
-    test('a turn by the buttons keeps it there too, from every side', () {
+    test('a turn all the way round keeps it there, side after side', () {
       final g = _game()..onPan(const Vec2(-50, 30));
       final before = middle(g);
       for (var k = 0; k < 4; k++) {
-        g.turn(1);
+        g
+          ..spinBy(1.2)
+          ..releaseSpin();
         _frames(g, 40);
         final now = middle(g);
         expect(now.x, closeTo(before.x, 1), reason: 'turn $k');
@@ -181,55 +183,39 @@ void main() {
     });
   });
 
-  group('the buttons and the twist turn it slowly too', () {
-    test('a turn goes through the angles in between', () {
-      final g = _game()..turn(1);
+  group('letting go', () {
+    test('goes through the angles in between, not at once', () {
+      final g = _game()
+        ..spinBy(1)
+        ..releaseSpin();
+      _frames(g, 2);
+      expect(g.spin, inExclusiveRange(1, _quarter));
       expect(g.renderer.rotation, ViewRotation.none);
-      g
-        ..update(0.1)
-        ..render(ui.Canvas(ui.PictureRecorder()));
-      expect(g.spin, inExclusiveRange(0, _quarter));
       _frames(g);
       expect(g.renderer.rotation, const ViewRotation(1));
       expect(g.spin, 0);
     });
 
-    test('turns pressed during a turn add up', () {
+    test('grabbing it again while it settles carries on from there', () {
       final g = _game()
-        ..turn(1)
-        ..turn(1);
-      _frames(g);
-      expect(g.renderer.rotation, const ViewRotation(2));
-    });
-
-    test('turning back mid-way goes back', () {
-      final g = _game()..turn(1);
-      _frames(g, 3);
-      g.turn(-1);
+        ..spinBy(1)
+        ..releaseSpin();
+      _frames(g, 2);
+      final at = g.spin;
+      g.spinBy(-1); // the finger is down again, and goes back
+      expect(g.spin, closeTo(at - 1, 1e-9));
+      g.releaseSpin();
       _frames(g);
       expect(g.renderer.rotation, ViewRotation.none);
     });
 
-    test('with reduced motion the turn is at once', () {
+    test('with reduced motion it settles at once', () {
       final g = _game()
         ..reducedMotion = true
-        ..turn(1);
+        ..spinBy(1)
+        ..releaseSpin();
       expect(g.renderer.rotation, const ViewRotation(1));
       expect(g.spin, 0);
-    });
-
-    test('a twist of two fingers turns once per gesture', () {
-      final g = _game()
-        ..onTwist(0.2)
-        ..onTwist(0.8)
-        ..onTwist(2.5);
-      _frames(g);
-      expect(g.renderer.rotation, const ViewRotation(1));
-      g
-        ..endTwist()
-        ..onTwist(-0.8);
-      _frames(g);
-      expect(g.renderer.rotation, ViewRotation.none);
     });
   });
 
