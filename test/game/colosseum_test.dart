@@ -10,7 +10,7 @@ const _oy = 20;
 
 VoxelWorld _colosseum(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.colosseum, _ox, _oy, stage);
+  buildLandmark(w, Landmark.colosseum, _ox, _oy, stage, classic: true);
   return w;
 }
 

@@ -10,7 +10,7 @@ const _oy = 20;
 
 VoxelWorld _pagoda(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.pagoda, _ox, _oy, stage);
+  buildLandmark(w, Landmark.pagoda, _ox, _oy, stage, classic: true);
   return w;
 }
 

@@ -188,8 +188,11 @@ void main() {
       expect(TownRules.settleLandmarks(once, sizeOf: _big), once);
     });
 
-    test('with the real sizes nothing moves yet', () {
-      final town = _town([_landmark(_at(0, 0)), _hut(_at(2, 2))]);
+    test('a landmark that is still 2 x 2 does not move', () {
+      final town = _town([
+        _landmark(_at(0, 0), landmark: Landmark.lighthouse),
+        _hut(_at(2, 2)),
+      ]);
       expect(TownRules.settleLandmarks(town), town);
     });
   });

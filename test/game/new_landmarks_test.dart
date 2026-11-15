@@ -8,7 +8,9 @@ import 'package:focus_town/game/world/voxel_world.dart';
 const _ox = 20;
 const _oy = 20;
 
-VoxelWorld _build(Landmark l, int stage, {bool classic = false}) {
+// The old designs on the old 2 x 2 block (the new ones are tested in
+// landmark_designs_test.dart).
+VoxelWorld _build(Landmark l, int stage, {bool classic = true}) {
   final w = VoxelWorld();
   buildLandmark(w, l, _ox, _oy, stage, classic: classic);
   return w;
@@ -60,80 +62,32 @@ void main() {
   test(
     'Christ the Redeemer, the old design: a flared robe, shoulders, arms',
     () {
-      final robe = _build(Landmark.christRedeemer, 7, classic: true);
+      final robe = _build(Landmark.christRedeemer, 7);
       expect(
         _at(robe, 4, 4, 10),
         Blocks.marble,
       ); // the robe is wide at the feet
       expect(_at(robe, 4, 4, 11), isNull); // and narrow above
-      expect(
-        _at(_build(Landmark.christRedeemer, 8, classic: true), 4, 5, 16),
-        Blocks.marble,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 8, classic: true), 2, 5, 16),
-        isNull,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 9, classic: true), 2, 5, 16),
-        Blocks.marble,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 9, classic: true), 0, 5, 14),
-        Blocks.marble,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 9, classic: true), 9, 5, 16),
-        isNull,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 10, classic: true), 9, 5, 16),
-        Blocks.marble,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 10, classic: true), 5, 5, 19),
-        isNull,
-      );
-      expect(
-        _at(_build(Landmark.christRedeemer, 11, classic: true), 5, 5, 19),
-        Blocks.marble,
-      );
+      expect(_at(_build(Landmark.christRedeemer, 8), 4, 5, 16), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 8), 2, 5, 16), isNull);
+      expect(_at(_build(Landmark.christRedeemer, 9), 2, 5, 16), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 9), 0, 5, 14), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 9), 9, 5, 16), isNull);
+      expect(_at(_build(Landmark.christRedeemer, 10), 9, 5, 16), Blocks.marble);
+      expect(_at(_build(Landmark.christRedeemer, 10), 5, 5, 19), isNull);
+      expect(_at(_build(Landmark.christRedeemer, 11), 5, 5, 19), Blocks.marble);
     },
   );
 
   test('Easter Island, the old design: a long head, a nose and a topknot', () {
-    expect(
-      _at(_build(Landmark.easterIsland, 6, classic: true), 4, 4, 14),
-      Blocks.stone,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 6, classic: true), 5, 7, 9),
-      isNull,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 7, classic: true), 5, 7, 9),
-      Blocks.stone,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 8, classic: true), 4, 7, 12),
-      Blocks.stone,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 9, classic: true), 4, 7, 11),
-      Blocks.char,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 10, classic: true), 5, 7, 7),
-      Blocks.cobble,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 11, classic: true), 5, 5, 15),
-      Blocks.roof,
-    );
-    expect(
-      _at(_build(Landmark.easterIsland, 12, classic: true), 2, 6, 6),
-      Blocks.stone,
-    );
+    expect(_at(_build(Landmark.easterIsland, 6), 4, 4, 14), Blocks.stone);
+    expect(_at(_build(Landmark.easterIsland, 6), 5, 7, 9), isNull);
+    expect(_at(_build(Landmark.easterIsland, 7), 5, 7, 9), Blocks.stone);
+    expect(_at(_build(Landmark.easterIsland, 8), 4, 7, 12), Blocks.stone);
+    expect(_at(_build(Landmark.easterIsland, 9), 4, 7, 11), Blocks.char);
+    expect(_at(_build(Landmark.easterIsland, 10), 5, 7, 7), Blocks.cobble);
+    expect(_at(_build(Landmark.easterIsland, 11), 5, 5, 15), Blocks.roof);
+    expect(_at(_build(Landmark.easterIsland, 12), 2, 6, 6), Blocks.stone);
   });
 
   test('Space Needle: legs, a waist, a shaft, a round saucer, a spire', () {

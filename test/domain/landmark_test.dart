@@ -273,7 +273,7 @@ void main() {
   });
 
   group('landmarkShowcase', () {
-    test('shows every landmark finished, on separate blocks', () {
+    test('shows every landmark finished, each on its own area', () {
       const hut = TownBuilding(
         id: 'h',
         tier: BuildingTier.hut,
@@ -283,12 +283,13 @@ void main() {
       final town = TownState.initial().copyWith(buildings: [hut]);
       final show = TownRules.landmarkShowcase(town);
       final marks = show.buildings.where((b) => b.landmark != null).toList();
-      expect(marks.map((b) => b.landmark), Landmark.values);
+      expect(marks.map((b) => b.landmark).toSet(), Landmark.values.toSet());
+      expect(marks, hasLength(Landmark.values.length));
       expect(marks.every((b) => b.status == BuildingStatus.complete), isTrue);
       expect(marks.every((b) => b.stage == Landmark.values[0].stages), isTrue);
       final plots = {
         for (final b in marks)
-          ...footprintOf(b.footprint, b.plotIndex, town.parcels)!,
+          ...footprintOf(b.footprint, b.plotIndex, show.parcels)!,
       };
       expect(plots.length, marks.fold(0, (n, b) => n + b.footprint.area));
       // The real town is untouched.

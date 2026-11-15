@@ -188,6 +188,33 @@ abstract final class Blocks {
   /// Gold: finials, domes and the figure on a tower.
   static final gold = BlockMaterial.of(0xe8b93f, 0xc99c2c);
 
+  /// Dark brown iron (a tower's lattice).
+  static final iron = BlockMaterial.of(0x6f5a4a, 0x5a493c);
+
+  /// Pale bronze (platforms of an iron tower).
+  static final bronze = BlockMaterial.of(0xb79c7d, 0x9a8264);
+
+  /// Red rock (a cliff).
+  static final redRock = BlockMaterial.of(0xb9694c, 0x9a553c);
+
+  /// Lighter bands of red rock.
+  static final redRockLight = BlockMaterial.of(0xc9805f, 0xa9684b);
+
+  /// Deep blue (a headdress).
+  static final lapis = BlockMaterial.of(0x2a5ea8, 0x224c8a);
+
+  /// Golden sandstone.
+  static final sandstone = BlockMaterial.of(0xd9bd78, 0xb9a064);
+
+  /// Darker golden sandstone.
+  static final sandstoneDark = BlockMaterial.of(0xcfb06a, 0xaf9356);
+
+  /// Verdigris, the green of old copper (a statue's robe).
+  static final verdigris = BlockMaterial.of(0x59a89d, 0x3f8c80);
+
+  /// Darker verdigris, for the folds.
+  static final verdigrisDark = BlockMaterial.of(0x3f8c80, 0x2f6e64);
+
   /// A fire.
   static final flame = BlockMaterial.of(0xf08a24, 0xd0701c);
 

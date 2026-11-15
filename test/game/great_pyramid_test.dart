@@ -9,7 +9,7 @@ const _oy = 20;
 
 VoxelWorld _pyramid(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.greatPyramid, _ox, _oy, stage);
+  buildLandmark(w, Landmark.greatPyramid, _ox, _oy, stage, classic: true);
   return w;
 }
 

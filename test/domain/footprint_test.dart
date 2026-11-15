@@ -223,10 +223,10 @@ void main() {
         tier: BuildingTier.castle,
         status: BuildingStatus.complete,
         plotIndex: anchor,
-        landmark: Landmark.values.first,
+        landmark: Landmark.petra,
       );
       final taken = TownRules.occupied(_town(land).copyWith(buildings: [b]));
-      expect(taken.length, Landmark.values.first.footprint.area);
+      expect(taken.length, Landmark.petra.footprint.area);
     });
   });
 }

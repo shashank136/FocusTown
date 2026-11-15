@@ -2022,7 +2022,8 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Tests first: widget tests for the message text with and without room.
 - Commit: `T-V14.4: no room message`
 
-### T-V14.5 [ ] The designs, one landmark per task
+### T-V14.5 [x] The designs, one landmark per task
+- All 13 done 2026-11-15. The last ten were ported in one go from the sketches' shapes (`lib/game/world/designs_towers.dart`: Space Needle, Pagoda, Eiffel Tower, Statue of Liberty; `designs_sites.dart`: Petra, Great Sphinx, Chichén Itzá, Colosseum, Taj Mahal, Great Pyramid) and a throw-away check compared every block position with the sketch (all identical). Tests: `test/game/landmark_designs_test.dart` (footprint, inset, every stage adds, features, block counts, the classic design still drawn); the old design tests use `classic: true`. New block materials: gold, flame, iron, bronze, red rock, lapis, sandstone, verdigris.
 - Do: for each landmark, in order Christ the Redeemer, Lighthouse of Alexandria, Easter Island Moai, Space Needle, Pagoda, Petra, Great Sphinx, Chichen Itza, Statue of Liberty, Eiffel Tower, Colosseum, Taj Mahal, Great Pyramid: set its footprint, draw its 12 stages at that size from the sketch, and update its card picture.
 - Tests first (each): the 12 stages grow block by block and stay inside the footprint; the finished block count is pinned; goldens.
 - Commit: `T-V14.5: <landmark> at its real size`
@@ -2031,18 +2032,19 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
   - [x] Christ the Redeemer, 1 x 1 (2026-11-15, 122 blocks)
   - [x] Lighthouse of Alexandria, 2 x 2 (2026-11-15, 636 blocks)
   - [x] Easter Island Moai, 2 x 2 (2026-11-15, one large statue, 1046 blocks)
-  - [ ] Space Needle, 2 x 2
-  - [ ] Pagoda, 2 x 2
-  - [ ] Petra, 3 x 2
-  - [ ] Great Sphinx, 4 x 2
-  - [ ] Chichén Itzá, 3 x 3
-  - [ ] Statue of Liberty, 3 x 3
-  - [ ] Eiffel Tower, 3 x 3
-  - [ ] Colosseum, 4 x 4
-  - [ ] Taj Mahal, 5 x 4
-  - [ ] Great Pyramid, 5 x 5
+  - [x] Space Needle, 2 x 2 (2026-11-15)
+  - [x] Pagoda, 2 x 2 (2026-11-15)
+  - [x] Petra, 3 x 2 (2026-11-15)
+  - [x] Great Sphinx, 4 x 2 (2026-11-15)
+  - [x] Chichén Itzá, 3 x 3 (2026-11-15)
+  - [x] Statue of Liberty, 3 x 3 (2026-11-15)
+  - [x] Eiffel Tower, 3 x 3 (2026-11-15)
+  - [x] Colosseum, 4 x 4 (2026-11-15)
+  - [x] Taj Mahal, 5 x 4 (2026-11-15)
+  - [x] Great Pyramid, 5 x 5 (2026-11-15)
 
-### T-V14.6 [ ] Debug aid at the new sizes
+### T-V14.6 [x] Debug aid at the new sizes
+- Done 2026-11-15: the showcase (`TownRules.landmarkShowcase`) builds out the four sides with their corners and stands all 13 landmarks on it, the biggest first. Still open: the debug screen's reset button is hard-wired to the Eiffel Tower.
 - Do: "Show every landmark on the map" lays all 13 out at their sizes (on extra land if needed).
 - Commit: `T-V14.6: show every landmark at its size`
 

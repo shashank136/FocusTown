@@ -10,7 +10,7 @@ const _oy = 20;
 
 VoxelWorld _taj(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.tajMahal, _ox, _oy, stage);
+  buildLandmark(w, Landmark.tajMahal, _ox, _oy, stage, classic: true);
   return w;
 }
 

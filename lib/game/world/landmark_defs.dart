@@ -2,13 +2,16 @@ import 'dart:math' as math;
 
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/designs_sites.dart';
+import 'package:focus_town/game/world/designs_towers.dart';
 import 'package:focus_town/game/world/landmark_designs.dart';
 import 'package:focus_town/game/world/vox.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
 /// Builds [landmark] up to [stage] (0 draws nothing, past the last stage is
-/// the last) on the 12 x 12 tiles from ([ox], [oy]): the block of its 2 x 2
-/// plots, one tile in from the edge (the outer tile is the road).
+/// the last) on the tiles from ([ox], [oy]): the area of its plots, one tile in
+/// from the edge (the outer tile is the road). With [classic] it draws the old
+/// design on the old 2 x 2 block (12 x 12 tiles).
 void buildLandmark(
   VoxelWorld w,
   Landmark landmark,
@@ -24,12 +27,19 @@ void buildLandmark(
       Landmark.christRedeemer => christRedeemerDesign(),
       Landmark.lighthouse => lighthouseDesign(),
       Landmark.easterIsland => easterIslandDesign(),
-      _ => null,
+      Landmark.spaceNeedle => spaceNeedleDesign(),
+      Landmark.pagoda => pagodaDesign(),
+      Landmark.petra => petraDesign(),
+      Landmark.sphinx => sphinxDesign(),
+      Landmark.chichenItza => chichenItzaDesign(),
+      Landmark.statueOfLiberty => statueOfLibertyDesign(),
+      Landmark.eiffel => eiffelDesign(),
+      Landmark.colosseum => colosseumDesign(),
+      Landmark.tajMahal => tajMahalDesign(),
+      Landmark.greatPyramid => greatPyramidDesign(),
     };
-    if (design != null) {
-      paintDesign(w, design, ox, oy, stage, landmark.stages);
-      return;
-    }
+    paintDesign(w, design, ox, oy, stage, landmark.stages);
+    return;
   }
   switch (landmark) {
     case Landmark.greatPyramid:

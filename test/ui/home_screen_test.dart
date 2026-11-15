@@ -160,7 +160,10 @@ void main() {
     final c = await _pump(tester);
     c.read(landmarkShowcaseProvider.notifier).toggle();
     await tester.pump();
-    expect(_game.towns.last.buildings.map((b) => b.landmark), Landmark.values);
+    expect(
+      _game.towns.last.buildings.map((b) => b.landmark).toSet(),
+      Landmark.values.toSet(),
+    );
     c.read(landmarkShowcaseProvider.notifier).toggle();
     await tester.pump();
     expect(_game.towns.last, TownState.initial());

@@ -16,7 +16,7 @@ const _oy = 20;
 
 VoxelWorld _eiffel(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.eiffel, _ox, _oy, stage);
+  buildLandmark(w, Landmark.eiffel, _ox, _oy, stage, classic: true);
   return w;
 }
 

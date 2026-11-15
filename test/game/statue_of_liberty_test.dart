@@ -10,7 +10,7 @@ const _oy = 20;
 
 VoxelWorld _statue(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.statueOfLiberty, _ox, _oy, stage);
+  buildLandmark(w, Landmark.statueOfLiberty, _ox, _oy, stage, classic: true);
   return w;
 }
 

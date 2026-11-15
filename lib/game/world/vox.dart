@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
+/// [n] rounded the way a design's author rounds: halves go up, also below 0.
+int jsRound(num n) => (n + 0.5).floor();
+
 /// A block of a design, with coordinates inside the design's own area (from
 /// 0, 0, 0).
 typedef DesignBlock = ({int x, int y, int z, BlockMaterial material});
@@ -26,22 +29,25 @@ class Vox {
   /// The blocks of the design.
   Iterable<DesignBlock> get blocks => _blocks.values;
 
-  /// Places one block.
-  void set(int x, int y, int z, BlockMaterial m) {
-    if (x < 0 || y < 0 || z < 0 || x >= width || y >= depth) return;
-    _blocks[(x * 256 + y) * 256 + z] = (x: x, y: y, z: z, material: m);
+  /// Places one block. Coordinates are rounded to whole tiles ([jsRound]).
+  void set(num x, num y, num z, BlockMaterial m) {
+    final ix = jsRound(x);
+    final iy = jsRound(y);
+    final iz = jsRound(z);
+    if (ix < 0 || iy < 0 || iz < 0 || ix >= width || iy >= depth) return;
+    _blocks[(ix * 256 + iy) * 256 + iz] = (x: ix, y: iy, z: iz, material: m);
   }
 
   /// Takes the block at ([x], [y], [z]) away.
-  void remove(int x, int y, int z) {
-    _blocks.remove((x * 256 + y) * 256 + z);
+  void remove(num x, num y, num z) {
+    _blocks.remove((jsRound(x) * 256 + jsRound(y)) * 256 + jsRound(z));
   }
 
   /// Fills the inclusive box from ([x0], [y0], [z0]) to ([x1], [y1], [z1]).
-  void box(int x0, int y0, int z0, int x1, int y1, int z1, BlockMaterial m) {
-    for (var x = x0; x <= x1; x++) {
-      for (var y = y0; y <= y1; y++) {
-        for (var z = z0; z <= z1; z++) {
+  void box(num x0, num y0, num z0, num x1, num y1, num z1, BlockMaterial m) {
+    for (var x = jsRound(x0); x <= jsRound(x1); x++) {
+      for (var y = jsRound(y0); y <= jsRound(y1); y++) {
+        for (var z = jsRound(z0); z <= jsRound(z1); z++) {
           set(x, y, z, m);
         }
       }
@@ -50,11 +56,15 @@ class Vox {
 
   /// The outline of the rectangle from ([x0], [y0]) to ([x1], [y1]) on every
   /// level from [z0] to [z1].
-  void ring(int x0, int y0, int x1, int y1, int z0, int z1, BlockMaterial m) {
-    for (var x = x0; x <= x1; x++) {
-      for (var y = y0; y <= y1; y++) {
-        if (x != x0 && x != x1 && y != y0 && y != y1) continue;
-        for (var z = z0; z <= z1; z++) {
+  void ring(num x0, num y0, num x1, num y1, num z0, num z1, BlockMaterial m) {
+    final ax = jsRound(x0);
+    final ay = jsRound(y0);
+    final bx = jsRound(x1);
+    final by = jsRound(y1);
+    for (var x = ax; x <= bx; x++) {
+      for (var y = ay; y <= by; y++) {
+        if (x != ax && x != bx && y != ay && y != by) continue;
+        for (var z = jsRound(z0); z <= jsRound(z1); z++) {
           set(x, y, z, m);
         }
       }
@@ -63,13 +73,13 @@ class Vox {
 
   /// A filled round disc of radius [r] about ([cx], [cy]) on levels [z0] to
   /// [z1].
-  void disc(double cx, double cy, double r, int z0, int z1, BlockMaterial m) {
+  void disc(num cx, num cy, num r, num z0, num z1, BlockMaterial m) {
     for (var x = (cx - r).floor(); x <= (cx + r).ceil(); x++) {
       for (var y = (cy - r).floor(); y <= (cy + r).ceil(); y++) {
         final dx = x - cx;
         final dy = y - cy;
         if (dx * dx + dy * dy > r * r + 0.25) continue;
-        for (var z = z0; z <= z1; z++) {
+        for (var z = jsRound(z0); z <= jsRound(z1); z++) {
           set(x, y, z, m);
         }
       }

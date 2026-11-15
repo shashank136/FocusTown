@@ -420,14 +420,29 @@ class TownRules {
         : LandmarkState.ready;
   }
 
-  /// A look-only copy of [town] for the debug screen: the island cleared and
-  /// every landmark standing finished, each on its own 2 x 2 block (the
-  /// stored town is never changed).
+  /// A look-only copy of [town] for the debug screen: the island cleared, the
+  /// four sides built out with their corners so that there is room for all of
+  /// them, and every landmark standing finished on its own area, the biggest
+  /// first (the stored town is never changed).
   static TownState landmarkShowcase(TownState town) {
-    var show = town.copyWith(buildings: const []);
-    for (final l in Landmark.values) {
+    var show = withCorners(
+      town.copyWith(
+        buildings: const [],
+        districts: const [],
+        parcels: [
+          for (final side in DistrictSide.values)
+            for (var r = 0; r < kDistrictRows; r++) ...districtRow(side, 0, r),
+        ],
+      ),
+    );
+    final order = [...Landmark.values]
+      ..sort((a, b) {
+        final byArea = b.footprint.area.compareTo(a.footprint.area);
+        return byArea != 0 ? byArea : a.index.compareTo(b.index);
+      });
+    for (final l in order) {
       final anchor = nextFreePlot(show, l.footprint);
-      if (anchor == null) break;
+      if (anchor == null) continue;
       show = show.copyWith(
         buildings: [
           ...show.buildings,

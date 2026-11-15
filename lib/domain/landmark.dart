@@ -9,7 +9,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 55,
     unlockLevel: TownLevel.metropolis,
-    footprint: Footprint.block,
+    footprint: Footprint(5, 5),
   ),
 
   /// The Lighthouse of Alexandria: 12 stages of 20 minutes each, from Village.
@@ -36,7 +36,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 50,
     unlockLevel: TownLevel.metropolis,
-    footprint: Footprint.block,
+    footprint: Footprint(5, 4),
   ),
 
   /// The Statue of Liberty: 12 stages of 35 minutes each, from City.
@@ -45,7 +45,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 35,
     unlockLevel: TownLevel.city,
-    footprint: Footprint.block,
+    footprint: Footprint(3, 3),
   ),
 
   /// The Colosseum: 12 stages of 45 minutes each, from Metropolis.
@@ -54,7 +54,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 45,
     unlockLevel: TownLevel.metropolis,
-    footprint: Footprint.block,
+    footprint: Footprint(4, 4),
   ),
 
   /// The Easter Island Moai: 12 stages of 20 minutes each, from Village.
@@ -81,7 +81,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 35,
     unlockLevel: TownLevel.city,
-    footprint: Footprint.block,
+    footprint: Footprint(3, 3),
   ),
 
   /// Petra: 12 stages of 25 minutes each, from Town.
@@ -90,7 +90,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 25,
     unlockLevel: TownLevel.town,
-    footprint: Footprint.block,
+    footprint: Footprint(3, 2),
   ),
 
   /// Christ the Redeemer: 12 stages of 10 minutes each, from Village.
@@ -108,7 +108,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 30,
     unlockLevel: TownLevel.town,
-    footprint: Footprint.block,
+    footprint: Footprint(4, 2),
   ),
 
   /// The Eiffel Tower: 12 stages of 35 minutes each, from City.
@@ -117,7 +117,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 35,
     unlockLevel: TownLevel.city,
-    footprint: Footprint.block,
+    footprint: Footprint(3, 3),
   );
 
   new({
