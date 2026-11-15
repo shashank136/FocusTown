@@ -19,10 +19,19 @@ VoxelWorld _build(
   int stage, {
   bool scaffold = false,
   Plot? plot,
+  int look = 0,
 }) {
   final p = plot ?? kPlots.first;
   final w = VoxelWorld();
-  buildTier(w, t, p.originX, p.originY, stage: stage, scaffold: scaffold);
+  buildTier(
+    w,
+    t,
+    p.originX,
+    p.originY,
+    stage: stage,
+    scaffold: scaffold,
+    look: look,
+  );
   return w;
 }
 
@@ -92,10 +101,10 @@ void main() {
       expect(w.has(ox + 1, oy + 2, 2), isFalse); // door stays open
     });
 
-    test('stage 3 roof overhangs by one block', () {
+    test('stage 3 roof covers the walls and no more', () {
       final w = _build(BuildingTier.hut, 3);
-      expect(w.get(ox - 1, oy - 1, 3), Blocks.roof);
-      expect(w.get(ox + 3, oy + 3, 3), Blocks.roof);
+      expect(w.get(ox, oy, 3), Blocks.roof);
+      expect(w.get(ox + 2, oy + 2, 3), Blocks.roof);
     });
   });
 
@@ -128,6 +137,28 @@ void main() {
       expect(w.get(ox, oy, 1), Blocks.cobble);
       expect(w.has(ox + 2, oy + 4, 1), isFalse); // door
     });
+  });
+
+  test('a finished building leaves the ring road of its plot clear', () {
+    final p = kPlots.first;
+    for (final t in BuildingTier.values) {
+      for (final look in [0, 1]) {
+        final w = _build(t, maxStage(t), look: look);
+        for (final b in w.blocks) {
+          final onRing =
+              b.x == p.originX ||
+              b.x == p.originX + 6 ||
+              b.y == p.originY ||
+              b.y == p.originY + 6;
+          if (t == BuildingTier.castle) continue; // 14 x 14, own ring
+          expect(
+            onRing,
+            isFalse,
+            reason: '$t look $look at ${b.x},${b.y},${b.z}',
+          );
+        }
+      }
+    }
   });
 
   group('footprint and scaffold', () {

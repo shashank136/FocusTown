@@ -79,7 +79,7 @@ void _hut(VoxelWorld w, int ox, int oy, int stage) {
       ..ring(ox, oy, 3, 3, z, Blocks.plank, corner: Blocks.log)
       ..remove(ox + 1, oy + 2, z); // door
   }
-  if (stage >= 3) w.fill(ox - 1, oy - 1, 3, ox + 3, oy + 3, 3, Blocks.roof);
+  if (stage >= 3) w.fill(ox, oy, 3, ox + 2, oy + 2, 3, Blocks.roof);
   if (stage >= 4) {
     w
       ..fill(ox, oy, 4, ox + 2, oy + 2, 4, Blocks.roof)
@@ -99,7 +99,7 @@ void _house(VoxelWorld w, int ox, int oy, int stage) {
   }
   w.remove(ox + 2, oy + 4, 1); // door
   if (stage >= 2) w.remove(ox + 2, oy + 4, 2);
-  if (stage >= 4) w.fill(ox - 1, oy - 1, 4, ox + 5, oy + 5, 4, Blocks.roof);
+  if (stage >= 4) w.fill(ox, oy, 4, ox + 4, oy + 4, 4, Blocks.roof);
   if (stage >= 5) w.fill(ox, oy, 5, ox + 4, oy + 4, 5, Blocks.roof);
   if (stage >= 6) w.fill(ox + 1, oy + 1, 6, ox + 3, oy + 3, 6, Blocks.roof);
   if (stage >= 7) w.set(ox + 2, oy + 2, 7, Blocks.roof);
@@ -157,7 +157,7 @@ void _cabin(VoxelWorld w, int ox, int oy, int stage) {
   w
     ..remove(ox + 1, oy + 2, 1) // door
     ..remove(ox + 1, oy + 2, 2);
-  if (stage >= 3) w.fill(ox - 1, oy - 1, 3, ox + 3, oy + 3, 3, Blocks.slate);
+  if (stage >= 3) w.fill(ox, oy, 3, ox + 2, oy + 2, 3, Blocks.slate);
   if (stage >= 4) {
     w
       ..fill(ox, oy, 4, ox + 2, oy + 2, 4, Blocks.slate)
@@ -179,8 +179,8 @@ void _townhouse(VoxelWorld w, int ox, int oy, int stage) {
   w
     ..remove(ox + 2, oy + 4, 1)
     ..remove(ox + 2, oy + 4, 2);
-  if (stage >= 5) w.fill(ox - 1, oy - 1, 5, ox + 5, oy + 5, 5, Blocks.slate);
-  if (stage >= 6) w.ring(ox - 1, oy - 1, 7, 7, 6, Blocks.cobble);
+  if (stage >= 5) w.fill(ox, oy, 5, ox + 4, oy + 4, 5, Blocks.slate);
+  if (stage >= 6) w.ring(ox, oy, 5, 5, 6, Blocks.cobble);
   if (stage >= 7) w.fill(ox + 3, oy + 1, 6, ox + 3, oy + 1, 8, Blocks.cobble);
 }
 
