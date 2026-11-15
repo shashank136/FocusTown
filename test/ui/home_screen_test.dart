@@ -85,6 +85,7 @@ Future<ProviderContainer> _pump(
   bool granted = false,
   Set<Tip> shown = const {},
   String? startupMessage,
+  int viewTurns = 0,
 }) async {
   _clock = FakeClock();
   _game = _SpyGame(clock: _clock);
@@ -107,11 +108,12 @@ Future<ProviderContainer> _pump(
     });
   }
   final notifier = FakeNotifier()..permissionGranted = granted;
-  if (onboarded || shown.isNotEmpty) {
+  if (onboarded || shown.isNotEmpty || viewTurns != 0) {
     final repo = TownRepository(db, _clock);
     await tester.runAsync(() async {
       await repo.loadOrCreate();
       if (onboarded) await repo.setOnboardingDone();
+      if (viewTurns != 0) await repo.saveViewTurns(viewTurns);
       for (final t in shown) {
         await repo.markTipShown(t);
       }
@@ -234,7 +236,7 @@ void main() {
   testWidgets('the turn buttons look at the island from the other sides', (
     tester,
   ) async {
-    await _pump(tester);
+    await _pump(tester, reducedMotion: true);
     expect(_game.renderer.rotation, ViewRotation.none);
     await tester.tap(find.byTooltip('Turn right'));
     await tester.pump();
@@ -249,10 +251,35 @@ void main() {
     expect(_game.renderer.rotation, const ViewRotation(3));
   });
 
+  testWidgets('a turn fades, and the side it ends on is remembered', (
+    tester,
+  ) async {
+    final c = await _pump(tester);
+    await tester.tap(find.byTooltip('Turn right'));
+    await tester.pump();
+    expect(_game.renderer.rotation, ViewRotation.none); // not yet turned
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+    expect(_game.renderer.rotation, const ViewRotation(1));
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 30)),
+    );
+    expect(await c.read(townRepositoryProvider).viewTurns(), 1);
+  });
+
+  testWidgets('the island is seen from the side it was left on', (
+    tester,
+  ) async {
+    await _pump(tester, viewTurns: 3);
+    expect(_game.renderer.rotation, const ViewRotation(3));
+    expect(_game.view.value, const ViewRotation(3));
+  });
+
   testWidgets('a compass shows which way north is, and follows the turns', (
     tester,
   ) async {
-    await _pump(tester);
+    await _pump(tester, reducedMotion: true);
     expect(find.byType(Compass), findsOneWidget);
     final before = tester.widget<Compass>(find.byType(Compass)).rotation;
     await tester.tap(find.byTooltip('Turn right'));

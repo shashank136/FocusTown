@@ -60,6 +60,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // The island is seen from the side it was left on. Not being able to save
+    // the side is no reason to bother the user.
+    final repo = ref.read(townRepositoryProvider);
+    _game.onTurned = (v) =>
+        unawaited(repo.saveViewTurns(v.turns).catchError((Object _) {}));
+    unawaited(
+      repo.viewTurns().then((turns) {
+        if (mounted && turns != 0) _game.rotate(turns);
+      }),
+    );
     // Completion is decided from the stored clock; this only asks the
     // controller to look once a second while a session runs.
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -503,14 +513,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       tooltip: 'Turn left',
                       icon: Icons.rotate_left,
                       size: 44,
-                      onPressed: () => _game.rotate(-1),
+                      onPressed: () => _game.turn(-1),
                     ),
                     const SizedBox(height: 8),
                     _roundButton(
                       tooltip: 'Turn right',
                       icon: Icons.rotate_right,
                       size: 44,
-                      onPressed: () => _game.rotate(1),
+                      onPressed: () => _game.turn(1),
                     ),
                   ],
                 ),

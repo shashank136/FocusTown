@@ -305,6 +305,19 @@ void main() {
     });
   });
 
+  group('view turns', () {
+    test('a new town is seen from the first side', () async {
+      await repo.loadOrCreate();
+      expect(await repo.viewTurns(), 0);
+    });
+
+    test('the side chosen is read back', () async {
+      await repo.loadOrCreate();
+      await repo.saveViewTurns(3);
+      expect(await repo.viewTurns(), 3);
+    });
+  });
+
   group('last duration', () {
     test('a new town remembers 25 minutes', () async {
       await repo.loadOrCreate();

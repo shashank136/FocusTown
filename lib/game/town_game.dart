@@ -22,6 +22,7 @@ import 'package:focus_town/game/render_guard.dart';
 import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/world/active_site.dart';
+import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
@@ -312,7 +313,70 @@ class TownGame extends FlameGame
   // ignore: use_setters_to_change_properties, a command, not a property
   void focusOnSite(Plot plot) => _siteToFocus = plot;
 
-  /// Turns the view by [by] quarter turns (1 or -1), keeping the camera on the
+  /// Called with the view once a [turn] has been made.
+  void Function(ViewRotation view)? onTurned;
+
+  // A turn fades the town out, turns it while the screen is covered, and fades
+  // it back in: the blocks cannot be drawn half way between two views.
+  static const _turnHalf = 0.15; // seconds each way
+  double _turnClock = 0;
+  bool _turning = false;
+  int _pendingTurns = 0;
+
+  /// How much the screen is covered by a turn under way: 0 (none) to 1.
+  double get turnFade {
+    if (!_turning) return 0;
+    final t = _turnClock < _turnHalf
+        ? _turnClock / _turnHalf
+        : (2 * _turnHalf - _turnClock) / _turnHalf;
+    return t.clamp(0, 1);
+  }
+
+  /// Turns the view by [by] quarter turns with a fade (at once when the system
+  /// asked for less motion). Turns asked for during a turn are added to it.
+  void turn(int by) {
+    if (reducedMotion || guard.degraded) {
+      rotate(by);
+      onTurned?.call(renderer.rotation);
+      return;
+    }
+    _pendingTurns += by;
+    if (_turning) {
+      // Already fading in: go back to fading out from where the cover is.
+      if (_turnClock > _turnHalf) _turnClock = turnFade * _turnHalf;
+    } else {
+      _turning = true;
+      _turnClock = 0;
+    }
+  }
+
+  static const _twistToTurn = 0.6; // radians, about 35 degrees
+  bool _twisted = false;
+
+  /// Two fingers twisted by [radians] since the gesture began (clockwise is
+  /// positive): far enough turns the view one step, once per gesture.
+  void onTwist(double radians) {
+    if (_twisted || radians.abs() < _twistToTurn) return;
+    _twisted = true;
+    turn(radians > 0 ? 1 : -1);
+  }
+
+  /// The two-finger gesture is over: the next one may turn again.
+  void endTwist() => _twisted = false;
+
+  void _stepTurn(double dt) {
+    if (!_turning) return;
+    _turnClock += dt;
+    if (_turnClock >= _turnHalf && _pendingTurns != 0) {
+      rotate(_pendingTurns);
+      _pendingTurns = 0;
+      onTurned?.call(renderer.rotation);
+    }
+    if (_turnClock >= 2 * _turnHalf) _turning = false;
+    _redraw = true;
+  }
+
+  /// Turns the view by [by] quarter turns at once, keeping the camera on the
   /// same spot of the island.
   void rotate(int by) {
     final old = renderer.rotation;
@@ -389,6 +453,7 @@ class TownGame extends FlameGame
     // A degraded town is a still picture: no camera, workers or effects.
     if (guard.degraded) return;
     _updateCamera(dt);
+    _stepTurn(dt);
     final step = Duration(microseconds: (dt * 1e6).round());
     _particles.step(step);
     _show?.step(step);
@@ -568,7 +633,13 @@ class TownGame extends FlameGame
   }
 
   @override
-  void onScaleStart(ScaleStartInfo info) => _lastScale = 1;
+  void onScaleStart(ScaleStartInfo info) {
+    _lastScale = 1;
+    endTwist();
+  }
+
+  @override
+  void onScaleEnd(ScaleEndInfo info) => endTwist();
 
   @override
   void onScaleUpdate(ScaleUpdateInfo info) {
@@ -579,6 +650,7 @@ class TownGame extends FlameGame
       final p = info.eventPosition.widget;
       onPinch(Vec2(p.x, p.y), scale / _lastScale);
       _lastScale = scale;
+      onTwist(info.raw.rotation);
     }
   }
 
@@ -622,6 +694,13 @@ class TownGame extends FlameGame
     }
     final frame = _lastFrame;
     if (frame != null) canvas.drawPicture(frame);
+    final fade = turnFade;
+    if (fade > 0) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.x, size.y),
+        Paint()..color = const Color(kSkyTop).withValues(alpha: fade),
+      );
+    }
   }
 
   // Frames are counted while painting but published from update: a listener

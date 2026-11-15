@@ -25,6 +25,7 @@ TownRow _townRowFrom(TownState s) {
     onboardingDone: false,
     createdAt: 0,
     lastDurationMinutes: 25,
+    viewTurns: 0,
     tipPassShown: false,
     tipGrowthShown: false,
     tipRecoveryShown: false,

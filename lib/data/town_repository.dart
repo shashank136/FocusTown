@@ -56,6 +56,19 @@ class TownRepository {
     ),
   );
 
+  /// The side the island is seen from, in quarter turns (0 for a new town).
+  Future<int> viewTurns() async {
+    final row = await _db.select(_db.towns).getSingleOrNull();
+    return row?.viewTurns ?? 0;
+  }
+
+  /// Remembers the side the island is seen from.
+  Future<void> saveViewTurns(int turns) => _write(
+    () => (_db.update(_db.towns)..where((t) => t.id.equals(_townId))).write(
+      TownsCompanion(viewTurns: Value(turns)),
+    ),
+  );
+
   /// On-device beta numbers, computed from the stored sessions.
   Future<BetaStats> betaStats() async {
     final sessions = await _db.select(_db.sessions).get();

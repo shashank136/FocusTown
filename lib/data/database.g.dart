@@ -251,6 +251,18 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _viewTurnsMeta = const VerificationMeta(
+    'viewTurns',
+  );
+  @override
+  late final GeneratedColumn<int> viewTurns = GeneratedColumn<int>(
+    'view_turns',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -273,6 +285,7 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
     parcels,
     districts,
     districtProject,
+    viewTurns,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -457,6 +470,12 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         ),
       );
     }
+    if (data.containsKey('view_turns')) {
+      context.handle(
+        _viewTurnsMeta,
+        viewTurns.isAcceptableOrUnknown(data['view_turns']!, _viewTurnsMeta),
+      );
+    }
     return context;
   }
 
@@ -546,6 +565,10 @@ class $TownsTable extends Towns with TableInfo<$TownsTable, TownRow> {
         DriftSqlType.string,
         data['${effectivePrefix}district_project'],
       ),
+      viewTurns: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}view_turns'],
+      )!,
     );
   }
 
@@ -576,6 +599,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
   final String parcels;
   final String districts;
   final String? districtProject;
+  final int viewTurns;
   const TownRow({
     required this.id,
     required this.workerCount,
@@ -597,6 +621,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     required this.parcels,
     required this.districts,
     this.districtProject,
+    required this.viewTurns,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -629,6 +654,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     if (!nullToAbsent || districtProject != null) {
       map['district_project'] = Variable<String>(districtProject);
     }
+    map['view_turns'] = Variable<int>(viewTurns);
     return map;
   }
 
@@ -662,6 +688,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       districtProject: districtProject == null && nullToAbsent
           ? const Value.absent()
           : Value(districtProject),
+      viewTurns: Value(viewTurns),
     );
   }
 
@@ -697,6 +724,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       parcels: serializer.fromJson<String>(json['parcels']),
       districts: serializer.fromJson<String>(json['districts']),
       districtProject: serializer.fromJson<String?>(json['districtProject']),
+      viewTurns: serializer.fromJson<int>(json['viewTurns']),
     );
   }
   @override
@@ -723,6 +751,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       'parcels': serializer.toJson<String>(parcels),
       'districts': serializer.toJson<String>(districts),
       'districtProject': serializer.toJson<String?>(districtProject),
+      'viewTurns': serializer.toJson<int>(viewTurns),
     };
   }
 
@@ -747,6 +776,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     String? parcels,
     String? districts,
     Value<String?> districtProject = const Value.absent(),
+    int? viewTurns,
   }) => TownRow(
     id: id ?? this.id,
     workerCount: workerCount ?? this.workerCount,
@@ -776,6 +806,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     districtProject: districtProject.present
         ? districtProject.value
         : this.districtProject,
+    viewTurns: viewTurns ?? this.viewTurns,
   );
   TownRow copyWithCompanion(TownsCompanion data) {
     return TownRow(
@@ -829,6 +860,7 @@ class TownRow extends DataClass implements Insertable<TownRow> {
       districtProject: data.districtProject.present
           ? data.districtProject.value
           : this.districtProject,
+      viewTurns: data.viewTurns.present ? data.viewTurns.value : this.viewTurns,
     );
   }
 
@@ -854,13 +886,14 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           ..write('notificationNoteShown: $notificationNoteShown, ')
           ..write('parcels: $parcels, ')
           ..write('districts: $districts, ')
-          ..write('districtProject: $districtProject')
+          ..write('districtProject: $districtProject, ')
+          ..write('viewTurns: $viewTurns')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     workerCount,
     plotsUnlocked,
@@ -881,7 +914,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
     parcels,
     districts,
     districtProject,
-  );
+    viewTurns,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -905,7 +939,8 @@ class TownRow extends DataClass implements Insertable<TownRow> {
           other.notificationNoteShown == this.notificationNoteShown &&
           other.parcels == this.parcels &&
           other.districts == this.districts &&
-          other.districtProject == this.districtProject);
+          other.districtProject == this.districtProject &&
+          other.viewTurns == this.viewTurns);
 }
 
 class TownsCompanion extends UpdateCompanion<TownRow> {
@@ -929,6 +964,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
   final Value<String> parcels;
   final Value<String> districts;
   final Value<String?> districtProject;
+  final Value<int> viewTurns;
   const TownsCompanion({
     this.id = const Value.absent(),
     this.workerCount = const Value.absent(),
@@ -950,6 +986,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.parcels = const Value.absent(),
     this.districts = const Value.absent(),
     this.districtProject = const Value.absent(),
+    this.viewTurns = const Value.absent(),
   });
   TownsCompanion.insert({
     this.id = const Value.absent(),
@@ -972,6 +1009,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     this.parcels = const Value.absent(),
     this.districts = const Value.absent(),
     this.districtProject = const Value.absent(),
+    this.viewTurns = const Value.absent(),
   }) : workerCount = Value(workerCount),
        plotsUnlocked = Value(plotsUnlocked),
        xp = Value(xp),
@@ -999,6 +1037,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Expression<String>? parcels,
     Expression<String>? districts,
     Expression<String>? districtProject,
+    Expression<int>? viewTurns,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1023,6 +1062,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       if (parcels != null) 'parcels': parcels,
       if (districts != null) 'districts': districts,
       if (districtProject != null) 'district_project': districtProject,
+      if (viewTurns != null) 'view_turns': viewTurns,
     });
   }
 
@@ -1047,6 +1087,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     Value<String>? parcels,
     Value<String>? districts,
     Value<String?>? districtProject,
+    Value<int>? viewTurns,
   }) {
     return TownsCompanion(
       id: id ?? this.id,
@@ -1070,6 +1111,7 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
       parcels: parcels ?? this.parcels,
       districts: districts ?? this.districts,
       districtProject: districtProject ?? this.districtProject,
+      viewTurns: viewTurns ?? this.viewTurns,
     );
   }
 
@@ -1138,6 +1180,9 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
     if (districtProject.present) {
       map['district_project'] = Variable<String>(districtProject.value);
     }
+    if (viewTurns.present) {
+      map['view_turns'] = Variable<int>(viewTurns.value);
+    }
     return map;
   }
 
@@ -1163,7 +1208,8 @@ class TownsCompanion extends UpdateCompanion<TownRow> {
           ..write('notificationNoteShown: $notificationNoteShown, ')
           ..write('parcels: $parcels, ')
           ..write('districts: $districts, ')
-          ..write('districtProject: $districtProject')
+          ..write('districtProject: $districtProject, ')
+          ..write('viewTurns: $viewTurns')
           ..write(')'))
         .toString();
   }
@@ -2968,6 +3014,7 @@ typedef $$TownsTableCreateCompanionBuilder = TownsCompanion Function({
   Value<String> parcels,
   Value<String> districts,
   Value<String?> districtProject,
+  Value<int> viewTurns,
 });
 typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<int> id,
@@ -2990,6 +3037,7 @@ typedef $$TownsTableUpdateCompanionBuilder = TownsCompanion Function({
   Value<String> parcels,
   Value<String> districts,
   Value<String?> districtProject,
+  Value<int> viewTurns,
 });
 
 class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
@@ -3097,6 +3145,11 @@ class $$TownsTableFilterComposer extends Composer<_$AppDatabase, $TownsTable> {
 
   ColumnFilters<String> get districtProject => $composableBuilder(
     column: $table.districtProject,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get viewTurns => $composableBuilder(
+    column: $table.viewTurns,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -3209,6 +3262,11 @@ class $$TownsTableOrderingComposer
     column: $table.districtProject,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get viewTurns => $composableBuilder(
+    column: $table.viewTurns,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TownsTableAnnotationComposer
@@ -3309,6 +3367,9 @@ class $$TownsTableAnnotationComposer
     column: $table.districtProject,
     builder: (column) => column,
   );
+
+  GeneratedColumn<int> get viewTurns =>
+      $composableBuilder(column: $table.viewTurns, builder: (column) => column);
 }
 
 class $$TownsTableTableManager
@@ -3359,6 +3420,7 @@ class $$TownsTableTableManager
                 Value<String> parcels = const Value.absent(),
                 Value<String> districts = const Value.absent(),
                 Value<String?> districtProject = const Value.absent(),
+                Value<int> viewTurns = const Value.absent(),
               }) => TownsCompanion(
                 id: id,
                 workerCount: workerCount,
@@ -3380,6 +3442,7 @@ class $$TownsTableTableManager
                 parcels: parcels,
                 districts: districts,
                 districtProject: districtProject,
+                viewTurns: viewTurns,
               ),
           createCompanionCallback:
               ({
@@ -3403,6 +3466,7 @@ class $$TownsTableTableManager
                 Value<String> parcels = const Value.absent(),
                 Value<String> districts = const Value.absent(),
                 Value<String?> districtProject = const Value.absent(),
+                Value<int> viewTurns = const Value.absent(),
               }) => TownsCompanion.insert(
                 id: id,
                 workerCount: workerCount,
@@ -3424,6 +3488,7 @@ class $$TownsTableTableManager
                 parcels: parcels,
                 districts: districts,
                 districtProject: districtProject,
+                viewTurns: viewTurns,
               ),
           withReferenceMapper: (p0) => p0
               .map(

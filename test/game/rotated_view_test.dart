@@ -138,6 +138,130 @@ void main() {
       expect(ay, closeTo(wy, 1));
     });
 
+    test('a turn made before the first frame still frames the island', () {
+      final g = TownGame()
+        ..onGameResize(Vector2(400, 700))
+        ..setFocus(FocusState(town: TownState.initial()))
+        ..rotate(2)
+        ..update(0.1)
+        ..render(ui.Canvas(ui.PictureRecorder()));
+      final cam = g.renderer.camera!;
+      final (wx, wy) = g.renderer.rotation.unpoint(
+        cam.centerWorld.x,
+        cam.centerWorld.y,
+      );
+      // The middle of the starting island is still in the middle of the screen.
+      expect(wx, closeTo(32, 12));
+      expect(wy, closeTo(32, 12));
+    });
+
+    test('a turn made before the first frame still frames the island', () {
+      final g = TownGame()
+        ..onGameResize(Vector2(400, 700))
+        ..setFocus(FocusState(town: TownState.initial()))
+        ..rotate(2)
+        ..update(0.1)
+        ..render(ui.Canvas(ui.PictureRecorder()));
+      final cam = g.renderer.camera!;
+      final (wx, wy) = g.renderer.rotation.unpoint(
+        cam.centerWorld.x,
+        cam.centerWorld.y,
+      );
+      // The middle of the starting island is still in the middle of the screen.
+      expect(wx, closeTo(32, 12));
+      expect(wy, closeTo(32, 12));
+    });
+
+    group('twisting two fingers', () {
+      void frames(TownGame g) {
+        for (var i = 0; i < 10; i++) {
+          g
+            ..update(0.05)
+            ..render(ui.Canvas(ui.PictureRecorder()));
+        }
+      }
+
+      test('a small twist while pinching changes nothing', () {
+        final g = _game()..onTwist(0.2);
+        frames(g);
+        expect(g.renderer.rotation, ViewRotation.none);
+      });
+
+      test('a clockwise twist turns right, an anticlockwise one left', () {
+        final right = _game()..onTwist(0.8);
+        frames(right);
+        expect(right.renderer.rotation, const ViewRotation(1));
+        final left = _game()..onTwist(-0.8);
+        frames(left);
+        expect(left.renderer.rotation, const ViewRotation(3));
+      });
+
+      test('one gesture turns once, the next gesture turns again', () {
+        final g = _game()
+          ..onTwist(0.8)
+          ..onTwist(1.5)
+          ..onTwist(2.5);
+        frames(g);
+        expect(g.renderer.rotation, const ViewRotation(1));
+        g
+          ..endTwist()
+          ..onTwist(0.8);
+        frames(g);
+        expect(g.renderer.rotation, const ViewRotation(2));
+      });
+    });
+
+    group('a turn with animation', () {
+      void frames(TownGame g, int n) {
+        for (var i = 0; i < n; i++) {
+          g
+            ..update(0.05)
+            ..render(ui.Canvas(ui.PictureRecorder()));
+        }
+      }
+
+      test('fades out, turns while the screen is covered, fades in', () {
+        final g = _game()..turn(1);
+        expect(g.renderer.rotation, ViewRotation.none);
+        expect(g.turnFade, 0);
+        frames(g, 2); // 0.1 s: on the way out
+        expect(g.turnFade, inExclusiveRange(0, 1));
+        expect(g.renderer.rotation, ViewRotation.none);
+        frames(g, 2); // 0.2 s: turned
+        expect(g.renderer.rotation, const ViewRotation(1));
+        expect(g.view.value, const ViewRotation(1));
+        frames(g, 8);
+        expect(g.turnFade, 0);
+      });
+
+      test('turns pressed during a turn add up', () {
+        final g = _game()
+          ..turn(1)
+          ..turn(1);
+        frames(g, 20);
+        expect(g.renderer.rotation, const ViewRotation(2));
+      });
+
+      test('with reduced motion the turn is at once', () {
+        final g = _game()
+          ..reducedMotion = true
+          ..turn(1);
+        expect(g.renderer.rotation, const ViewRotation(1));
+        expect(g.turnFade, 0);
+      });
+
+      test('it tells which side it ended on', () {
+        final seen = <int>[];
+        final g = _game()
+          ..onTurned = (v) {
+            seen.add(v.turns);
+          }
+          ..turn(-1);
+        frames(g, 20);
+        expect(seen, [3]);
+      });
+    });
+
     test('turning back undoes a turn', () {
       final g = _game()
         ..rotate(1)

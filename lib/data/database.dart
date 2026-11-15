@@ -42,6 +42,8 @@ class Towns extends Table {
   TextColumn get districts => text().withDefault(const Constant(''))();
   // the district being built, as east:130 (side and minutes), or null
   TextColumn get districtProject => text().nullable()();
+  // the side the island is seen from, in quarter turns (0 to 3)
+  IntColumn get viewTurns => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column<Object>> get primaryKey => {id};
@@ -108,7 +110,7 @@ class AppDatabase extends _$AppDatabase {
   new(super.e);
 
   /// The schema version this build of the app writes.
-  static const currentSchemaVersion = 11;
+  static const currentSchemaVersion = 12;
 
   @override
   int get schemaVersion => currentSchemaVersion;
@@ -129,6 +131,8 @@ class AppDatabase extends _$AppDatabase {
       }
       // v5: the ruin a repair session clears.
       if (from < 5) await m.addColumn(sessions, sessions.repairPlotIndex);
+      // v12: the side the island is seen from.
+      if (from < 12) await m.addColumn(towns, towns.viewTurns);
       // v11: the side a district session builds on.
       if (from < 11) await m.addColumn(sessions, sessions.district);
       // v10: districts, the island grown in blocks of 64.
