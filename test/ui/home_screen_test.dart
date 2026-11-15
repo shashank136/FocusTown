@@ -558,7 +558,7 @@ void main() {
       expect(outlines, isNotEmpty);
       for (final i in outlines) {
         expect(
-          footprintOf(BuildingTier.castle, i, const []),
+          footprintOf(Footprint.block, i, const []),
           isNotNull,
           reason: 'plot $i',
         );

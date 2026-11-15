@@ -1,5 +1,9 @@
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/footprint.dart';
+import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
+
+export 'package:focus_town/domain/footprint.dart';
 
 /// Tile where each starting plot column or row begins: four west/north of the
 /// road (tiles 31 and 32), four east/south of it.
@@ -71,27 +75,34 @@ int? rawPlotAtCell(int gx, int gy, List<Parcel> parcels) {
   return null;
 }
 
-/// How many plots a building of [tier] takes: a castle stands on a 2 x 2
-/// block, everything else on one plot.
-int plotsOf(BuildingTier tier) => tier == BuildingTier.castle ? 4 : 1;
+/// The footprint of a building of [tier], or of [landmark] when it is one.
+Footprint footprintFor(BuildingTier tier, [Landmark? landmark]) =>
+    landmark?.footprint ??
+    (tier == BuildingTier.castle ? Footprint.block : Footprint.one);
 
-// Columns and rows 3 and 4 of the starting island are split by the road.
-bool _crossesRoad(int g) => g == 3;
+// A run of [n] grid cells from [g] lies across the road of the starting
+// island when it has cells on both sides of it (between columns or rows 3 and
+// 4).
+bool _crossesRoad(int g, int n) => g <= 3 && g + n - 1 >= 4;
 
-/// The plots a building of [tier] anchored on plot [anchor] covers, the anchor
-/// (its top-left plot) first, or null when that cannot hold it: the block runs
-/// off the plots of the island or across the road. Whether the plots are
-/// free is not checked here.
-List<int>? footprintOf(BuildingTier tier, int anchor, List<Parcel> parcels) {
+/// The plots a building of [size] anchored on plot [anchor] covers, the anchor
+/// (its top-left plot) first, or null when that cannot hold it: a plot is
+/// missing (open sea, unclaimed land or a garden) or the block lies across the
+/// road of the starting island. Whether the plots are free is not checked
+/// here.
+List<int>? footprintOf(Footprint size, int anchor, List<Parcel> parcels) {
   final cell = plotCell(anchor, parcels);
   if (cell == null) return null;
-  if (plotsOf(tier) == 1) return [anchor];
+  if (size.area == 1) return [anchor];
   final (gx, gy) = cell;
-  if (_crossesRoad(gx) || _crossesRoad(gy)) return null;
-  final cells = [
-    plotAtCell(gx + 1, gy, parcels),
-    plotAtCell(gx, gy + 1, parcels),
-    plotAtCell(gx + 1, gy + 1, parcels),
-  ];
-  return cells.contains(null) ? null : [anchor, ...cells.cast<int>()];
+  if (_crossesRoad(gx, size.cols) || _crossesRoad(gy, size.rows)) return null;
+  final plots = <int>[];
+  for (var y = 0; y < size.rows; y++) {
+    for (var x = 0; x < size.cols; x++) {
+      final plot = plotAtCell(gx + x, gy + y, parcels);
+      if (plot == null) return null;
+      plots.add(plot);
+    }
+  }
+  return plots;
 }

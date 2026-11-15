@@ -123,6 +123,27 @@ void main() {
     expect(r.tiles.length, greaterThan(2 * 64 * 2 - 4 + 24));
   });
 
+  test('a road runs round a rectangle of 3 x 2 plots, and not inside it', () {
+    final site = Plot(-1, parcelOrigin(8), parcelOrigin(0), 3, 2);
+    final land = [
+      for (var r = 0; r < 3; r++) ...districtRow(DistrictSide.east, 0, r),
+    ];
+    final r = RoadNetwork(_town(const [], land), site: site);
+    for (var x = site.originX; x < site.originX + 21; x++) {
+      expect(r.isRoad(x, site.originY), isTrue, reason: 'top $x');
+      expect(r.isRoad(x, site.originY + 13), isTrue, reason: 'bottom $x');
+    }
+    for (var y = site.originY; y < site.originY + 14; y++) {
+      expect(r.isRoad(site.originX, y), isTrue, reason: 'left $y');
+      expect(r.isRoad(site.originX + 20, y), isTrue, reason: 'right $y');
+    }
+    for (var x = site.originX + 1; x < site.originX + 20; x++) {
+      for (var y = site.originY + 1; y < site.originY + 13; y++) {
+        expect(r.isRoad(x, y), isFalse, reason: 'inside ($x,$y)');
+      }
+    }
+  });
+
   test('nothing is a road under a building', () {
     final buildings = [
       _b(_at(0, 0), BuildingTier.castle),
@@ -132,8 +153,8 @@ void main() {
     final r = RoadNetwork(_town(buildings));
     for (final b in buildings) {
       final p = plotForTier(b.plotIndex, b.tier, const []);
-      for (var x = 1; x < p.size - 1; x++) {
-        for (var y = 1; y < p.size - 1; y++) {
+      for (var x = 1; x < p.width - 1; x++) {
+        for (var y = 1; y < p.depth - 1; y++) {
           expect(
             r.isRoad(p.originX + x, p.originY + y),
             isFalse,

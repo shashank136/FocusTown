@@ -7,6 +7,7 @@ import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 
 /// Whether a placed building is standing or destroyed.
 enum BuildingStatus {
@@ -54,6 +55,9 @@ class TownBuilding {
 
   /// Minutes of finished sessions built into a landmark so far.
   final int progress;
+
+  /// The plots it covers: one, a 2 x 2 block, or its landmark's rectangle.
+  Footprint get footprint => footprintFor(tier, landmark);
 
   /// The landmark's stage: how many stages its progress has reached.
   int get stage {

@@ -30,10 +30,19 @@ void main() {
     ]);
   });
 
+  test('a plot over several plots has a width and a depth of its own', () {
+    const p = Plot(5, 10, 20, 3, 2);
+    expect(p.cols, 3);
+    expect(p.rows, 2);
+    expect(p.width, 21);
+    expect(p.depth, 14);
+    expect((p.center.x, p.center.y), (20.5, 27.0));
+  });
+
   test('plot size is 7 and the center is the middle of the plot', () {
     final p = kPlots.first;
-    expect(p.size, kPlotSize);
-    expect(p.size, 7);
+    expect(p.width, kPlotSize);
+    expect(p.width, 7);
     expect((p.center.x, p.center.y), (27.5, 27.5));
   });
 
@@ -42,10 +51,10 @@ void main() {
     for (final p in kPlots) {
       expect(p.originX, greaterThanOrEqualTo(0));
       expect(p.originY, greaterThanOrEqualTo(0));
-      expect(p.originX + p.size - 1, lessThan(kMapSize));
-      expect(p.originY + p.size - 1, lessThan(kMapSize));
-      for (var x = p.originX; x < p.originX + p.size; x++) {
-        for (var y = p.originY; y < p.originY + p.size; y++) {
+      expect(p.originX + p.width - 1, lessThan(kMapSize));
+      expect(p.originY + p.width - 1, lessThan(kMapSize));
+      for (var x = p.originX; x < p.originX + p.width; x++) {
+        for (var y = p.originY; y < p.originY + p.width; y++) {
           expect(isRoad(x, y), isFalse, reason: 'plot ${p.index} on a road');
           expect(seen.add((x, y)), isTrue, reason: 'overlap at ($x, $y)');
         }
@@ -65,7 +74,7 @@ void main() {
 
   test('plotAt finds the plot from its corner tiles and is null elsewhere', () {
     for (final p in kPlots) {
-      final last = p.size - 1;
+      final last = p.width - 1;
       for (final (dx, dy) in [(0, 0), (last, 0), (0, last), (last, last)]) {
         expect(plotAt(p.originX + dx, p.originY + dy), p);
       }

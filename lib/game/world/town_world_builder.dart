@@ -26,12 +26,13 @@ Plot activeSitePlot(
   BuildingTier tier = BuildingTier.hut,
 ]) {
   final int index;
-  if (chosen != null && TownRules.isPlotFree(town, chosen, tier)) {
+  final size = footprintFor(tier);
+  if (chosen != null && TownRules.isPlotFree(town, chosen, size)) {
     index = chosen;
   } else {
     index =
-        TownRules.nextFreePlot(town, tier) ??
-        TownRules.firstUnusedPlot(town, tier) ??
+        TownRules.nextFreePlot(town, size) ??
+        TownRules.firstUnusedPlot(town, size) ??
         0;
   }
   return plotForTier(index, tier, town.parcels);
@@ -45,7 +46,11 @@ Plot sessionSitePlot(TownState town, Session session) {
     return Plot(-1, parcelOrigin(land.gx), parcelOrigin(land.gy));
   }
   if (session.isLandmark) {
-    return plotForTier(session.plotIndex!, BuildingTier.castle, town.parcels);
+    return plotForFootprint(
+      session.plotIndex!,
+      session.landmark!.footprint,
+      town.parcels,
+    );
   }
   final district = session.district;
   if (district != null) {
@@ -129,7 +134,11 @@ VoxelWorld buildTownWorld(
   final sitePlot = building == null
       ? null
       : building.landmark != null
-      ? plotForTier(building.plotIndex!, BuildingTier.castle, town.parcels)
+      ? plotForFootprint(
+          building.plotIndex!,
+          building.landmark!.footprint,
+          town.parcels,
+        )
       : activeSitePlot(town, building.plotIndex, building.tier);
   // Plots in use (a building, a ruin or the site) are cleared and bordered;
   // all others stay forest.
@@ -161,7 +170,11 @@ VoxelWorld buildTownWorld(
   }
   if (sitePlot != null) {
     inUse.addAll(
-      footprintOf(building!.tier, sitePlot.index, town.parcels) ??
+      footprintOf(
+            footprintFor(building!.tier, building.landmark),
+            sitePlot.index,
+            town.parcels,
+          ) ??
           [sitePlot.index],
     );
   }
@@ -184,7 +197,7 @@ VoxelWorld buildTownWorld(
     // road round it stays in sight.
     clearings: [
       for (final b in town.buildings)
-        ..._clearing(plotForTier(b.plotIndex, b.tier, town.parcels)),
+        ..._clearing(plotForBuilding(b, town.parcels)),
       if (sitePlot != null) ..._clearing(sitePlot),
     ],
     bushZones: [
@@ -222,7 +235,8 @@ VoxelWorld buildTownWorld(
     } else {
       // A castle ruin is a ruin on each plot of its block.
       for (final i
-          in footprintOf(b.tier, b.plotIndex, town.parcels) ?? [b.plotIndex]) {
+          in footprintOf(b.footprint, b.plotIndex, town.parcels) ??
+              [b.plotIndex]) {
         final q = plotFor(i, town.parcels);
         buildRuin(w, q.originX, q.originY);
       }
@@ -259,7 +273,7 @@ Iterable<(int, int, int, int)> _clearing(Plot plot) => [
   (
     plot.originX - 4,
     plot.originY - 4,
-    plot.originX + plot.size + 3,
-    plot.originY + plot.size + 3,
+    plot.originX + plot.width + 3,
+    plot.originY + plot.depth + 3,
   ),
 ];

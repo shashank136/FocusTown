@@ -398,7 +398,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
         ),
       if (option.reason != null)
         Text(option.reason!, style: TextStyle(color: theme.colorScheme.error)),
-      if (TownRules.nextFreePlot(town, option.tier) == null)
+      if (TownRules.nextFreePlot(town, footprintFor(option.tier)) == null)
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
@@ -415,7 +415,8 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
           TextButton(
             onPressed:
                 option.enabled &&
-                    TownRules.nextFreePlot(town, option.tier) != null
+                    TownRules.nextFreePlot(town, footprintFor(option.tier)) !=
+                        null
                 ? () => _choosePlot(minutes)
                 : null,
             child: const Text('Choose plot…'),
@@ -433,7 +434,7 @@ class _SessionSetupSheetState extends ConsumerState<SessionSetupSheet> {
   // Why there is no room for a [tier] now, and what makes some.
   static String _roomNote(TownState town, BuildingTier tier) {
     final ruins = town.buildings.any((b) => b.status == BuildingStatus.ruin);
-    final head = plotsOf(tier) == 1
+    final head = footprintFor(tier) == Footprint.one
         ? 'Every plot is used.'
         : 'There is no free 2 x 2 block of plots for a castle.';
     return '$head A finished build waits until there is room. Tap Expand '

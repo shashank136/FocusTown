@@ -58,27 +58,27 @@ void main() {
   test('a castle needs a free block, a hut just a free plot', () {
     final crowded = _crowded();
     expect(TownRules.hasRoom(crowded), isTrue);
-    expect(TownRules.hasRoom(crowded, BuildingTier.castle), isFalse);
-    expect(TownRules.hasRoom(_town(), BuildingTier.castle), isTrue);
+    expect(TownRules.hasRoom(crowded, Footprint.block), isFalse);
+    expect(TownRules.hasRoom(_town(), Footprint.block), isTrue);
   });
 
   test('a castle needs a free block, even with room', () {
     final town = _town(buildings: [_b(_at(1, 1), BuildingTier.hut)]);
-    expect(TownRules.isPlotFree(town, block, BuildingTier.castle), isFalse);
-    expect(TownRules.isPlotFree(town, _at(0, 4), BuildingTier.castle), isTrue);
-    expect(TownRules.isPlotFree(town, _at(3, 0), BuildingTier.castle), isFalse);
+    expect(TownRules.isPlotFree(town, block, Footprint.block), isFalse);
+    expect(TownRules.isPlotFree(town, _at(0, 4), Footprint.block), isTrue);
+    expect(TownRules.isPlotFree(town, _at(3, 0), Footprint.block), isFalse);
     // A hut can still use the plots next to it.
     expect(TownRules.isPlotFree(town, _at(0, 0)), isTrue);
   });
 
   test('the lowest free block is the automatic site', () {
     final town = _town();
-    final anchor = TownRules.nextFreePlot(town, BuildingTier.castle)!;
-    expect(footprintOf(BuildingTier.castle, anchor, const []), isNotNull);
+    final anchor = TownRules.nextFreePlot(town, Footprint.block)!;
+    expect(footprintOf(Footprint.block, anchor, const []), isNotNull);
     // It is the first anchor in plot order that fits.
     for (var i = 0; i < anchor; i++) {
       expect(
-        footprintOf(BuildingTier.castle, i, const []),
+        footprintOf(Footprint.block, i, const []),
         isNull,
         reason: '$i',
       );

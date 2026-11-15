@@ -9,6 +9,7 @@ import 'package:focus_town/domain/building_look.dart';
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/clock.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/domain/town.dart';
@@ -288,9 +289,14 @@ class TownGame extends FlameGame
   }
 
   /// Outlines the [free] plots and fills [selected] (choose-a-plot mode), over
-  /// [span] x [span] plots for a castle; an empty set turns the outlines off.
-  void setPlacement(Set<int> free, int? selected, {int span = 1}) {
-    renderer.setPlotOverlay(free, selected, span: span);
+  /// the plots of [footprint] for a castle or landmark; an empty set turns the
+  /// outlines off.
+  void setPlacement(
+    Set<int> free,
+    int? selected, {
+    Footprint footprint = Footprint.one,
+  }) {
+    renderer.setPlotOverlay(free, selected, footprint: footprint);
     _redraw = true;
   }
 

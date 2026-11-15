@@ -1,3 +1,4 @@
+import 'package:focus_town/domain/footprint.dart';
 import 'package:focus_town/domain/town_level.dart';
 
 /// A big building that takes several sessions to build.
@@ -8,6 +9,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 10,
     unlockLevel: TownLevel.village,
+    footprint: Footprint.block,
   ),
 
   /// The Lighthouse of Alexandria: 12 stages of 15 minutes each, from Village.
@@ -16,6 +18,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 15,
     unlockLevel: TownLevel.village,
+    footprint: Footprint.block,
   ),
 
   /// The Pagoda: 12 stages of 20 minutes each, from Town.
@@ -24,6 +27,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 20,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// The Taj Mahal: 12 stages of 25 minutes each, from Town.
@@ -32,6 +36,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 25,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// The Statue of Liberty: 12 stages of 30 minutes each, from Town.
@@ -40,6 +45,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 30,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// The Colosseum: 12 stages of 40 minutes each, from City.
@@ -48,6 +54,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 40,
     unlockLevel: TownLevel.city,
+    footprint: Footprint.block,
   ),
 
   /// The Easter Island Moai: 12 stages of 20 minutes each, from Village.
@@ -56,6 +63,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 20,
     unlockLevel: TownLevel.village,
+    footprint: Footprint.block,
   ),
 
   /// The Space Needle: 12 stages of 30 minutes each, from Town.
@@ -64,6 +72,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 30,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// Chichén Itzá: 12 stages of 25 minutes each, from Town.
@@ -72,6 +81,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 25,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// Petra: 12 stages of 30 minutes each, from Town.
@@ -80,6 +90,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 30,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// Christ the Redeemer: 12 stages of 40 minutes each, from City.
@@ -88,6 +99,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 40,
     unlockLevel: TownLevel.city,
+    footprint: Footprint.block,
   ),
 
   /// The Great Sphinx of Giza: 12 stages of 25 minutes each, from Town.
@@ -96,6 +108,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 25,
     unlockLevel: TownLevel.town,
+    footprint: Footprint.block,
   ),
 
   /// The Eiffel Tower: 12 stages of 20 minutes each, from Village.
@@ -104,6 +117,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 20,
     unlockLevel: TownLevel.village,
+    footprint: Footprint.block,
   );
 
   new({
@@ -111,6 +125,7 @@ enum Landmark {
     required this.stages,
     required this.minutesPerStage,
     required this.unlockLevel,
+    required this.footprint,
   });
 
   /// Its name.
@@ -124,6 +139,9 @@ enum Landmark {
 
   /// The town level that unlocks it.
   final TownLevel unlockLevel;
+
+  /// The plots it stands on: a rectangle of free plots in one piece.
+  final Footprint footprint;
 
   /// Minutes in all.
   int get totalMinutes => stages * minutesPerStage;

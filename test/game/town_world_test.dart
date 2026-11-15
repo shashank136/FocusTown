@@ -157,7 +157,7 @@ void main() {
     final w = buildTownWorld(
       _town(buildings: [_b(_block, BuildingTier.castle)]),
     );
-    for (final i in footprintOf(BuildingTier.castle, _block, const [])!) {
+    for (final i in footprintOf(Footprint.block, _block, const [])!) {
       expect(_leaves(w, kPlots[i]), 0, reason: 'plot $i');
     }
     // Its neighbours stay forest.
@@ -168,7 +168,7 @@ void main() {
     final w = buildTownWorld(
       _town(buildings: [_b(_block, BuildingTier.castle, BuildingStatus.ruin)]),
     );
-    for (final i in footprintOf(BuildingTier.castle, _block, const [])!) {
+    for (final i in footprintOf(Footprint.block, _block, const [])!) {
       final p = kPlots[i];
       expect(
         w.blocks.any(
@@ -187,12 +187,20 @@ void main() {
 
   test('the site of a castle session spans a block', () {
     final plot = plotForTier(_block, BuildingTier.castle, const []);
-    expect(plot.span, 2);
+    expect((plot.cols, plot.rows), (2, 2));
     expect(plot.center.x, plot.originX + 7);
-    expect(plotForTier(_block, BuildingTier.hut, const []).span, 1);
+    expect(plotForTier(_block, BuildingTier.hut, const []).cols, 1);
     // A block that does not fit falls back to a single plot.
     final bad = plotAtCell(3, 0, const [])!;
-    expect(plotForTier(bad, BuildingTier.castle, const []).span, 1);
+    expect(plotForTier(bad, BuildingTier.castle, const []).cols, 1);
+    // A footprint of its own: 3 wide and 2 deep.
+    final wide = plotForFootprint(
+      plotAtCell(0, 0, const [])!,
+      const Footprint(3, 2),
+      const [],
+    );
+    expect((wide.cols, wide.rows), (3, 2));
+    expect(wide.depth, 14);
   });
 
   test('a ruin draws ruin blocks with char', () {

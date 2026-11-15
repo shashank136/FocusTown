@@ -198,7 +198,7 @@ void main() {
   test(
     'castle builders spread along the two front walls of its 14 x 14 block',
     () {
-      const plot = Plot(0, 10, 10, 2);
+      const plot = Plot(0, 10, 10, 2, 2);
       final out = siteWorkers(plot, BuildingTier.castle, 8, 0);
       expect(out, hasLength(8));
       final front = out.where((w) => w.worker.facing == (0, -1)).toList();

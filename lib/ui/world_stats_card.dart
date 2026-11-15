@@ -39,7 +39,7 @@ class WorldStatsCard extends ConsumerWidget {
     Iterable<({int x, int y, int z, Object material})> blocks,
     TownState town,
   ) {
-    final plot = plotForTier(b.plotIndex, b.tier, town.parcels);
+    final plot = plotForBuilding(b, town.parcels);
     return '${b.tier.name} ${b.status.name} plot ${b.plotIndex}: '
         '${_blocksInPlot(blocks, plot)} blocks';
   }
@@ -53,9 +53,9 @@ class WorldStatsCard extends ConsumerWidget {
         (b) =>
             b.z >= 1 &&
             b.x >= p.originX &&
-            b.x < p.originX + p.size &&
+            b.x < p.originX + p.width &&
             b.y >= p.originY &&
-            b.y < p.originY + p.size,
+            b.y < p.originY + p.depth,
       )
       .length;
 }

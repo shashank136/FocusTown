@@ -77,7 +77,7 @@ Future<Image> renderTierPreview(
   int look,
 ) {
   // A castle stands on a 2 x 2 block of plots.
-  final side = kPlotSize * (plotsOf(tier) == 4 ? 2 : 1);
+  final side = kPlotSize * footprintFor(tier).cols;
   final world = VoxelWorld()
     ..fill(0, 0, 0, side - 1, side - 1, 0, Blocks.grass);
   buildTier(world, tier, 0, 0, stage: maxStage(tier), look: look);

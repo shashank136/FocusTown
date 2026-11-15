@@ -132,21 +132,21 @@ class _Heap {
 
 // The outer tile ring of [p]'s block.
 Iterable<Tile> _ring(Plot p) sync* {
-  final n = p.size;
-  for (var i = 0; i < n; i++) {
+  final w = p.width;
+  final d = p.depth;
+  for (var i = 0; i < w; i++) {
     yield (p.originX + i, p.originY);
-    yield (p.originX + i, p.originY + n - 1);
-    if (i > 0 && i < n - 1) {
-      yield (p.originX, p.originY + i);
-      yield (p.originX + n - 1, p.originY + i);
-    }
+    yield (p.originX + i, p.originY + d - 1);
+  }
+  for (var j = 1; j < d - 1; j++) {
+    yield (p.originX, p.originY + j);
+    yield (p.originX + w - 1, p.originY + j);
   }
 }
 
 Set<Tile> _build(TownState town, Plot? site) {
   final blocks = [
-    for (final b in town.buildings)
-      plotForTier(b.plotIndex, b.tier, town.parcels),
+    for (final b in town.buildings) plotForBuilding(b, town.parcels),
     ?site,
   ];
   // The two main roads run on across any land added to the island, as wide
@@ -161,8 +161,8 @@ Set<Tile> _build(TownState town, Plot? site) {
   // Under a building: never a road.
   final blocked = <Tile>{
     for (final p in blocks)
-      for (var x = 1; x < p.size - 1; x++)
-        for (var y = 1; y < p.size - 1; y++) (p.originX + x, p.originY + y),
+      for (var x = 1; x < p.width - 1; x++)
+        for (var y = 1; y < p.depth - 1; y++) (p.originX + x, p.originY + y),
   };
   // Where a connector may run: the edge tiles of every plot, and the roads.
   final lattice = <Tile>{...roads};

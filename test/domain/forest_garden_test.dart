@@ -103,7 +103,7 @@ void main() {
     );
     // Cell (4,4) with its neighbours (5,4), (4,5), (5,5): the garden is one.
     final anchor = plotAtCell(4, 4, done.parcels)!;
-    expect(footprintOf(BuildingTier.castle, anchor, done.parcels), isNull);
+    expect(footprintOf(Footprint.block, anchor, done.parcels), isNull);
   });
 
   group('forest squares of new district land', () {

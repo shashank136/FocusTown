@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
+import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/world/vec2.dart';
 
 /// Width and depth of the town map in tiles.
@@ -11,11 +12,18 @@ const kMapSize = 64;
 /// Width and depth of one building plot in tiles.
 const kPlotSize = 7;
 
-/// A square building plot. Plot 0 is nearest the crossing.
+/// A building plot, or the rectangle of plots a bigger building stands on.
+/// Plot 0 is nearest the crossing.
 class Plot {
-  /// Creates a plot; [span] is how many plots wide and deep the building on it
-  /// is (2 for a castle on a 2 x 2 block).
-  const new(this.index, this.originX, this.originY, [this.span = 1]);
+  /// Creates a plot; [cols] and [rows] are how many plots wide (x) and deep
+  /// (y) the building on it is (2 and 2 for a castle on a 2 x 2 block).
+  const new(
+    this.index,
+    this.originX,
+    this.originY, [
+    this.cols = 1,
+    this.rows = 1,
+  ]);
 
   /// Number 0..63, nearest the crossing first.
   final int index;
@@ -26,14 +34,20 @@ class Plot {
   /// Tile of the north corner.
   final int originY;
 
-  /// Plots wide and deep: 1, or 2 for a block.
-  final int span;
+  /// Plots wide (along x).
+  final int cols;
 
-  /// Width and depth in tiles.
-  int get size => kPlotSize * span;
+  /// Plots deep (along y).
+  final int rows;
+
+  /// Width in tiles (along x).
+  int get width => kPlotSize * cols;
+
+  /// Depth in tiles (along y).
+  int get depth => kPlotSize * rows;
 
   /// Middle of the plot (or block) in tile coordinates.
-  Vec2 get center => Vec2(originX + size / 2, originY + size / 2);
+  Vec2 get center => Vec2(originX + width / 2, originY + depth / 2);
 }
 
 /// Whether tile ([x], [y]) is on one of the two crossing roads (31..32).
@@ -82,14 +96,23 @@ Plot plotFor(int index, List<Parcel> parcels) {
   return Plot(index, parcelOrigin(p.gx), parcelOrigin(p.gy));
 }
 
-/// The plot a building of [tier] anchored on plot [index] stands on: the anchor
-/// plot with a span of 2 for a castle on a block that fits, else a single plot.
-Plot plotForTier(int index, BuildingTier tier, List<Parcel> parcels) {
+/// The plot a building of [size] anchored on plot [index] stands on: the
+/// anchor plot grown to the whole rectangle when it fits there, else a single
+/// plot.
+Plot plotForFootprint(int index, Footprint size, List<Parcel> parcels) {
   final p = plotFor(index, parcels);
-  return plotsOf(tier) == 4 && footprintOf(tier, index, parcels) != null
-      ? Plot(p.index, p.originX, p.originY, 2)
+  return size.area > 1 && footprintOf(size, index, parcels) != null
+      ? Plot(p.index, p.originX, p.originY, size.cols, size.rows)
       : p;
 }
+
+/// The plot a building of [tier] anchored on plot [index] stands on.
+Plot plotForTier(int index, BuildingTier tier, List<Parcel> parcels) =>
+    plotForFootprint(index, footprintFor(tier), parcels);
+
+/// The plot [b] stands on: its own footprint, so a landmark's rectangle.
+Plot plotForBuilding(TownBuilding b, List<Parcel> parcels) =>
+    plotForFootprint(b.plotIndex, b.footprint, parcels);
 
 /// The plot covering tile ([x], [y]) in a town with the claimed [parcels], or
 /// null for roads, scenery and unclaimed land.

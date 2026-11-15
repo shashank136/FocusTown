@@ -105,8 +105,8 @@ void main() {
       ],
     );
     final w = buildTownWorld(town);
-    for (var x = plot.originX; x < plot.originX + plot.size; x++) {
-      for (final y in [plot.originY, plot.originY + plot.size - 1]) {
+    for (var x = plot.originX; x < plot.originX + plot.width; x++) {
+      for (final y in [plot.originY, plot.originY + plot.depth - 1]) {
         expect(w.get(x, y, 0), Blocks.path, reason: '$x,$y');
       }
     }

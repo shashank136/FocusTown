@@ -5,6 +5,7 @@ import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 
 /// Lifecycle state of a focus session.
@@ -129,6 +130,9 @@ class Session {
 
   /// Whether this session builds on a [landmark].
   bool get isLandmark => landmark != null;
+
+  /// The plots the building of this session covers.
+  Footprint get footprint => footprintFor(tier, landmark);
 
   /// Whether this session builds a [district].
   bool get isDistrict => district != null;

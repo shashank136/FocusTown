@@ -1998,7 +1998,8 @@ Rules in `docs/spec.md` ("Gardens on forest squares").
 
 Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option C) are in `docs/reference/landmark_island.html`; the voxel shapes in it are the reference for each design. Each task: tests first, then commit.
 
-### T-V14.1 [ ] Rectangular footprints
+### T-V14.1 [x] Rectangular footprints
+- Done 2026-11-14: `Footprint` (`lib/domain/footprint.dart`, exported by `plot_grid.dart`), `footprintFor(tier, landmark)`, `footprintOf(size, anchor, parcels)` for any rectangle, `Landmark.footprint` (all 2 x 2 for now), `TownRules.hasRoom/nextFreePlot/isPlotFree/firstUnusedPlot` take a `Footprint`; `Plot` has `cols`, `rows`, `width`, `depth` (no `span` or `size`); `plotForFootprint`, `plotForBuilding`; the ring road, clearings, outlines and the placement card use the rectangle. Finding: the main roads run on across district land (rows and columns 3 and 4 stay split), so a 5-deep block cannot start at row 0 of an east or west strip: a 5 x 5 needs corner land above or below (`withCorners`) or a second district. Tests: `test/domain/footprint_test.dart`.
 - Do: a landmark has a footprint of width x depth plots (`Landmark.footprint`, start with 2 x 2 for all, so nothing changes). `plot_grid.dart`: `footprintOf` takes a width and depth and checks the plots are one piece, claimed, not a garden, and not across the road; `Plot` has width and depth in tiles (replace `span`); `TownRules.occupied/isPlotFree/nextFreePlot` and the placement outlines, the ring roads, clearings and the camera use the rectangle.
 - Tests first: a 3 x 2 and a 5 x 4 footprint on land with and without a road, a garden or a building in the way; `plotForTier` for landmarks; the ring road runs round a rectangle; the placement outline for a rectangle.
 - Commit: `T-V14.1: rectangular footprints`

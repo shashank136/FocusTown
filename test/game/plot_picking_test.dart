@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/town_game.dart';
 import 'package:focus_town/game/world/iso.dart';
@@ -65,13 +66,13 @@ void main() {
 
   test('a castle selection is drawn over its whole 2 x 2 block', () {
     final g = _game()
-      ..setPlacement({1, 2}, 2, span: 2)
+      ..setPlacement({1, 2}, 2, footprint: Footprint.block)
       ..update(0.1)
       ..render(ui.Canvas(ui.PictureRecorder()));
-    expect(g.renderer.selectedSpan, 2);
+    expect(g.renderer.selectedFootprint, Footprint.block);
     g
       ..setPlacement({1, 2}, 2)
       ..update(0.1);
-    expect(g.renderer.selectedSpan, 1);
+    expect(g.renderer.selectedFootprint, Footprint.one);
   });
 }

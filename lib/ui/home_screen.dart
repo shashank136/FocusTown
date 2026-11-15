@@ -194,10 +194,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ? const {}
           : {
               for (var i = 0; i < TownRules.plotCountOf(town); i++)
-                if (TownRules.isPlotFree(town, i, placement.tier)) i,
+                if (TownRules.isPlotFree(town, i, placement.footprint)) i,
             },
       placement?.plot,
-      span: placement != null && plotsOf(placement.tier) == 4 ? 2 : 1,
+      footprint: placement?.footprint ?? Footprint.one,
     );
   }
 

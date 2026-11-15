@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
 import 'package:focus_town/game/world/vec2.dart';
@@ -14,16 +15,20 @@ void paintPlotOutlines(
   int? selected, {
   required double tile,
   required Vec2 origin,
-  int selectedSpan = 1,
+  Footprint selectedFootprint = Footprint.one,
   List<Parcel> parcels = const [],
   ViewRotation rotation = ViewRotation.none,
   double spin = 0,
   Vec2 pivot = const Vec2(0, 0),
 }) {
-  Path diamond(Plot p, [int span = 1]) {
-    final side = kPlotSize * span;
-    // The plot's square as it lies in the current view.
-    final (vx, vy, _, _) = rotation.rect(p.originX, p.originY, side, side);
+  Path diamond(Plot p, [Footprint f = Footprint.one]) {
+    // The plot's rectangle as it lies in the current view.
+    final (vx, vy, w, d) = rotation.rect(
+      p.originX,
+      p.originY,
+      kPlotSize * f.cols,
+      kPlotSize * f.rows,
+    );
     Offset at(int dx, int dy) {
       final turned = turnAbout(
         (vx + dx).toDouble(),
@@ -37,9 +42,9 @@ void paintPlotOutlines(
 
     return Path()
       ..moveTo(at(0, 0).dx, at(0, 0).dy)
-      ..lineTo(at(side, 0).dx, at(side, 0).dy)
-      ..lineTo(at(side, side).dx, at(side, side).dy)
-      ..lineTo(at(0, side).dx, at(0, side).dy)
+      ..lineTo(at(w, 0).dx, at(w, 0).dy)
+      ..lineTo(at(w, d).dx, at(w, d).dy)
+      ..lineTo(at(0, d).dx, at(0, d).dy)
       ..close();
   }
 
@@ -51,7 +56,7 @@ void paintPlotOutlines(
     canvas.drawPath(diamond(plotFor(i, parcels)), stroke);
   }
   if (selected != null) {
-    final path = diamond(plotFor(selected, parcels), selectedSpan);
+    final path = diamond(plotFor(selected, parcels), selectedFootprint);
     canvas
       ..drawPath(path, Paint()..color = const Color(0x6643A047))
       ..drawPath(

@@ -33,43 +33,43 @@ void main() {
       for (final t in BuildingTier.values.where(
         (t) => t != BuildingTier.castle,
       )) {
-        expect(footprintOf(t, 10, const []), [10]);
-        expect(plotsOf(t), 1);
+        expect(footprintOf(footprintFor(t), 10, const []), [10]);
+        expect(footprintFor(t).area, 1);
       }
     });
 
     test('a castle takes the 2 x 2 block, anchor first', () {
       final anchor = plotAtCell(0, 0, const [])!;
-      final f = footprintOf(BuildingTier.castle, anchor, const [])!;
+      final f = footprintOf(Footprint.block, anchor, const [])!;
       expect(f, [
         anchor,
         plotAtCell(1, 0, const []),
         plotAtCell(0, 1, const []),
         plotAtCell(1, 1, const []),
       ]);
-      expect(plotsOf(BuildingTier.castle), 4);
+      expect(footprintFor(BuildingTier.castle).area, 4);
     });
 
     test('a castle may not cross the road or leave the island', () {
       expect(
-        footprintOf(BuildingTier.castle, plotAtCell(3, 0, const [])!, const []),
+        footprintOf(Footprint.block, plotAtCell(3, 0, const [])!, const []),
         isNull,
       ); // columns 3 and 4 are split by the road
       expect(
-        footprintOf(BuildingTier.castle, plotAtCell(0, 3, const [])!, const []),
+        footprintOf(Footprint.block, plotAtCell(0, 3, const [])!, const []),
         isNull,
       );
       expect(
-        footprintOf(BuildingTier.castle, plotAtCell(7, 0, const [])!, const []),
+        footprintOf(Footprint.block, plotAtCell(7, 0, const [])!, const []),
         isNull,
       ); // no plot east of column 7
-      expect(footprintOf(BuildingTier.castle, 999, const []), isNull);
+      expect(footprintOf(Footprint.block, 999, const []), isNull);
     });
 
     test('claimed land can complete a block at the coast', () {
       const parcels = [Parcel(8, 0), Parcel(8, 1)];
       final anchor = plotAtCell(7, 0, parcels)!;
-      expect(footprintOf(BuildingTier.castle, anchor, parcels), [
+      expect(footprintOf(Footprint.block, anchor, parcels), [
         anchor,
         64,
         plotAtCell(7, 1, parcels),

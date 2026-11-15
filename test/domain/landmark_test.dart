@@ -275,7 +275,7 @@ void main() {
       expect(marks.every((b) => b.stage == Landmark.values[0].stages), isTrue);
       final plots = {
         for (final b in marks)
-          ...footprintOf(b.tier, b.plotIndex, town.parcels)!,
+          ...footprintOf(b.footprint, b.plotIndex, town.parcels)!,
       };
       expect(plots.length, 4 * marks.length);
       // The real town is untouched.

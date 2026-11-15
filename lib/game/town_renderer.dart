@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show listEquals;
 
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
 import 'package:focus_town/game/camera/town_camera.dart';
 import 'package:focus_town/game/effects/particles.dart';
@@ -58,7 +59,7 @@ class TownRenderer {
   ReadyPreview? _preview;
   Set<int> _outlines = const {};
   int? _selected;
-  int _selectedSpan = 1;
+  Footprint _selectedFootprint = Footprint.one;
   List<VisibleBlock> _previewBlocks = const [];
   (BuildingTier, int, int)? _previewKey;
   ViewRotation _rotation = ViewRotation.none;
@@ -242,14 +243,18 @@ class TownRenderer {
   int? get selectedPlot => _selected;
 
   /// How many plots wide the selection is (2 for a castle's block).
-  int get selectedSpan => _selectedSpan;
+  Footprint get selectedFootprint => _selectedFootprint;
 
   /// Outlines the [free] plots and fills [selected]; an empty set hides them.
   /// Drawn over the cached town every frame, so it never re-records it.
-  void setPlotOverlay(Set<int> free, int? selected, {int span = 1}) {
+  void setPlotOverlay(
+    Set<int> free,
+    int? selected, {
+    Footprint footprint = Footprint.one,
+  }) {
     _outlines = free;
     _selected = selected;
-    _selectedSpan = span;
+    _selectedFootprint = footprint;
   }
 
   /// The floating "ready to place" building, if shown.
@@ -314,7 +319,7 @@ class TownRenderer {
         canvas,
         _outlines,
         _selected,
-        selectedSpan: _selectedSpan,
+        selectedFootprint: _selectedFootprint,
         parcels: parcels,
         rotation: _rotation,
         tile: cam.tile,
@@ -422,7 +427,7 @@ class TownRenderer {
         canvas,
         _outlines,
         _selected,
-        selectedSpan: _selectedSpan,
+        selectedFootprint: _selectedFootprint,
         parcels: parcels,
         rotation: _rotation,
         tile: cam.tile,

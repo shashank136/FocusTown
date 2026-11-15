@@ -41,6 +41,9 @@ class Placement {
   BuildingTier get tier =>
       landmark != null ? BuildingTier.castle : BuildingTier.forMinutes(minutes);
 
+  /// The plots what is being placed covers: a landmark's own rectangle.
+  Footprint get footprint => footprintFor(tier, landmark);
+
   @override
   bool operator ==(Object other) =>
       other is Placement &&
@@ -80,7 +83,7 @@ class PlacementController extends Notifier<Placement?> {
     final current = state;
     final focus = ref.read(focusControllerProvider).value;
     if (current == null || focus == null) return;
-    if (!TownRules.isPlotFree(focus.town, i, current.tier)) return;
+    if (!TownRules.isPlotFree(focus.town, i, current.footprint)) return;
     state = Placement(
       current.minutes,
       plot: i,

@@ -11,6 +11,7 @@ import 'package:focus_town/domain/elapsed.dart';
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/local_date.dart';
 import 'package:focus_town/domain/parcel.dart';
+import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/progression.dart';
 import 'package:focus_town/domain/session.dart';
 import 'package:focus_town/domain/session_engine.dart';
@@ -87,38 +88,41 @@ class FocusController extends AsyncNotifier<FocusState> {
   /// Starts a session of [minutes] on [plotIndex] (a free plot), or on the
   /// next free plot when null, building the chosen [look]; it exists only
   /// once it is saved.
-  Future<void> start(int minutes, {int? plotIndex, int? look}) => _once(
-    () async {
-      final current = await future;
-      if (current.active != null) {
-        throw StateError('A session is already active');
-      }
-      if (!TownRules.canStart(current.town, minutes)) {
-        throw StateError('Cannot start $minutes minutes with this town');
-      }
-      final tier = BuildingTier.forMinutes(minutes);
-      if (plotIndex != null &&
-          !TownRules.isPlotFree(current.town, plotIndex, tier)) {
-        throw StateError('Plot $plotIndex is not free for a ${tier.name}');
-      }
-      final now = TimeStamp.now(ref.read(clockProvider));
-      final built = SessionEngine.start(
-        id: 's${now.wall.microsecondsSinceEpoch}',
-        minutes: minutes,
-        workersAvailable: current.town.workers,
-        recovery: current.town.inRecoveryMode,
-        now: now,
-        plotIndex: plotIndex ?? TownRules.nextFreePlot(current.town, tier),
-        look: look,
-      );
-      final session = _testLength(built);
-      // The first session of a new week brings the emergency pause back.
-      final town = _refilled(current.town, now);
-      // Save first: a session that was not saved never starts.
-      await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
-      state = AsyncData(current.copyWith(town: town, active: session));
-    },
-  );
+  Future<void> start(
+    int minutes, {
+    int? plotIndex,
+    int? look,
+  }) => _once(() async {
+    final current = await future;
+    if (current.active != null) {
+      throw StateError('A session is already active');
+    }
+    if (!TownRules.canStart(current.town, minutes)) {
+      throw StateError('Cannot start $minutes minutes with this town');
+    }
+    final tier = BuildingTier.forMinutes(minutes);
+    if (plotIndex != null &&
+        !TownRules.isPlotFree(current.town, plotIndex, footprintFor(tier))) {
+      throw StateError('Plot $plotIndex is not free for a ${tier.name}');
+    }
+    final now = TimeStamp.now(ref.read(clockProvider));
+    final built = SessionEngine.start(
+      id: 's${now.wall.microsecondsSinceEpoch}',
+      minutes: minutes,
+      workersAvailable: current.town.workers,
+      recovery: current.town.inRecoveryMode,
+      now: now,
+      plotIndex:
+          plotIndex ?? TownRules.nextFreePlot(current.town, footprintFor(tier)),
+      look: look,
+    );
+    final session = _testLength(built);
+    // The first session of a new week brings the emergency pause back.
+    final town = _refilled(current.town, now);
+    // Save first: a session that was not saved never starts.
+    await ref.read(townRepositoryProvider).saveSessionStarted(town, session);
+    state = AsyncData(current.copyWith(town: town, active: session));
+  });
 
   // Testing aid: new sessions last 1 minute while the switch is on.
   Session _testLength(Session s) =>
@@ -188,10 +192,12 @@ class FocusController extends AsyncNotifier<FocusState> {
         throw StateError('${landmark.title} cannot be started');
       }
       final anchor =
-          plotIndex ?? TownRules.nextFreePlot(town, BuildingTier.castle)!;
+          plotIndex ?? TownRules.nextFreePlot(town, landmark.footprint)!;
       town =
           TownRules.beginLandmark(town, landmark, anchor) ??
-          (throw StateError('Plot $anchor is not a free 2 x 2 block'));
+          (throw StateError(
+            'Plot $anchor is not a free area for ${landmark.title}',
+          ));
     }
     final project = TownRules.landmarkProject(town, landmark)!;
     final now = TimeStamp.now(ref.read(clockProvider));
