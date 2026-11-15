@@ -206,7 +206,10 @@ void main() {
       ],
     );
     await _open(tester, crowded);
-    final open = Landmark.values.where((l) => l.unlockLevel.minXp <= 300);
+    // A landmark of one plot still finds a free plot between the huts.
+    final open = Landmark.values.where(
+      (l) => l.unlockLevel.minXp <= 300 && l.footprint.area > 1,
+    );
     for (final l in open) {
       expect(
         find.text(noRoomText(l.title, l.footprint)),
@@ -214,8 +217,8 @@ void main() {
         reason: l.title,
       );
     }
-    // No Start or Continue, but a way to make room on each of them.
-    expect(find.byType(FilledButton), findsNothing);
+    // No Start or Continue on those, but a way to make room on each of them.
+    expect(find.widgetWithText(FilledButton, 'Start'), findsOneWidget);
     expect(
       find.widgetWithText(OutlinedButton, 'Expand island'),
       findsNWidgets(open.length),

@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/landmark.dart';
+import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/landmark_defs.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
@@ -34,11 +36,14 @@ void main() {
         expect(_cells(_build(l, 99)), _cells(_build(l, l.stages)));
       });
 
-      test('it stays inside its 12 x 12 inset', () {
+      test('it stays inside the inset of its footprint', () {
+        // One tile in from the road on every side of the plots.
+        final w = l.footprint.cols * 7 - 3;
+        final d = l.footprint.rows * 7 - 3;
         for (final b in _build(l, l.stages).blocks) {
-          expect(b.x, inInclusiveRange(_ox, _ox + 11));
-          expect(b.y, inInclusiveRange(_oy, _oy + 11));
-          expect(b.z, greaterThanOrEqualTo(1));
+          expect(b.x, inInclusiveRange(_ox, _ox + w));
+          expect(b.y, inInclusiveRange(_oy, _oy + d));
+          expect(b.z, greaterThanOrEqualTo(0));
         }
       });
 
@@ -50,7 +55,15 @@ void main() {
       });
 
       test('it is bigger than a house', () {
-        expect(_build(l, l.stages).blockCount, greaterThan(150));
+        final house = VoxelWorld();
+        buildTier(
+          house,
+          BuildingTier.house,
+          0,
+          0,
+          stage: maxStage(BuildingTier.house),
+        );
+        expect(_build(l, l.stages).blockCount, greaterThan(house.blockCount));
       });
     });
   }

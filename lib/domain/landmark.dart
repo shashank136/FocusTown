@@ -99,7 +99,7 @@ enum Landmark {
     stages: 12,
     minutesPerStage: 10,
     unlockLevel: TownLevel.village,
-    footprint: Footprint.block,
+    footprint: Footprint.one,
   ),
 
   /// The Great Sphinx of Giza: 12 stages of 30 minutes each, from Town.

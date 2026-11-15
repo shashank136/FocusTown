@@ -290,7 +290,7 @@ void main() {
         for (final b in marks)
           ...footprintOf(b.footprint, b.plotIndex, town.parcels)!,
       };
-      expect(plots.length, 4 * marks.length);
+      expect(plots.length, marks.fold(0, (n, b) => n + b.footprint.area));
       // The real town is untouched.
       expect(town.buildings, [hut]);
     });

@@ -2,12 +2,27 @@ import 'dart:math' as math;
 
 import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/game/world/block_material.dart';
+import 'package:focus_town/game/world/landmark_designs.dart';
+import 'package:focus_town/game/world/vox.dart';
 import 'package:focus_town/game/world/voxel_world.dart';
 
 /// Builds [landmark] up to [stage] (0 draws nothing, past the last stage is
 /// the last) on the 12 x 12 tiles from ([ox], [oy]): the block of its 2 x 2
 /// plots, one tile in from the edge (the outer tile is the road).
-void buildLandmark(VoxelWorld w, Landmark landmark, int ox, int oy, int stage) {
+void buildLandmark(
+  VoxelWorld w,
+  Landmark landmark,
+  int ox,
+  int oy,
+  int stage, {
+  bool classic = false,
+}) {
+  // A landmark that stands on the old 2 x 2 block (it has no room for its
+  // new size yet) keeps the old design, drawn in 12 x 12 tiles.
+  if (!classic && landmark == Landmark.christRedeemer) {
+    paintDesign(w, christRedeemerDesign(), ox, oy, stage, landmark.stages);
+    return;
+  }
   switch (landmark) {
     case Landmark.greatPyramid:
       _greatPyramid(w, ox, oy, stage);

@@ -16,7 +16,15 @@ import 'package:focus_town/game/world/voxel_world.dart';
 /// the [size] x [size] picture (a tall tower fills its height).
 Future<Image> renderLandmarkPreview(Landmark landmark, {int size = 96}) {
   final world = VoxelWorld()
-    ..fill(0, 0, 0, 2 * kPlotSize - 1, 2 * kPlotSize - 1, 0, Blocks.grass);
+    ..fill(
+      0,
+      0,
+      0,
+      landmark.footprint.cols * kPlotSize - 1,
+      landmark.footprint.rows * kPlotSize - 1,
+      0,
+      Blocks.grass,
+    );
   buildLandmark(world, landmark, 1, 1, landmark.stages);
   final (blocks, length, box) = _measure(world);
   final tile = 0.8 * size / length;

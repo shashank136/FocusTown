@@ -221,7 +221,14 @@ VoxelWorld buildTownWorld(
     final p = plotFor(b.plotIndex, town.parcels);
     final landmark = b.landmark;
     if (landmark != null) {
-      buildLandmark(w, landmark, p.originX + 1, p.originY + 1, b.stage);
+      buildLandmark(
+        w,
+        landmark,
+        p.originX + 1,
+        p.originY + 1,
+        b.stage,
+        classic: TownRules.footprintOfBuilding(town, b) != landmark.footprint,
+      );
     } else if (b.status == BuildingStatus.complete) {
       buildTier(
         w,

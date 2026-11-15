@@ -2026,6 +2026,21 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Do: for each landmark, in order Christ the Redeemer, Lighthouse of Alexandria, Easter Island Moai, Space Needle, Pagoda, Petra, Great Sphinx, Chichen Itza, Statue of Liberty, Eiffel Tower, Colosseum, Taj Mahal, Great Pyramid: set its footprint, draw its 12 stages at that size from the sketch, and update its card picture.
 - Tests first (each): the 12 stages grow block by block and stay inside the footprint; the finished block count is pinned; goldens.
 - Commit: `T-V14.5: <landmark> at its real size`
+- How: a design is drawn with `Vox` (`lib/game/world/vox.dart`: set, box, ring, disc inside its own area) in `lib/game/world/landmark_designs.dart` (port from the sketch's shape in `docs/reference/landmark_island.html`), and `paintDesign` shows it stage by stage from the ground up (the sketch's blocks at their heights; it needs at least 12 height levels). `buildLandmark(..., classic: true)` draws the old 12 x 12 design, which the world builder uses when a landmark's real footprint is not its new one. Set the landmark's `footprint` in `Landmark`, update its tests (`landmark_layout_test.dart` checks the inset of every footprint, `new_landmarks_test.dart` keeps the old design's checks with `classic: true`) and add `test/game/<name>_design_test.dart`.
+- Progress:
+  - [x] Christ the Redeemer, 1 x 1 (2026-11-15, 122 blocks)
+  - [ ] Lighthouse of Alexandria, 2 x 2
+  - [ ] Easter Island Moai, 2 x 2
+  - [ ] Space Needle, 2 x 2
+  - [ ] Pagoda, 2 x 2
+  - [ ] Petra, 3 x 2
+  - [ ] Great Sphinx, 4 x 2
+  - [ ] Chichén Itzá, 3 x 3
+  - [ ] Statue of Liberty, 3 x 3
+  - [ ] Eiffel Tower, 3 x 3
+  - [ ] Colosseum, 4 x 4
+  - [ ] Taj Mahal, 5 x 4
+  - [ ] Great Pyramid, 5 x 5
 
 ### T-V14.6 [ ] Debug aid at the new sizes
 - Do: "Show every landmark on the map" lays all 13 out at their sizes (on extra land if needed).

@@ -8,9 +8,9 @@ import 'package:focus_town/game/world/voxel_world.dart';
 const _ox = 20;
 const _oy = 20;
 
-VoxelWorld _build(Landmark l, int stage) {
+VoxelWorld _build(Landmark l, int stage, {bool classic = false}) {
   final w = VoxelWorld();
-  buildLandmark(w, l, _ox, _oy, stage);
+  buildLandmark(w, l, _ox, _oy, stage, classic: classic);
   return w;
 }
 
@@ -58,22 +58,46 @@ void main() {
   });
 
   test(
-    'Christ the Redeemer: a flared robe, shoulders, arms, then the head',
+    'Christ the Redeemer, the old design: a flared robe, shoulders, arms',
     () {
-      final robe = _build(Landmark.christRedeemer, 7);
+      final robe = _build(Landmark.christRedeemer, 7, classic: true);
       expect(
         _at(robe, 4, 4, 10),
         Blocks.marble,
       ); // the robe is wide at the feet
       expect(_at(robe, 4, 4, 11), isNull); // and narrow above
-      expect(_at(_build(Landmark.christRedeemer, 8), 4, 5, 16), Blocks.marble);
-      expect(_at(_build(Landmark.christRedeemer, 8), 2, 5, 16), isNull);
-      expect(_at(_build(Landmark.christRedeemer, 9), 2, 5, 16), Blocks.marble);
-      expect(_at(_build(Landmark.christRedeemer, 9), 0, 5, 14), Blocks.marble);
-      expect(_at(_build(Landmark.christRedeemer, 9), 9, 5, 16), isNull);
-      expect(_at(_build(Landmark.christRedeemer, 10), 9, 5, 16), Blocks.marble);
-      expect(_at(_build(Landmark.christRedeemer, 10), 5, 5, 19), isNull);
-      expect(_at(_build(Landmark.christRedeemer, 11), 5, 5, 19), Blocks.marble);
+      expect(
+        _at(_build(Landmark.christRedeemer, 8, classic: true), 4, 5, 16),
+        Blocks.marble,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 8, classic: true), 2, 5, 16),
+        isNull,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 9, classic: true), 2, 5, 16),
+        Blocks.marble,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 9, classic: true), 0, 5, 14),
+        Blocks.marble,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 9, classic: true), 9, 5, 16),
+        isNull,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 10, classic: true), 9, 5, 16),
+        Blocks.marble,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 10, classic: true), 5, 5, 19),
+        isNull,
+      );
+      expect(
+        _at(_build(Landmark.christRedeemer, 11, classic: true), 5, 5, 19),
+        Blocks.marble,
+      );
     },
   );
 
