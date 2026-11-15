@@ -483,6 +483,41 @@ void main() {
       );
     });
 
+    test(
+      'the preview is the whole strip: the corners that come with the row',
+      () {
+        // Two rows built north and two east, as on a real island.
+        var t = TownRules.beginDistrict(_city(), DistrictSide.north)!;
+        t = TownRules.applyDistrictMinutes(t, 120);
+        t = TownRules.beginDistrict(t, DistrictSide.east)!;
+        t = TownRules.applyDistrictMinutes(t, 120);
+        // A south row would also fill the corner beside the east strip: the
+        // strip is 10 squares wide, not 8.
+        final next = TownRules.nextDistrictRow(t, DistrictSide.south);
+        expect(next, hasLength(10));
+        expect(
+          {for (final p in next) (p.gx, p.gy)},
+          {for (var x = 0; x < 8; x++) (x, 8), (8, 8), (9, 8)},
+        );
+        // And exactly what building it adds.
+        var built = TownRules.beginDistrict(t, DistrictSide.south)!;
+        built = TownRules.applyDistrictMinutes(built, 60);
+        expect(
+          {for (final p in built.parcels.skip(t.parcels.length)) (p.gx, p.gy)},
+          {for (final p in next) (p.gx, p.gy)},
+        );
+      },
+    );
+
+    test('with an arm on each side the strip reaches both corners', () {
+      var t = _city();
+      for (final side in [DistrictSide.east, DistrictSide.west]) {
+        t = TownRules.beginDistrict(t, side)!;
+        t = TownRules.applyDistrictMinutes(t, 60);
+      }
+      expect(TownRules.nextDistrictRow(t, DistrictSide.north), hasLength(10));
+    });
+
     test('nothing where there is no room', () {
       final t = _city(done: [DistrictSide.east]);
       expect(TownRules.nextDistrictRow(t, DistrictSide.east), isEmpty);

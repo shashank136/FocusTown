@@ -438,13 +438,32 @@ class TownRules {
     return DistrictState.ready;
   }
 
-  /// The 8 squares of the row that [side] would build next (empty when the
-  /// side has no room left): the first row after the ones already built.
+  /// The squares that building the next row of [side] adds: its 8 squares and
+  /// the corner squares that come with it where the neighbouring sides have
+  /// rows too, so the strip is as wide as the island's edge. Empty when the
+  /// side has no room left.
   static List<Parcel> nextDistrictRow(TownState town, DistrictSide side) {
     final index = town.districts.where((d) => d == side).length;
     final built = builtRows(town, side);
     if (!districtFits(side, index) || built >= kDistrictRows) return const [];
-    return districtRow(side, index, built);
+    final row = districtRow(side, index, built);
+    // What the row brings with it: build it on paper and see what is new.
+    final owned = {for (final p in town.parcels) (p.gx, p.gy)};
+    final filled = withCorners(
+      town.copyWith(
+        parcels: [
+          ...town.parcels,
+          for (final p in row)
+            if (!owned.contains((p.gx, p.gy))) p,
+        ],
+      ),
+    );
+    final inRow = {for (final p in row) (p.gx, p.gy)};
+    return [
+      ...row,
+      for (final p in filled.parcels.skip(town.parcels.length))
+        if (!inRow.contains((p.gx, p.gy))) p,
+    ];
   }
 
   /// Starts (or goes on with) the district on [side]. On another side than
