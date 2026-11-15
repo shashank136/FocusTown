@@ -203,7 +203,19 @@ class TownGame extends FlameGame
     );
     final top = maxStage(tier) + 4.0;
     final (cx, cy) = renderer.rotation.point(plot.center.x, plot.center.y);
-    final at = project(cx, cy, top, cam.tile, cam.origin);
+    // While the island turns, the label turns with it, about the same pivot.
+    final pivot = renderer.spinPivot;
+    final c = math.cos(renderer.spin);
+    final s = math.sin(renderer.spin);
+    final dx = cx - pivot.x;
+    final dy = cy - pivot.y;
+    final at = project(
+      pivot.x + dx * c - dy * s,
+      pivot.y + dx * s + dy * c,
+      top,
+      cam.tile,
+      cam.origin,
+    );
     readyLabel.value = at;
   }
 

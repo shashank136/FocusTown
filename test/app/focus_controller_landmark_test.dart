@@ -205,6 +205,23 @@ void main() {
     expect(town.buildings.where((b) => b.landmark != null), hasLength(1));
   });
 
+  test('resetting all landmarks clears every one, and nothing else', () async {
+    final (c, n) = await ready();
+    await n.startLandmark(Landmark.lighthouse, 60);
+    await finish(c, n, 60);
+    final others = _state(c).town.buildings.where((b) => b.landmark == null);
+    await n.resetAllLandmarks();
+    final town = (await _container().read(focusControllerProvider.future)).town;
+    expect(town.buildings.where((b) => b.landmark != null), isEmpty);
+    expect(town.buildings.length, others.length);
+  });
+
+  test('landmarks cannot be reset while a session is running', () async {
+    final (_, n) = await ready();
+    await n.startLandmark(Landmark.lighthouse, 30);
+    await expectLater(n.resetAllLandmarks(), throwsStateError);
+  });
+
   test('a landmark cannot be reset while a session is running', () async {
     final (_, n) = await ready();
     await n.startLandmark(Landmark.lighthouse, 30);

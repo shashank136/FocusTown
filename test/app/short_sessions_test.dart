@@ -126,7 +126,7 @@ void main() {
       ),
     );
     await tester.pump();
-    final finder = find.text('Reset Eiffel Tower');
+    final finder = find.text('Reset all landmarks');
     await tester.scrollUntilVisible(finder, 200);
     await tester.tap(finder);
     await tester.pump();

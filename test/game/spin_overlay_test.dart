@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/app/focus_state.dart';
+import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/session_engine.dart';
 import 'package:focus_town/domain/testing/fake_clock.dart';
@@ -104,6 +105,28 @@ void main() {
       );
       final d = _differ(without, withWorker, box);
       expect(d.inside, greaterThan(10));
+      expect(d.outside, 0);
+    });
+  });
+
+  testWidgets('the ready preview is drawn while the island turns', (
+    tester,
+  ) async {
+    await tester.runAsync(() async {
+      final r = _renderer();
+      final without = await _shot(r);
+      final plot = plotFor(0, r.parcels);
+      r.setPreview(ReadyPreview(BuildingTier.house, plot, 0.4));
+      final withPreview = await _shot(r);
+      final at = _screen(r, plot.center.x, plot.center.y, 4);
+      final t = r.camera!.tile;
+      final box = ui.Rect.fromCenter(
+        center: ui.Offset(at.x, at.y),
+        width: 14 * t,
+        height: 14 * t,
+      );
+      final d = _differ(without, withPreview, box);
+      expect(d.inside, greaterThan(50));
       expect(d.outside, 0);
     });
   });

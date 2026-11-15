@@ -61,6 +61,8 @@ class TownRenderer {
   int? _selected;
   Footprint _selectedFootprint = Footprint.one;
   List<VisibleBlock> _previewBlocks = const [];
+  VoxelWorld? _previewWorld;
+  SpinBlocks? _previewSpin;
   (BuildingTier, int, int)? _previewKey;
   ViewRotation _rotation = ViewRotation.none;
   int _worldVersion = 0;
@@ -276,9 +278,12 @@ class TownRenderer {
       stage: maxStage(preview.tier),
       look: preview.look,
     );
-    _previewBlocks =
-        (_rotation == ViewRotation.none ? w : _rotation.rotateWorld(w))
-            .sortedVisible();
+    final turned = _rotation == ViewRotation.none
+        ? w
+        : _rotation.rotateWorld(w);
+    _previewWorld = turned;
+    _previewSpin = null;
+    _previewBlocks = turned.sortedVisible();
   }
 
   /// Draws everything into [canvas], which is [size] big.
@@ -446,6 +451,27 @@ class TownRenderer {
         spin: _spin,
         pivot: pivot,
       );
+    }
+    final preview = _preview;
+    final previewWorld = _previewWorld;
+    if (preview != null && previewWorld != null) {
+      // The floating copy turns with the island, lifted 2 blocks.
+      canvas
+        ..saveLayer(
+          null,
+          Paint()..color = Color.fromRGBO(0, 0, 0, preview.alpha.clamp(0, 1)),
+        )
+        ..translate(0, -2 * cam.tile);
+      paintSpin(
+        canvas,
+        _previewSpin ??= SpinBlocks.of(previewWorld),
+        angle: _spin,
+        center: pivot,
+        tile: cam.tile,
+        origin: cam.origin,
+        viewSize: size,
+      );
+      canvas.restore();
     }
   }
 

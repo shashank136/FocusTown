@@ -2011,7 +2011,7 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Commit: `T-V14.2: settle landmarks`
 
 ### T-V14.3 [x] Unlock levels and times by size
-- Done 2026-11-15: the spec table is in `lib/domain/landmark.dart` (minutes per stage 10 to 55, 120 to 660 minutes in all; Village: Christ, Lighthouse, Moai; Town: Space Needle, Pagoda, Petra, Sphinx; City: Chichén Itzá, Statue of Liberty, Eiffel; Metropolis: Colosseum, Taj Mahal, Great Pyramid). A finished landmark is always at its last stage (`TownBuilding.stage`), a landmark in progress keeps its minutes. Old tests that used the Eiffel Tower as the generic landmark (20-minute stages, Village) now use the Lighthouse, which has those numbers. Tests: `test/domain/landmark_table_test.dart`. The debug screen's reset button is still Eiffel only (T-V14.6).
+- Done 2026-11-15: the spec table is in `lib/domain/landmark.dart` (minutes per stage 10 to 55, 120 to 660 minutes in all; Village: Christ, Lighthouse, Moai; Town: Space Needle, Pagoda, Petra, Sphinx; City: Chichén Itzá, Statue of Liberty, Eiffel; Metropolis: Colosseum, Taj Mahal, Great Pyramid). A finished landmark is always at its last stage (`TownBuilding.stage`), a landmark in progress keeps its minutes. Old tests that used the Eiffel Tower as the generic landmark (20-minute stages, Village) now use the Lighthouse, which has those numbers. Tests: `test/domain/landmark_table_test.dart`. The debug screen's reset button now clears every landmark (2026-11-15).
 - Do: the table in the spec (`Landmark.minutesPerStage`, `unlockLevel`; `TownLevel.metropolis` is the top level). A landmark in progress keeps its minutes.
 - Tests first: every landmark's total time and unlock level; progress is kept.
 - Commit: `T-V14.3: landmark times and levels`
@@ -2044,7 +2044,7 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
   - [x] Great Pyramid, 5 x 5 (2026-11-15)
 
 ### T-V14.6 [x] Debug aid at the new sizes
-- Done 2026-11-15: the showcase (`TownRules.landmarkShowcase`) builds out the four sides with their corners and stands all 13 landmarks on it, the biggest first. Still open: the debug screen's reset button is hard-wired to the Eiffel Tower.
+- Done 2026-11-15: the showcase (`TownRules.landmarkShowcase`) builds out the four sides with their corners and stands all 13 landmarks on it, the biggest first. The debug screen's reset button clears every landmark (`FocusController.resetAllLandmarks`). While the island turns, the floating "ready to place" building and its label turn with it (done 2026-11-15, for 1.0.1). The card pictures of all 13 landmarks were checked at their new sizes and fit.
 - Do: "Show every landmark on the map" lays all 13 out at their sizes (on extra land if needed).
 - Commit: `T-V14.6: show every landmark at its size`
 

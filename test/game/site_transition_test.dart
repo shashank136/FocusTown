@@ -401,6 +401,19 @@ void main() {
       expect(g.readyLabel.value, isNull);
     });
 
+    test('the Ready to place label follows the island while it turns', () {
+      final g = running();
+      finish(g, queued);
+      g.update(0.1);
+      final before = g.readyLabel.value!;
+      g
+        ..spinBy(0.6)
+        ..update(0.1);
+      final after = g.readyLabel.value!;
+      final moved = (after.x - before.x).abs() + (after.y - before.y).abs();
+      expect(moved, greaterThan(5));
+    });
+
     test('completed and failed results show no label or preview', () {
       for (final r in [
         result0,

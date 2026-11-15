@@ -6,7 +6,6 @@ import 'package:focus_town/app/landmark_showcase.dart';
 import 'package:focus_town/app/providers.dart';
 import 'package:focus_town/app/short_sessions.dart';
 import 'package:focus_town/domain/elapsed.dart';
-import 'package:focus_town/domain/landmark.dart';
 import 'package:focus_town/domain/time_stamp.dart';
 import 'package:focus_town/ui/debug_log_view.dart';
 import 'package:focus_town/ui/event_log_panel.dart';
@@ -49,9 +48,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
   Future<void> _resetLandmark() async {
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref
-          .read(focusControllerProvider.notifier)
-          .resetLandmark(Landmark.eiffel);
+      await ref.read(focusControllerProvider.notifier).resetAllLandmarks();
       // The controller refuses with a StateError while a session runs.
       // ignore: avoid_catching_errors
     } on StateError catch (e) {
@@ -146,7 +143,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
             ),
             OutlinedButton(
               onPressed: () => unawaited(_resetLandmark()),
-              child: const Text('Reset Eiffel Tower'),
+              child: const Text('Reset all landmarks'),
             ),
             const FocusDebugPanel(),
             const WorldStatsCard(),

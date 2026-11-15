@@ -251,7 +251,14 @@ class FocusController extends AsyncNotifier<FocusState> {
   /// Removes [landmark] from the town, finished or not, so it can be built
   /// again. A testing aid, reached from the debug screen; not while a session
   /// is running.
-  Future<void> resetLandmark(Landmark landmark) async {
+  Future<void> resetLandmark(Landmark landmark) =>
+      _removeLandmarks((l) => l == landmark);
+
+  /// Removes every landmark from the town, finished or not. A testing aid,
+  /// reached from the debug screen; not while a session is running.
+  Future<void> resetAllLandmarks() => _removeLandmarks((_) => true);
+
+  Future<void> _removeLandmarks(bool Function(Landmark landmark) remove) async {
     final current = await future;
     if (current.active != null) {
       throw StateError('A session is running');
@@ -259,7 +266,7 @@ class FocusController extends AsyncNotifier<FocusState> {
     final town = current.town.copyWith(
       buildings: [
         for (final b in current.town.buildings)
-          if (b.landmark != landmark) b,
+          if (b.landmark == null || !remove(b.landmark!)) b,
       ],
     );
     await ref.read(townRepositoryProvider).saveTown(town);
