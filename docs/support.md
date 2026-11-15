@@ -3,9 +3,9 @@ layout: default
 title: Support
 ---
 
-# Focus Town support
+# Focus Worldbuilder support
 
-Focus Town is an offline focus timer: you start a session, builders build, and you leave your phone alone.
+Focus Worldbuilder is an offline focus timer: you start a session, builders build, and you leave your phone alone.
 
 ## How it works
 
@@ -22,10 +22,10 @@ Focus Town is an offline focus timer: you start a session, builders build, and y
 Make sure the app was open when you locked the phone. If you pressed Home first and then locked, the app counts that as leaving.
 
 **I don't get warnings.**
-Open Settings > Notifications > Focus Town and allow notifications.
+Open Settings > Notifications > Worldbuilder and allow notifications.
 
 **I don't see the lock screen countdown.**
-Open Settings > Focus Town and make sure Live Activities are on.
+Open Settings > Worldbuilder and make sure Live Activities are on.
 
 **Can I get my town back after deleting the app?**
 No. Everything is stored on the phone only.

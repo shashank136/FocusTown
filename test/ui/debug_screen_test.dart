@@ -43,7 +43,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Focus Town debug'), findsOneWidget);
+    expect(find.text('Focus Worldbuilder debug'), findsOneWidget);
     expect(find.textContaining('Wall:'), findsOneWidget);
     expect(find.text('Uptime: 0:00:00'), findsOneWidget);
 

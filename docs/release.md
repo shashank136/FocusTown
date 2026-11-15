@@ -1,10 +1,10 @@
 # Release notes
 
-Everything needed to ship Focus Town, except the secrets (which are never committed).
+Everything needed to ship Focus Worldbuilder, except the secrets (which are never committed).
 
 ## Identity
 
-- Display name: `Focus Town`.
+- Display name (home screen): `Worldbuilder` (the store name is `Focus Worldbuilder`; the full name is too long under an icon). Renamed 2026-11-15.
 - Version: `1.0.0+1` (`pubspec.yaml`).
 - Bundle id / application id: `com.shashank.focusTown` (iOS, iOS tests as
   `.RunnerTests`, Android `applicationId` and package). Chosen by the user on
@@ -79,19 +79,20 @@ creating the app.
   `build.gradle.kts` and the resource files are written but unverified; run
   `flutter build apk --release` once the SDK is installed.
 
-## Store name (decided 2026-11-12)
+## Store name (decided 2026-11-15)
 
-App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focustown: Pomodoro Timer", exists, so the exact name may be taken.
+App Store limits: name 30 characters, subtitle 30 characters. The old name `Focus Town` was dropped because at least four apps use it or `Focustown` (one with about 9,900 ratings), so a clash or a complaint was likely. `Focus Worldbuilder` was chosen because it says what the app is: you focus, and you build a world. A search of the US App Store on 2026-11-15 found no app with that name (only `FocusWorld: Focus & Grow` is near it); App Store Connect's New App form is the final check.
 
-- Name: `Focus Town`
-- Subtitle: `Build While You Focus`
-- If the name is taken, try in order: `Focus Town Builder`, `Focus Town: Block Builder`, `Focus Town: Build & Focus` (keep the subtitle).
-- The home screen name (`CFBundleDisplayName`) stays `Focus Town`; it need not match the store name.
-- Keep the icon and screenshots clearly different from the other app (isometric block town).
+- Name: `Focus Worldbuilder` (18 characters)
+- Subtitle: `Build a Town as You Focus` (25 characters)
+- If the name is refused, try in order: `My Focus World`, `Focus Landmarks`, `Focus Wonders`.
+- The home screen name (`CFBundleDisplayName`, Android label) is `Worldbuilder`: a long name is cut off under an icon. Settings > Notifications lists the app by that name.
+- The bundle id `com.shashank.focusTown`, the repository and the GitHub Pages address (`.../FocusTown/...`) keep the old name; users never see them.
+- Keep the icon and screenshots clearly different from the other apps (an isometric block island with famous landmarks).
 
 ## Store listing (draft 2026-11-12)
 
-- Name / subtitle: see above (`Focus Town` / `Build While You Focus`).
+- Name / subtitle: see above (`Focus Worldbuilder` / `Build a Town as You Focus`).
 - Category: Productivity (primary), Lifestyle (secondary).
 - Age rating: 4+. No violence, no user content, no web access, no purchases, no gambling.
 - Price: **Free**. No in-app purchases, no subscriptions, no ads, now or planned. Leave the paid-apps agreement, tax and banking empty in App Store Connect; only the free-apps agreement is needed.
@@ -99,7 +100,7 @@ App Store limits: name 30 characters, subtitle 30 characters. Another app, "Focu
 - Promotional text (max 170): `Start a focus session and your builders raise a block town. Leave the app and they stop. Grow your island and build famous landmarks. Free, no ads.`
 - Description (updated 2026-11-15):
 
-  Focus Town turns focus time into a town you can see.
+  Focus Worldbuilder turns focus time into a world you can see.
 
   Pick how long you want to focus, from 10 minutes to 2 hours. Little builders start work on a new building. Put your phone down, and watch them finish. Leave the app before the time is up, and they stop and leave a ruin behind.
 

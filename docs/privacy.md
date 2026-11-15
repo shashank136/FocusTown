@@ -3,16 +3,16 @@ layout: default
 title: Privacy policy
 ---
 
-# Focus Town privacy policy
+# Focus Worldbuilder privacy policy
 
 Last updated: 2026-11-12
 
-Focus Town does not collect, store on a server, share or sell any personal data.
+Focus Worldbuilder does not collect, store on a server, share or sell any personal data.
 
 ## What stays on your phone
 
 - Your town, focus sessions, streak and settings are saved in a database on your phone. They never leave it.
-- Focus Town has no accounts, no sign-in, no ads, no analytics and no tracking. It makes no network connections.
+- Focus Worldbuilder has no accounts, no sign-in, no ads, no analytics and no tracking. It makes no network connections.
 - A small log file on your phone records app events (for example "session started") to help find bugs. It stays on your phone. You can copy it from the debug screen and send it to the developer if you choose to; nothing is sent automatically.
 
 ## What the app uses
@@ -24,7 +24,7 @@ Focus Town does not collect, store on a server, share or sell any personal data.
 
 ## Children
 
-Focus Town collects no data from anyone, including children.
+Focus Worldbuilder collects no data from anyone, including children.
 
 ## Deleting your data
 

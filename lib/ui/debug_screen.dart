@@ -93,7 +93,7 @@ class _DebugScreenState extends ConsumerState<DebugScreen> {
     final now = TimeStamp.now(clock);
     final tampered = wallClockTampered(_start, now);
     return Scaffold(
-      appBar: AppBar(title: const Text('Focus Town debug')),
+      appBar: AppBar(title: const Text('Focus Worldbuilder debug')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

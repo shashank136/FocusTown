@@ -317,7 +317,7 @@ void main() {
     await tester.tap(find.byTooltip('Open debug screen'));
     await tester.pump(); // starts the route
     await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('Focus Town debug'), findsOneWidget);
+    expect(find.text('Focus Worldbuilder debug'), findsOneWidget);
   });
 
   testWidgets('tapping elsewhere does nothing', (tester) async {
@@ -325,7 +325,7 @@ void main() {
     await tester.tapAt(const Offset(300, 300));
     await tester.longPressAt(const Offset(300, 300));
     await tester.pump(const Duration(milliseconds: 600));
-    expect(find.text('Focus Town debug'), findsNothing);
+    expect(find.text('Focus Worldbuilder debug'), findsNothing);
   });
 
   testWidgets('the debug button sits below the status bar', (tester) async {

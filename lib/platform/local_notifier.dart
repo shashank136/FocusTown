@@ -64,13 +64,13 @@ class LocalNotifier implements Notifier {
     if (emergency) {
       await _plugin.show(
         id: kWarningNotificationId,
-        title: 'Focus Town',
+        title: 'Focus Worldbuilder',
         body: 'Emergency pause on. You can be away for up to 10 minutes.',
         notificationDetails: _details,
       );
       await _plugin.zonedSchedule(
         id: kPassNotificationId,
-        title: 'Focus Town',
+        title: 'Focus Worldbuilder',
         body: 'Come back! Your builders stop in 2 minutes.',
         scheduledDate: tz.TZDateTime.now(tz.local).add(_emergencyWarning),
         notificationDetails: _details,
@@ -80,14 +80,14 @@ class LocalNotifier implements Notifier {
     }
     await _plugin.show(
       id: kWarningNotificationId,
-      title: 'Focus Town',
+      title: 'Focus Worldbuilder',
       body: 'Come back! Your builders stop in 10 seconds.',
       notificationDetails: _details,
     );
     if (!passAvailable) return;
     await _plugin.zonedSchedule(
       id: kPassNotificationId,
-      title: 'Focus Town',
+      title: 'Focus Worldbuilder',
       body: 'Emergency pass used. You have 60 seconds.',
       scheduledDate: tz.TZDateTime.now(tz.local).add(_passDelay),
       notificationDetails: _details,

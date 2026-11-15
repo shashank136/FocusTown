@@ -1,9 +1,9 @@
 ---
 layout: default
-title: Focus Town
+title: Focus Worldbuilder
 ---
 
-# Focus Town
+# Focus Worldbuilder
 
 A focus timer that grows a block-style town while you stay off your phone.
 
