@@ -458,6 +458,12 @@ Product guardrail for v2: purchases must never shorten build time, since build t
 - Ruins and the building site get the same roads. Gardens and unclaimed forest do not.
 - Spare workers walk the whole network, not only the two main roads: each walks a route between two places on the network and back. Up to 8 walk at once.
 
+## Roads on new land and clearings (decided 2026-11-14)
+
+- The two main roads run on in a straight line across any land a district adds, as wide as on the starting island.
+- The forest leaves a clearing round every building and building site: no tree trunk within 4 tiles of its plot or block, so tree tops never hide its ring road, from any side the view is turned to.
+- After a session ends (or the district preview is closed without one) the camera glides back out to where it was before it moved in. If the player moved the camera themselves, it stays where they put it.
+
 ## Landmarks (Phase V8, decided 2026-11-12)
 
 - A landmark is a big building that takes several sessions. The first one is the Eiffel Tower (12 stages, 20 minutes of finished sessions per stage, so 240 minutes in all). Only one landmark can be in progress, and each can be built once.

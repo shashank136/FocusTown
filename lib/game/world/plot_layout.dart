@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:focus_town/domain/building_tier.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
@@ -50,6 +52,20 @@ int parcelOrigin(int g) => g < 0
     : g < kBaseOrigins.length
     ? kBaseOrigins[g]
     : kBaseOrigins.last + kPlotSize * (g - kBaseOrigins.length + 1);
+
+/// The tiles of the island ground for a town with the claimed [parcels]: the
+/// 64 x 64 map, grown so that it holds every claimed parcel with the same
+/// 3-tile margin all round. The end of each range is one past the last tile.
+({int x0, int y0, int x1, int y1}) islandGround(Iterable<Parcel> parcels) {
+  final gx = [0, kBaseParcelsPerSide - 1, for (final p in parcels) p.gx];
+  final gy = [0, kBaseParcelsPerSide - 1, for (final p in parcels) p.gy];
+  return (
+    x0: parcelOrigin(gx.reduce(math.min)) - 3,
+    y0: parcelOrigin(gy.reduce(math.min)) - 3,
+    x1: parcelOrigin(gx.reduce(math.max)) + kPlotSize + 3,
+    y1: parcelOrigin(gy.reduce(math.max)) + kPlotSize + 3,
+  );
+}
 
 /// Plot [index] of a town with the claimed [parcels]: the classic plots come
 /// first (0..63), then one plot per claimed non-garden parcel in claim order.

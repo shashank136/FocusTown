@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:focus_town/domain/building_tier.dart';
+import 'package:focus_town/domain/district.dart';
 import 'package:focus_town/domain/parcel.dart';
 import 'package:focus_town/domain/plot_grid.dart';
 import 'package:focus_town/domain/town.dart';
@@ -203,6 +204,59 @@ void main() {
     test('the walkers do not all take the same road', () {
       final routes = RoadNetwork(town).routes(8);
       expect(routes.map((r) => r.first).toSet().length, greaterThan(4));
+    });
+  });
+
+  group('main roads on district land', () {
+    // Two rows north: the island ground reaches y = -11 (a row is 7 tiles,
+    // and the 3-tile margin).
+    final north = [
+      ...districtRow(DistrictSide.north, 0, 0),
+      ...districtRow(DistrictSide.north, 0, 1),
+    ];
+    final east = [
+      ...districtRow(DistrictSide.east, 0, 0),
+      ...districtRow(DistrictSide.east, 0, 1),
+    ];
+
+    test('the north road goes on through the new rows, as wide as before', () {
+      final r = RoadNetwork(_town(const [], north));
+      for (final y in [-1, -5, -10]) {
+        expect(r.isRoad(31, y), isTrue, reason: 'y $y');
+        expect(r.isRoad(32, y), isTrue, reason: 'y $y');
+      }
+      // Not beside it, and not past the end of the land.
+      expect(r.isRoad(30, -5), isFalse);
+      expect(r.isRoad(33, -5), isFalse);
+      expect(r.isRoad(31, -20), isFalse);
+      expect(_connected(r), isTrue);
+    });
+
+    test('the east road goes on through the new rows', () {
+      final r = RoadNetwork(_town(const [], east));
+      for (final x in [64, 68, 74]) {
+        expect(r.isRoad(x, 31), isTrue, reason: 'x $x');
+        expect(r.isRoad(x, 32), isTrue, reason: 'x $x');
+      }
+      expect(r.isRoad(70, 30), isFalse);
+      expect(_connected(r), isTrue);
+    });
+
+    test('without new land the roads are the two crossing roads only', () {
+      final r = RoadNetwork(_town(const []));
+      expect(r.isRoad(31, -1), isFalse);
+      expect(r.isRoad(64, 31), isFalse);
+    });
+
+    test('walkers can use the new roads', () {
+      final r = RoadNetwork(_town(const [], [...north, ...east]));
+      final routes = r.routes(8);
+      expect(routes, isNotEmpty);
+      for (final route in routes) {
+        for (final t in route) {
+          expect(r.isRoad(t.$1, t.$2), isTrue);
+        }
+      }
     });
   });
 }

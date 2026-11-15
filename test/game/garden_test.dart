@@ -82,6 +82,58 @@ void main() {
     }
   });
 
+  test('no forest tree hides the road round a building', () {
+    // A house on plot 7, with the forest all round it.
+    const plot = 7;
+    const house = TownBuilding(
+      id: 'h',
+      tier: BuildingTier.house,
+      status: BuildingStatus.complete,
+      plotIndex: plot,
+    );
+    final town = TownState(
+      workers: 3,
+      plotsUnlocked: 6,
+      buildings: [house],
+      queue: const [],
+      inRecoveryMode: false,
+    );
+    final w = buildTownWorld(town);
+    final p = kPlots[plot];
+    // A tree top hides the ground up to 4 tiles away, from any side: no trunk
+    // within 4 tiles of the plot.
+    for (final b in w.blocks) {
+      if (b.material != Blocks.log) continue;
+      final inPlot =
+          b.x >= p.originX &&
+          b.x < p.originX + kPlotSize &&
+          b.y >= p.originY &&
+          b.y < p.originY + kPlotSize; // the house's own beams
+      final near =
+          b.x >= p.originX - 4 &&
+          b.x < p.originX + kPlotSize + 4 &&
+          b.y >= p.originY - 4 &&
+          b.y < p.originY + kPlotSize + 4;
+      expect(near && !inPlot, isFalse, reason: 'trunk at ${b.x},${b.y}');
+    }
+    // The forest further off is still there.
+    expect(w.blocks.where((b) => b.material == Blocks.log), isNotEmpty);
+  });
+
+  test('the main roads are drawn on new land, beside plain ground', () {
+    final land = [
+      ...districtRow(DistrictSide.north, 0, 0),
+      ...districtRow(DistrictSide.north, 0, 1),
+    ];
+    final w = buildTownWorld(_town(land));
+    for (final y in [-1, -6, -10]) {
+      expect(w.get(31, y, 0), Blocks.path, reason: 'y $y');
+      expect(w.get(32, y, 0), Blocks.path, reason: 'y $y');
+    }
+    expect(w.get(30, -6, 0), isNot(Blocks.path));
+    expect(w.get(33, -6, 0), isNot(Blocks.path));
+  });
+
   test('new land makes the island ground one clean rectangle', () {
     // Without land the island ground is the 64 x 64 map: nothing beyond it.
     final plain = buildTownWorld(_town(const []));

@@ -91,6 +91,9 @@ class TownGame extends FlameGame
   Vec2? _doubleTapAt;
   CameraTransition? _transition;
   Plot? _siteToFocus;
+  // Where the camera was before it was moved in for a session or a preview,
+  // so that it can go back once that is over.
+  CameraPose? _poseBeforeFocus;
 
   // The last building site, remembered because the stored town moves on to
   // the next free plot the moment a session ends.
@@ -253,30 +256,34 @@ class TownGame extends FlameGame
 
   /// One finger dragged by [delta] pixels.
   void onPan(Vec2 delta) {
-    _transition = null;
-    _redraw = true;
+    _takeOver();
     renderer.camera?.panBy(delta);
+  }
+
+  // The user moves the camera: any glide stops, and it no longer goes back to
+  // where it was before a session or a preview.
+  void _takeOver() {
+    _transition = null;
+    _poseBeforeFocus = null;
+    _redraw = true;
   }
 
   /// Pinch around [focal]; [factor] is the change since the last update.
   void onPinch(Vec2 focal, double factor) {
-    _transition = null;
-    _redraw = true;
+    _takeOver();
     renderer.camera?.zoomAt(focal, factor);
   }
 
   /// Mouse wheel at [pos]; a negative [dy] (wheel up) zooms in.
   void onWheel(Vec2 pos, double dy) {
-    _transition = null;
-    _redraw = true;
+    _takeOver();
     renderer.camera?.zoomAt(pos, math.exp(-dy * 0.002));
   }
 
   /// Double tap at [pos]: zoom in 1.5x around it. (Not `onDoubleTap`: Flame's
   /// mixin already owns that name with another signature.)
   void onDoubleTapAt(Vec2 pos) {
-    _transition = null;
-    _redraw = true;
+    _takeOver();
     renderer.camera?.zoomAt(pos, 1.5);
   }
 
@@ -320,8 +327,9 @@ class TownGame extends FlameGame
       final (nx, ny) = next.point(wx, wy);
       cam.focusOn(Vec2(nx, ny));
     }
-    // A glide began in the old view.
+    // A glide began in the old view, and so was the pose to go back to.
     _transition = null;
+    _poseBeforeFocus = null;
     _redraw = true;
   }
 
@@ -348,6 +356,7 @@ class TownGame extends FlameGame
     final region = renderer.turnedRect(
       Rect.fromLTRB(minX - 12, minY - 12, maxX + 12, maxY + 12),
     );
+    _poseBeforeFocus ??= cam.pose;
     final target = TownCamera(cam.viewSize, box: cam.box)
       ..fitToRegion(region)
       // The sheet covers the lower part of the screen: look from higher up.
@@ -402,9 +411,20 @@ class TownGame extends FlameGame
   void _updateCamera(double dt) {
     final cam = renderer.camera;
     if (cam == null) return;
+    // Once the session is over (or the district preview closed without one),
+    // the camera goes back out to where it was.
+    final back = _poseBeforeFocus;
+    if (back != null &&
+        _siteToFocus == null &&
+        _focus?.active == null &&
+        renderer.rowHighlight.isEmpty) {
+      _poseBeforeFocus = null;
+      _transition = CameraTransition(from: cam.pose, to: back);
+    }
     final site = _siteToFocus;
     if (site != null) {
       _siteToFocus = null;
+      _poseBeforeFocus ??= cam.pose;
       final (sx, sy) = renderer.rotation.point(site.center.x, site.center.y);
       _transition = CameraTransition(
         from: cam.pose,

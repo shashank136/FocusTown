@@ -16,12 +16,21 @@ void buildForest(
   required Set<int> cleared,
   List<Parcel> parcels = const [],
   List<(int, int, int, int)> bushZones = const [],
+  List<(int, int, int, int)> clearings = const [],
   int seed = 11,
 }) {
   // Trees in and just in front of a garden are flower bushes instead: low,
   // so they do not hide the garden with green. [bushZones] give the tile range
   // (x0, y0, x1, y1) of their trunks.
+  // No tree stands in a clearing either: [clearings] give the tile range (x0,
+  // y0, x1, y1) of trunks that are left out, round a building, so that its ring
+  // road is not hidden by tree tops.
   void tree(int x, int y) {
+    if (clearings.any(
+      (a) => x >= a.$1 && x <= a.$3 && y >= a.$2 && y <= a.$4,
+    )) {
+      return;
+    }
     final bush = bushZones.any(
       (a) => x >= a.$1 && x <= a.$3 && y >= a.$2 && y <= a.$4,
     );

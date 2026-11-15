@@ -130,9 +130,6 @@ class _Heap {
   }
 }
 
-bool _isMain(int x, int y) =>
-    x >= 0 && y >= 0 && x < kMapSize && y < kMapSize && isRoad(x, y);
-
 // The outer tile ring of [p]'s block.
 Iterable<Tile> _ring(Plot p) sync* {
   final n = p.size;
@@ -152,10 +149,13 @@ Set<Tile> _build(TownState town, Plot? site) {
       plotForTier(b.plotIndex, b.tier, town.parcels),
     ?site,
   ];
+  // The two main roads run on across any land added to the island, as wide
+  // as on the starting island.
+  final g = islandGround(town.parcels);
   final roads = <Tile>{
-    for (var x = 0; x < kMapSize; x++)
-      for (var y = 0; y < kMapSize; y++)
-        if (_isMain(x, y)) (x, y),
+    for (var x = g.x0; x < g.x1; x++)
+      for (var y = g.y0; y < g.y1; y++)
+        if (isRoad(x, y)) (x, y),
     for (final p in blocks) ..._ring(p),
   };
   // Under a building: never a road.
