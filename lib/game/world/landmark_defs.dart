@@ -23,6 +23,7 @@ void buildLandmark(
     final design = switch (landmark) {
       Landmark.christRedeemer => christRedeemerDesign(),
       Landmark.lighthouse => lighthouseDesign(),
+      Landmark.easterIsland => easterIslandDesign(),
       _ => null,
     };
     if (design != null) {

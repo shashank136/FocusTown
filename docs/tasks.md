@@ -2030,7 +2030,7 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - Progress:
   - [x] Christ the Redeemer, 1 x 1 (2026-11-15, 122 blocks)
   - [x] Lighthouse of Alexandria, 2 x 2 (2026-11-15, 636 blocks)
-  - [ ] Easter Island Moai, 2 x 2
+  - [x] Easter Island Moai, 2 x 2 (2026-11-15, one large statue, 1046 blocks)
   - [ ] Space Needle, 2 x 2
   - [ ] Pagoda, 2 x 2
   - [ ] Petra, 3 x 2

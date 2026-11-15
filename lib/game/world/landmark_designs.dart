@@ -154,3 +154,76 @@ Vox lighthouseDesign({int width = 12, int depth = 12, int height = 30}) {
   }
   return v;
 }
+
+/// The Easter Island Moai on a 2 x 2 block ([width] x [depth] tiles inside the
+/// road): one large statue facing front on a stone platform (the ahu) with a
+/// ramp and a paved apron. A plain slab body with no legs, the arms down the
+/// sides and the hands meeting on the belly; a very tall flat-topped head
+/// carved from the chin up: jutting chin, thin mouth, lips, a long nose with
+/// nostrils, deep eye sockets, a heavy brow and long ears; a red topknot.
+Vox easterIslandDesign({int width = 12, int depth = 12}) {
+  final v = Vox(width, depth);
+  final bodyWidth = width >= 10 ? 7 : math.max(3, width - 2) | 1;
+  final bodyDepth = math.max(3, math.min(5, depth - 6));
+  final xs = ((width - bodyWidth) / 2).round();
+  final cx = xs + (bodyWidth >> 1);
+  final y1 = math.max(bodyDepth, depth - 4);
+  final y0 = y1 - bodyDepth + 1;
+  final xe = xs + bodyWidth - 1;
+  // The floor, the platform of fitted stones, its ramp and the apron.
+  v
+    ..box(0, 0, 0, width - 1, depth - 1, 0, Blocks.path)
+    ..box(0, 0, 1, width - 1, y1 + 1, 2, Blocks.cobble)
+    ..box(1, y1 + 2, 1, width - 2, y1 + 2, 1, Blocks.stone)
+    ..box(0, y1 + 3, 0, width - 1, depth - 1, 0, Blocks.path);
+  for (var x = 0; x < width; x++) {
+    for (var y = 0; y <= y1 + 1; y++) {
+      if ((x + y) % 3 == 0) v.set(x, y, 2, Blocks.stone);
+    }
+  }
+  // The body: a slab, the arms carved down the sides, the hands on the belly
+  // with finger lines, the line of the collarbone.
+  const bodyBase = 3;
+  v.box(xs, y0, bodyBase, xe, y1, bodyBase + 5, Blocks.cobble);
+  for (var z = bodyBase + 1; z <= bodyBase + 4; z++) {
+    v
+      ..set(xs + 1, y1, z, Blocks.char)
+      ..set(xe - 1, y1, z, Blocks.char);
+  }
+  v
+    ..box(
+      xs + 1,
+      y1 + 1,
+      bodyBase + 2,
+      xe - 1,
+      y1 + 1,
+      bodyBase + 3,
+      Blocks.stone,
+    )
+    ..box(xs + 1, y1, bodyBase + 5, xe - 1, y1, bodyBase + 5, Blocks.char);
+  // The head, carved in layers from the chin up.
+  const head = bodyBase + 6;
+  v
+    ..box(xs, y0, head, xe, y1, head + 8, Blocks.stone)
+    ..box(xs + 1, y1 + 1, head, xe - 1, y1 + 1, head + 1, Blocks.stone)
+    ..box(xs + 1, y1, head + 2, xe - 1, y1, head + 2, Blocks.char)
+    ..box(xs + 1, y1 + 1, head + 3, xe - 1, y1 + 1, head + 3, Blocks.stone)
+    ..box(cx, y1 + 1, head + 4, cx, y1 + 1, head + 7, Blocks.stone)
+    ..box(cx, y1 + 2, head + 4, cx, y1 + 2, head + 5, Blocks.stone)
+    ..box(cx - 1, y1 + 1, head + 4, cx + 1, y1 + 1, head + 4, Blocks.stone)
+    ..set(cx - 1, y1 + 1, head + 4, Blocks.char)
+    ..set(cx + 1, y1 + 1, head + 4, Blocks.char);
+  for (final ex in [xs + 1, xe - 2]) {
+    v.box(ex, y1, head + 5, ex + 1, y1, head + 6, Blocks.char);
+  }
+  v.box(xs, y1 + 1, head + 7, xe, y1 + 2, head + 7, Blocks.cobble);
+  for (final ex in [xs - 1, xe + 1]) {
+    v
+      ..box(ex, y1 - 2, head + 3, ex, y1 - 1, head + 6, Blocks.stone)
+      ..set(ex, y1 - 1, head + 2, Blocks.stone);
+  }
+  // The topknot of red scoria.
+  final knot = math.max(1.2, bodyWidth / 2 - 1.1);
+  v.disc(cx.toDouble(), (y0 + y1) / 2, knot, head + 9, head + 11, Blocks.roof);
+  return v;
+}

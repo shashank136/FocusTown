@@ -101,15 +101,39 @@ void main() {
     },
   );
 
-  test('Easter Island: a long head with a nose, deep eyes and a topknot', () {
-    expect(_at(_build(Landmark.easterIsland, 6), 4, 4, 14), Blocks.stone);
-    expect(_at(_build(Landmark.easterIsland, 6), 5, 7, 9), isNull);
-    expect(_at(_build(Landmark.easterIsland, 7), 5, 7, 9), Blocks.stone);
-    expect(_at(_build(Landmark.easterIsland, 8), 4, 7, 12), Blocks.stone);
-    expect(_at(_build(Landmark.easterIsland, 9), 4, 7, 11), Blocks.char);
-    expect(_at(_build(Landmark.easterIsland, 10), 5, 7, 7), Blocks.cobble);
-    expect(_at(_build(Landmark.easterIsland, 11), 5, 5, 15), Blocks.roof);
-    expect(_at(_build(Landmark.easterIsland, 12), 2, 6, 6), Blocks.stone);
+  test('Easter Island, the old design: a long head, a nose and a topknot', () {
+    expect(
+      _at(_build(Landmark.easterIsland, 6, classic: true), 4, 4, 14),
+      Blocks.stone,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 6, classic: true), 5, 7, 9),
+      isNull,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 7, classic: true), 5, 7, 9),
+      Blocks.stone,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 8, classic: true), 4, 7, 12),
+      Blocks.stone,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 9, classic: true), 4, 7, 11),
+      Blocks.char,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 10, classic: true), 5, 7, 7),
+      Blocks.cobble,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 11, classic: true), 5, 5, 15),
+      Blocks.roof,
+    );
+    expect(
+      _at(_build(Landmark.easterIsland, 12, classic: true), 2, 6, 6),
+      Blocks.stone,
+    );
   });
 
   test('Space Needle: legs, a waist, a shaft, a round saucer, a spire', () {
