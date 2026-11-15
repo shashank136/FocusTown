@@ -741,13 +741,18 @@ void main() {
       expect(find.widgetWithText(ChoiceChip, 'West'), findsOneWidget);
     });
 
-    testWidgets('three districts is the most: no choice any more', (
+    testWidgets('four districts is the most: no choice any more', (
       tester,
     ) async {
       await _open(
         tester,
         seed: city(
-          done: [DistrictSide.east, DistrictSide.west, DistrictSide.north],
+          done: [
+            DistrictSide.east,
+            DistrictSide.west,
+            DistrictSide.north,
+            DistrictSide.north,
+          ],
         ),
       );
       expect(find.widgetWithText(ChoiceChip, 'Expand island'), findsNothing);

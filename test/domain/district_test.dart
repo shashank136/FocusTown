@@ -170,12 +170,24 @@ void main() {
       );
     });
 
-    test('at most 3 districts in all', () {
-      final t = _city(
+    test('at most 4 districts in all, so every side can have one', () {
+      final three = _city(
         done: [DistrictSide.east, DistrictSide.west, DistrictSide.north],
       );
       expect(
-        TownRules.districtState(t, DistrictSide.south),
+        TownRules.districtState(three, DistrictSide.south),
+        DistrictState.ready,
+      );
+      final four = _city(
+        done: [
+          DistrictSide.east,
+          DistrictSide.west,
+          DistrictSide.north,
+          DistrictSide.north,
+        ],
+      );
+      expect(
+        TownRules.districtState(four, DistrictSide.south),
         DistrictState.limit,
       );
     });
@@ -232,21 +244,23 @@ void main() {
     });
 
     test('the limit counts finished and half-built districts', () {
-      var t = _city(done: [DistrictSide.east, DistrictSide.west]);
-      // A third, half built, on the north.
-      t = TownRules.beginDistrict(t, DistrictSide.north)!;
-      t = TownRules.applyDistrictMinutes(t, 120);
-      expect(
-        TownRules.districtState(t, DistrictSide.south),
-        DistrictState.limit,
+      var t = _city(
+        done: [DistrictSide.east, DistrictSide.west, DistrictSide.north],
       );
-      // The half-built one can still be gone on with.
+      // A fourth, half built, on the south.
+      t = TownRules.beginDistrict(t, DistrictSide.south)!;
+      t = TownRules.applyDistrictMinutes(t, 120);
+      // That is four, so a second district on the north cannot start.
       expect(
         TownRules.districtState(t, DistrictSide.north),
+        DistrictState.limit,
+      );
+      expect(TownRules.beginDistrict(t, DistrictSide.north), isNull);
+      // The half-built one can still be gone on with.
+      expect(
+        TownRules.districtState(t, DistrictSide.south),
         DistrictState.inProgress,
       );
-      final other = TownRules.beginDistrict(t, DistrictSide.south);
-      expect(other, isNull);
     });
   });
 

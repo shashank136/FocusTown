@@ -15,8 +15,8 @@ const kMinutesPerDistrictRow = 60;
 /// Focus minutes for a whole district.
 const int kDistrictMinutes = kDistrictRows * kMinutesPerDistrictRow;
 
-/// Most districts a town can have at first (a frame rate and battery limit).
-const kMaxDistricts = 3;
+/// Most districts a town can have (a frame rate and battery limit).
+const kMaxDistricts = 4;
 
 /// The side of the starting island a district is added on.
 enum DistrictSide {
