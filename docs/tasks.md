@@ -2029,7 +2029,7 @@ Spec: `docs/spec.md` ("The landmark list"). The sketches the user chose (option 
 - How: a design is drawn with `Vox` (`lib/game/world/vox.dart`: set, box, ring, disc inside its own area) in `lib/game/world/landmark_designs.dart` (port from the sketch's shape in `docs/reference/landmark_island.html`), and `paintDesign` shows it stage by stage from the ground up (the sketch's blocks at their heights; it needs at least 12 height levels). `buildLandmark(..., classic: true)` draws the old 12 x 12 design, which the world builder uses when a landmark's real footprint is not its new one. Set the landmark's `footprint` in `Landmark`, update its tests (`landmark_layout_test.dart` checks the inset of every footprint, `new_landmarks_test.dart` keeps the old design's checks with `classic: true`) and add `test/game/<name>_design_test.dart`.
 - Progress:
   - [x] Christ the Redeemer, 1 x 1 (2026-11-15, 122 blocks)
-  - [ ] Lighthouse of Alexandria, 2 x 2
+  - [x] Lighthouse of Alexandria, 2 x 2 (2026-11-15, 636 blocks)
   - [ ] Easter Island Moai, 2 x 2
   - [ ] Space Needle, 2 x 2
   - [ ] Pagoda, 2 x 2

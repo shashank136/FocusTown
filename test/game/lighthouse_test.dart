@@ -10,7 +10,7 @@ const _oy = 20;
 
 VoxelWorld _lighthouse(int stage) {
   final w = VoxelWorld();
-  buildLandmark(w, Landmark.lighthouse, _ox, _oy, stage);
+  buildLandmark(w, Landmark.lighthouse, _ox, _oy, stage, classic: true);
   return w;
 }
 
@@ -23,7 +23,7 @@ void main() {
     expect(Landmark.lighthouse.unlockLevel, TownLevel.village);
   });
 
-  test('a square base two levels per stage, then a narrower middle', () {
+  test('the old design: a square base, then a narrower middle', () {
     expect(_lighthouse(4).has(_ox + 2, _oy + 2, 8), isTrue);
     expect(_lighthouse(4).has(_ox + 2, _oy + 2, 9), isFalse);
     // The middle starts with a ledge round the top of the base.

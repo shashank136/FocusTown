@@ -19,9 +19,16 @@ void buildLandmark(
 }) {
   // A landmark that stands on the old 2 x 2 block (it has no room for its
   // new size yet) keeps the old design, drawn in 12 x 12 tiles.
-  if (!classic && landmark == Landmark.christRedeemer) {
-    paintDesign(w, christRedeemerDesign(), ox, oy, stage, landmark.stages);
-    return;
+  if (!classic) {
+    final design = switch (landmark) {
+      Landmark.christRedeemer => christRedeemerDesign(),
+      Landmark.lighthouse => lighthouseDesign(),
+      _ => null,
+    };
+    if (design != null) {
+      paintDesign(w, design, ox, oy, stage, landmark.stages);
+      return;
+    }
   }
   switch (landmark) {
     case Landmark.greatPyramid:

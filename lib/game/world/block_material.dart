@@ -185,6 +185,12 @@ abstract final class Blocks {
   /// Pink flowers.
   static final flowerPink = BlockMaterial.of(0xf47fb2, 0xd5648f);
 
+  /// Gold: finials, domes and the figure on a tower.
+  static final gold = BlockMaterial.of(0xe8b93f, 0xc99c2c);
+
+  /// A fire.
+  static final flame = BlockMaterial.of(0xf08a24, 0xd0701c);
+
   /// Violet flowers.
   static final flowerViolet = BlockMaterial.of(0x9b6fe3, 0x7d54c2);
 
