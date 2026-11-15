@@ -22,7 +22,6 @@ import 'package:focus_town/game/render_guard.dart';
 import 'package:focus_town/game/town_renderer.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
 import 'package:focus_town/game/world/active_site.dart';
-import 'package:focus_town/game/world/block_material.dart';
 import 'package:focus_town/game/world/building_defs.dart';
 import 'package:focus_town/game/world/iso.dart';
 import 'package:focus_town/game/world/plot_layout.dart';
@@ -313,26 +312,46 @@ class TownGame extends FlameGame
   // ignore: use_setters_to_change_properties, a command, not a property
   void focusOnSite(Plot plot) => _siteToFocus = plot;
 
-  /// Called with the view once a [turn] has been made.
+  /// Called with the view once it has settled on a new side.
   void Function(ViewRotation view)? onTurned;
 
-  // A turn fades the town out, turns it while the screen is covered, and fades
-  // it back in: the blocks cannot be drawn half way between two views.
-  static const _turnHalf = 0.15; // seconds each way
-  double _turnClock = 0;
-  bool _turning = false;
-  int _pendingTurns = 0;
+  static const double _quarter = math.pi / 2;
+  // Radians turned per pixel a finger glides sideways.
+  static const _turnPerPixel = 0.006;
+  double _spin = 0;
+  _SpinTween? _spinTween;
 
-  /// How much the screen is covered by a turn under way: 0 (none) to 1.
-  double get turnFade {
-    if (!_turning) return 0;
-    final t = _turnClock < _turnHalf
-        ? _turnClock / _turnHalf
-        : (2 * _turnHalf - _turnClock) / _turnHalf;
-    return t.clamp(0, 1);
+  /// How far the view is turned from the side it rests on, in radians: not
+  /// zero while a finger turns it or it settles. A quarter turn is the next
+  /// side (positive is the way [ViewRotation.next] goes).
+  double get spin => _spin;
+
+  /// Turns the view by [radians] more, right now (a finger on the screen).
+  void spinBy(double radians) {
+    if (guard.degraded) return;
+    _takeOver();
+    _spinTween = null;
+    _spin += radians;
+    renderer.setSpin(_spin);
   }
 
-  /// Turns the view by [by] quarter turns with a fade (at once when the system
+  /// The finger is up: the view settles, slowly, on the side nearest to where
+  /// it was heading. [velocity] is how fast it was turning (radians a second).
+  void releaseSpin([double velocity = 0]) {
+    final heading = _spin + velocity * 0.12;
+    _settle((heading / _quarter).round() * _quarter);
+  }
+
+  void _settle(double target) {
+    if (_spin == target) {
+      _finishSpin(target);
+      return;
+    }
+    final turns = ((target - _spin).abs() / _quarter).clamp(0.0, 2.0);
+    _spinTween = _SpinTween(_spin, target, 0.25 + 0.45 * turns);
+  }
+
+  /// Turns the view by [by] quarter turns, slowly (at once when the system
   /// asked for less motion). Turns asked for during a turn are added to it.
   void turn(int by) {
     if (reducedMotion || guard.degraded) {
@@ -340,14 +359,67 @@ class TownGame extends FlameGame
       onTurned?.call(renderer.rotation);
       return;
     }
-    _pendingTurns += by;
-    if (_turning) {
-      // Already fading in: go back to fading out from where the cover is.
-      if (_turnClock > _turnHalf) _turnClock = turnFade * _turnHalf;
+    _takeOver();
+    final resting = _spinTween?.to ?? _spin;
+    _settle((resting / _quarter).round() * _quarter + by * _quarter);
+  }
+
+  void _stepSpin(double dt) {
+    final tween = _spinTween;
+    if (tween == null) return;
+    tween.elapsed += dt;
+    final t = (tween.elapsed / tween.duration).clamp(0.0, 1.0);
+    final eased = t < 0.5 ? 4 * t * t * t : 1 - math.pow(-2 * t + 2, 3) / 2;
+    if (t >= 1) {
+      _finishSpin(tween.to);
     } else {
-      _turning = true;
-      _turnClock = 0;
+      _spin = tween.from + (tween.to - tween.from) * eased;
+      renderer.setSpin(_spin);
     }
+    _redraw = true;
+  }
+
+  // The view rests on the side that [target] quarter turns lead to.
+  void _finishSpin(double target) {
+    _spinTween = null;
+    _spin = 0;
+    renderer.setSpin(0);
+    final before = renderer.rotation;
+    rotate((target / _quarter).round());
+    _redraw = true;
+    if (renderer.rotation != before) onTurned?.call(renderer.rotation);
+  }
+
+  // One finger: the first sideways glide of a touch turns the view, the first
+  // up and down glide pans it, and the touch stays that way till it is lifted.
+  bool? _glideTurns;
+  Vec2 _glideTravel = const Vec2(0, 0);
+
+  /// One finger moved by [delta] pixels.
+  void onOneFinger(Vec2 delta) {
+    var turns = _glideTurns;
+    var move = delta;
+    if (turns == null) {
+      _glideTravel = Vec2(_glideTravel.x + delta.x, _glideTravel.y + delta.y);
+      final far = _glideTravel.x.abs() + _glideTravel.y.abs();
+      if (far < 8) return;
+      turns = _glideTravel.x.abs() > _glideTravel.y.abs() * 1.2;
+      _glideTurns = turns;
+      move = _glideTravel;
+    }
+    if (turns) {
+      spinBy(-move.x * _turnPerPixel);
+    } else {
+      onPan(move);
+    }
+  }
+
+  /// The finger is up (moving at [velocityX] pixels a second sideways).
+  void endOneFinger({double velocityX = 0}) {
+    final turned = _glideTurns ?? false;
+    _glideTurns = null;
+    _glideTravel = const Vec2(0, 0);
+    if (turned) releaseSpin(-velocityX * _turnPerPixel);
   }
 
   static const _twistToTurn = 0.6; // radians, about 35 degrees
@@ -363,18 +435,6 @@ class TownGame extends FlameGame
 
   /// The two-finger gesture is over: the next one may turn again.
   void endTwist() => _twisted = false;
-
-  void _stepTurn(double dt) {
-    if (!_turning) return;
-    _turnClock += dt;
-    if (_turnClock >= _turnHalf && _pendingTurns != 0) {
-      rotate(_pendingTurns);
-      _pendingTurns = 0;
-      onTurned?.call(renderer.rotation);
-    }
-    if (_turnClock >= 2 * _turnHalf) _turning = false;
-    _redraw = true;
-  }
 
   /// Turns the view by [by] quarter turns at once, keeping the camera on the
   /// same spot of the island.
@@ -450,10 +510,10 @@ class TownGame extends FlameGame
     super.update(dt);
     _elapsed += Duration(microseconds: (dt * 1e6).round());
     _publishFps();
+    _stepSpin(dt);
     // A degraded town is a still picture: no camera, workers or effects.
     if (guard.degraded) return;
     _updateCamera(dt);
-    _stepTurn(dt);
     final step = Duration(microseconds: (dt * 1e6).round());
     _particles.step(step);
     _show?.step(step);
@@ -636,16 +696,23 @@ class TownGame extends FlameGame
   void onScaleStart(ScaleStartInfo info) {
     _lastScale = 1;
     endTwist();
+    endOneFinger();
   }
 
   @override
-  void onScaleEnd(ScaleEndInfo info) => endTwist();
+  void onScaleEnd(ScaleEndInfo info) {
+    endTwist();
+    endOneFinger(velocityX: info.raw.velocity.pixelsPerSecond.dx);
+  }
 
   @override
   void onScaleUpdate(ScaleUpdateInfo info) {
     final d = info.raw.focalPointDelta;
-    onPan(Vec2(d.dx, d.dy));
-    if (info.pointerCount > 1) {
+    if (info.pointerCount == 1) {
+      onOneFinger(Vec2(d.dx, d.dy));
+    } else {
+      endOneFinger();
+      onPan(Vec2(d.dx, d.dy));
       final scale = info.raw.scale;
       final p = info.eventPosition.widget;
       onPinch(Vec2(p.x, p.y), scale / _lastScale);
@@ -694,13 +761,6 @@ class TownGame extends FlameGame
     }
     final frame = _lastFrame;
     if (frame != null) canvas.drawPicture(frame);
-    final fade = turnFade;
-    if (fade > 0) {
-      canvas.drawRect(
-        Rect.fromLTWH(0, 0, size.x, size.y),
-        Paint()..color = const Color(kSkyTop).withValues(alpha: fade),
-      );
-    }
   }
 
   // Frames are counted while painting but published from update: a listener
@@ -726,4 +786,14 @@ class TownGame extends FlameGame
       _fpsWindowRenders = 0;
     }
   }
+}
+
+// A turn of the view from one angle to another over [duration] seconds.
+class _SpinTween {
+  new(this.from, this.to, this.duration);
+
+  final double from;
+  final double to;
+  final double duration;
+  double elapsed = 0;
 }

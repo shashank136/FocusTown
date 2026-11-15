@@ -251,14 +251,14 @@ void main() {
     expect(_game.renderer.rotation, const ViewRotation(3));
   });
 
-  testWidgets('a turn fades, and the side it ends on is remembered', (
+  testWidgets('a turn takes a moment, and the side it ends on is remembered', (
     tester,
   ) async {
     final c = await _pump(tester);
     await tester.tap(find.byTooltip('Turn right'));
     await tester.pump();
     expect(_game.renderer.rotation, ViewRotation.none); // not yet turned
-    for (var i = 0; i < 10; i++) {
+    for (var i = 0; i < 20; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(_game.renderer.rotation, const ViewRotation(1));

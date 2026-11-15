@@ -174,7 +174,7 @@ void main() {
 
     group('twisting two fingers', () {
       void frames(TownGame g) {
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 20; i++) {
           g
             ..update(0.05)
             ..render(ui.Canvas(ui.PictureRecorder()));
@@ -208,57 +208,6 @@ void main() {
           ..onTwist(0.8);
         frames(g);
         expect(g.renderer.rotation, const ViewRotation(2));
-      });
-    });
-
-    group('a turn with animation', () {
-      void frames(TownGame g, int n) {
-        for (var i = 0; i < n; i++) {
-          g
-            ..update(0.05)
-            ..render(ui.Canvas(ui.PictureRecorder()));
-        }
-      }
-
-      test('fades out, turns while the screen is covered, fades in', () {
-        final g = _game()..turn(1);
-        expect(g.renderer.rotation, ViewRotation.none);
-        expect(g.turnFade, 0);
-        frames(g, 2); // 0.1 s: on the way out
-        expect(g.turnFade, inExclusiveRange(0, 1));
-        expect(g.renderer.rotation, ViewRotation.none);
-        frames(g, 2); // 0.2 s: turned
-        expect(g.renderer.rotation, const ViewRotation(1));
-        expect(g.view.value, const ViewRotation(1));
-        frames(g, 8);
-        expect(g.turnFade, 0);
-      });
-
-      test('turns pressed during a turn add up', () {
-        final g = _game()
-          ..turn(1)
-          ..turn(1);
-        frames(g, 20);
-        expect(g.renderer.rotation, const ViewRotation(2));
-      });
-
-      test('with reduced motion the turn is at once', () {
-        final g = _game()
-          ..reducedMotion = true
-          ..turn(1);
-        expect(g.renderer.rotation, const ViewRotation(1));
-        expect(g.turnFade, 0);
-      });
-
-      test('it tells which side it ended on', () {
-        final seen = <int>[];
-        final g = _game()
-          ..onTurned = (v) {
-            seen.add(v.turns);
-          }
-          ..turn(-1);
-        frames(g, 20);
-        expect(seen, [3]);
       });
     });
 

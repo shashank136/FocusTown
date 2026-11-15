@@ -11,6 +11,7 @@ import 'package:focus_town/game/effects/particles.dart';
 import 'package:focus_town/game/render/block_painter.dart';
 import 'package:focus_town/game/render/particle_painter.dart';
 import 'package:focus_town/game/render/plot_outline_painter.dart';
+import 'package:focus_town/game/render/spin_painter.dart';
 import 'package:focus_town/game/render/static_layer_cache.dart';
 import 'package:focus_town/game/render/worker_painter.dart';
 import 'package:focus_town/game/workers/worker_layout.dart';
@@ -62,6 +63,10 @@ class TownRenderer {
   (BuildingTier, int, int)? _previewKey;
   ViewRotation _rotation = ViewRotation.none;
   int _worldVersion = 0;
+  VoxelWorld? _viewWorld;
+  late SpinBlocks _spinBlocks;
+  int _spinBlocksVersion = -1;
+  double _spin = 0;
   TownState? _town;
   List<Parcel> _extraLand = const [];
   List<Parcel> _rowHighlight = const [];
@@ -86,6 +91,15 @@ class TownRenderer {
     final preview = _preview;
     if (preview != null) setPreview(preview);
   }
+
+  /// How far the view is turned from [rotation], in radians (0 at rest). Not
+  /// zero while the island is being turned: it is then drawn live, at that
+  /// angle, in flat colors, and nothing else is drawn over it.
+  double get spin => _spin;
+
+  /// Turns the view [radians] from [rotation] about the middle of the screen.
+  // ignore: use_setters_to_change_properties, a command, not a property
+  void setSpin(double radians) => _spin = radians;
 
   /// Land a running session has reached but that is not stored yet.
   List<Parcel> get extraLand => _extraLand;
@@ -154,9 +168,11 @@ class TownRenderer {
         ? town
         : town.copyWith(parcels: [...town.parcels, ..._extraLand]);
     final world = buildTownWorld(shown, site: _site);
-    final visible =
-        (_rotation == ViewRotation.none ? world : _rotation.rotateWorld(world))
-            .sortedVisible();
+    final turned = _rotation == ViewRotation.none
+        ? world
+        : _rotation.rotateWorld(world);
+    _viewWorld = turned;
+    final visible = turned.sortedVisible();
     _visible = visible;
     _index = BlockIndex(visible);
     _worldVersion++;
@@ -276,6 +292,10 @@ class TownRenderer {
       cam.fitToRegion(unlockedRegion);
       _fitted = true;
     }
+    if (_spin != 0) {
+      _paintSpin(canvas, size, cam);
+      return;
+    }
     _cache
       ..update(
         worldVersion: _worldVersion,
@@ -343,6 +363,24 @@ class TownRenderer {
         origin: cam.origin,
       );
     }
+  }
+
+  void _paintSpin(Canvas canvas, Size size, TownCamera cam) {
+    final world = _viewWorld;
+    if (world == null) return;
+    if (_spinBlocksVersion != _worldVersion) {
+      _spinBlocks = SpinBlocks.of(world);
+      _spinBlocksVersion = _worldVersion;
+    }
+    paintSpin(
+      canvas,
+      _spinBlocks,
+      angle: _spin,
+      center: cam.centerWorld,
+      tile: cam.tile,
+      origin: cam.origin,
+      viewSize: size,
+    );
   }
 
   /// The claimed land, for picking and outlines.
